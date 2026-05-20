@@ -46,7 +46,6 @@ E nhsym warnsyms[WARNCOUNT];
 E NEARDATA int warn_obj_cnt; /* count of monsters meeting criteria */
 
 E int x_maze_max, y_maze_max;
-E int otg_temp;
 
 E NEARDATA int in_doagain;
 
@@ -159,7 +158,6 @@ E const char ynchars[];
 E const char ynqchars[];
 E const char ynaqchars[];
 E const char ynNaqchars[];
-E NEARDATA long yn_number;
 
 E const char disclosure_options[];
 
@@ -189,7 +187,6 @@ E char lock[];
 
 E const schar xdir[], ydir[], zdir[];
 
-E NEARDATA schar tbx, tby; /* set in mthrowu.c */
 
 E NEARDATA struct multishot {
     int n, i;

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL int FDECL(monmulti, (struct monst *, struct obj *, struct obj *));
 STATIC_DCL void FDECL(monshoot, (struct monst *, struct obj *, struct obj *));
@@ -253,7 +254,7 @@ struct obj *otmp, *mwep;
                      mtarg ? mtarg->my : mtmp->muy),
         multishot = monmulti(mtmp, otmp, mwep);
         /*
-         * Caller must have called linedup() to set up tbx, tby.
+         * Caller must have called linedup() to set up current_nle_ctx->tbx, current_nle_ctx->tby.
          */
 
     if (canseemon(mtmp)) {
@@ -283,7 +284,7 @@ struct obj *otmp, *mwep;
     }
     m_shot.n = multishot;
     for (m_shot.i = 1; m_shot.i <= m_shot.n; m_shot.i++) {
-        m_throw(mtmp, mtmp->mx, mtmp->my, sgn(tbx), sgn(tby), dm, otmp);
+        m_throw(mtmp, mtmp->mx, mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby), dm, otmp);
         /* conceptually all N missiles are in flight at once, but
            if mtmp gets killed (shot kills adjacent gas spore and
            triggers explosion, perhaps), inventory will be dropped
@@ -781,7 +782,7 @@ struct attack *mattk;
             if (canseemon(mtmp))
                 pline("%s spits venom!", Monnam(mtmp));
             target = mtarg;
-            m_throw(mtmp, mtmp->mx, mtmp->my, sgn(tbx), sgn(tby),
+            m_throw(mtmp, mtmp->mx, mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby),
                     distmin(mtmp->mx,mtmp->my,mtarg->mx,mtarg->my), otmp);
             target = (struct monst *)0;
             nomul(0);
@@ -826,7 +827,7 @@ struct attack  *mattk;
                 if (canseemon(mtmp))
                     pline("%s breathes %s!", Monnam(mtmp), breathwep[typ - 1]);
                 dobuzz((int) (-20 - (typ - 1)), (int) mattk->damn,
-                       mtmp->mx, mtmp->my, sgn(tbx), sgn(tby), FALSE);
+                       mtmp->mx, mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby), FALSE);
                 nomul(0);
                 /* breath runs out sometimes. Also, give monster some
                  * cunning; don't breath if the target fell asleep.
@@ -982,7 +983,7 @@ struct attack *mattk;
                  - distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy))) {
             if (canseemon(mtmp))
                 pline("%s spits venom!", Monnam(mtmp));
-            m_throw(mtmp, mtmp->mx, mtmp->my, sgn(tbx), sgn(tby),
+            m_throw(mtmp, mtmp->mx, mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby),
                     distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), otmp);
             nomul(0);
             return 0;
@@ -1019,7 +1020,7 @@ struct attack *mattk;
                     pline("%s breathes %s!", Monnam(mtmp),
                           breathwep[typ - 1]);
                 buzz((int) (-20 - (typ - 1)), (int) mattk->damn, mtmp->mx,
-                     mtmp->my, sgn(tbx), sgn(tby));
+                     mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby));
                 nomul(0);
                 /* breath runs out sometimes. Also, give monster some
                  * cunning; don't breath if the player fell asleep.
@@ -1043,16 +1044,16 @@ int boulderhandling; /* 0=block, 1=ignore, 2=conditionally block */
     int dx, dy, boulderspots;
 
     /* These two values are set for use after successful return. */
-    tbx = ax - bx;
-    tby = ay - by;
+    current_nle_ctx->tbx = ax - bx;
+    current_nle_ctx->tby = ay - by;
 
     /* sometimes displacement makes a monster think that you're at its
        own location; prevent it from throwing and zapping in that case */
-    if (!tbx && !tby)
+    if (!current_nle_ctx->tbx && !current_nle_ctx->tby)
         return FALSE;
 
-    if ((!tbx || !tby || abs(tbx) == abs(tby)) /* straight line or diagonal */
-        && distmin(tbx, tby, 0, 0) < BOLT_LIM) {
+    if ((!current_nle_ctx->tbx || !current_nle_ctx->tby || abs(current_nle_ctx->tbx) == abs(current_nle_ctx->tby)) /* straight line or diagonal */
+        && distmin(current_nle_ctx->tbx, current_nle_ctx->tby, 0, 0) < BOLT_LIM) {
         if ((ax == u.ux && ay == u.uy) ? (boolean) couldsee(bx, by)
                                        : clear_path(ax, ay, bx, by))
             return TRUE;

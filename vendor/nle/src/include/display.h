@@ -312,11 +312,11 @@
     ((int) what_mon(monsndx((mon)->data), rng) + GLYPH_PET_OFF)
 
 /* This has the unfortunate side effect of needing a global variable    */
-/* to store a result. 'otg_temp' is defined and declared in decl.{ch}.  */
+/* to store a result. 'current_nle_ctx->otg_temp' is defined and declared in decl.{ch}.  */
 #define random_obj_to_glyph(rng)                \
-    ((otg_temp = random_object(rng)) == CORPSE  \
+    ((current_nle_ctx->otg_temp = random_object(rng)) == CORPSE  \
          ? random_monster(rng) + GLYPH_BODY_OFF \
-         : otg_temp + GLYPH_OBJ_OFF)
+         : current_nle_ctx->otg_temp + GLYPH_OBJ_OFF)
 
 #define obj_to_glyph(obj, rng)                                          \
     (((obj)->otyp == STATUE)                                            \

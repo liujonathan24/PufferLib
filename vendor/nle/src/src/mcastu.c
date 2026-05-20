@@ -859,7 +859,7 @@ register struct attack *mattk;
                 pline("%s zaps you with a %s!", Monnam(mtmp),
                       flash_types[ad_to_typ(mattk->adtyp)]);
             buzz(-ad_to_typ(mattk->adtyp), (int) mattk->damn, mtmp->mx,
-                 mtmp->my, sgn(tbx), sgn(tby));
+                 mtmp->my, sgn(current_nle_ctx->tbx), sgn(current_nle_ctx->tby));
         } else
             impossible("Monster spell %d cast", mattk->adtyp - 1);
     }

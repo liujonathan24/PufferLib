@@ -357,7 +357,7 @@ register int n;
 
 extern char erase_char; /* from xxxtty.c; don't need kill_char */
 
-/* returns a single keystroke; also sets 'yn_number' */
+/* returns a single keystroke; also sets 'current_nle_ctx->yn_number' */
 char
 tty_yn_function(query, resp, def)
 const char *query, *resp;
@@ -381,7 +381,7 @@ char def;
     boolean doprev = 0;
     char prompt[BUFSZ];
 
-    yn_number = 0L;
+    current_nle_ctx->yn_number = 0L;
     if (ttyDisplay->toplin == 1 && !(cw->flags & WIN_STOP))
         more();
     cw->flags &= ~WIN_STOP;
@@ -511,7 +511,7 @@ char def;
                 }
             } while (z != '\n');
             if (value > 0)
-                yn_number = value;
+                current_nle_ctx->yn_number = value;
             else if (value == 0)
                 q = 'n'; /* 0 => "no" */
             else {       /* remove number from top line, then try again */
@@ -522,8 +522,8 @@ char def;
     } while (!q);
 
  clean_up:
-    if (yn_number)
-        Sprintf(rtmp, "#%ld", yn_number);
+    if (current_nle_ctx->yn_number)
+        Sprintf(rtmp, "#%ld", current_nle_ctx->yn_number);
     else
         (void) key2txt(q, rtmp);
     /* addtopl(rtmp); -- rewrite toplines instead */

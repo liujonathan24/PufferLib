@@ -673,9 +673,9 @@ int what; /* should be a long */
                     }
                     break;
                 case '#': /* count was entered */
-                    if (!yn_number)
+                    if (!current_nle_ctx->yn_number)
                         continue; /* 0 count => No */
-                    lcount = (long) yn_number;
+                    lcount = (long) current_nle_ctx->yn_number;
                     if (lcount > obj->quan)
                         lcount = obj->quan;
                     /*FALLTHRU*/

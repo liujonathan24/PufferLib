@@ -28,7 +28,6 @@ NEARDATA int nsubroom = 0;
 /* maze limits must be even; masking off lowest bit guarantees that */
 int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;
 
-int otg_temp; /* used by object_to_glyph() [otg] */
 
 NEARDATA int in_doagain = 0;
 
@@ -64,7 +63,6 @@ const char ynchars[] = "yn";
 const char ynqchars[] = "ynq";
 const char ynaqchars[] = "ynaq";
 const char ynNaqchars[] = "yn#aq";
-NEARDATA long yn_number = 0L;
 
 const char disclosure_options[] = "iavgco";
 
@@ -92,7 +90,6 @@ const schar xdir[10] = { -1, -1, 0, 1, 1, 1, 0, -1, 0, 0 };
 const schar ydir[10] = { 0, -1, -1, -1, 0, 1, 1, 1, 0, 0 };
 const schar zdir[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, -1 };
 
-NEARDATA schar tbx = 0, tby = 0; /* mthrowu: target */
 
 /* for xname handling of multiple shot missile volleys:
    number of shots, index of current one, validity check, shoot vs throw */

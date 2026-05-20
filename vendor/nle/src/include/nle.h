@@ -88,6 +88,11 @@ typedef struct nle_globals {
     boolean             unweapon;           /* was decl.c (player unwielded) */
     boolean             mrg_to_wielded;     /* was decl.c (merge picked-up to wield) */
     boolean             defer_see_monsters; /* was decl.c (suppress see_monsters refresh) */
+    /* stage 3h — small misc globals */
+    schar               tbx;                /* was decl.c (throw target x) */
+    schar               tby;                /* was decl.c (throw target y) */
+    int                 otg_temp;           /* was decl.c (object_to_glyph scratch) */
+    long                yn_number;          /* was decl.c (last numeric y/n response) */
 } nle_ctx_t;
 
 /*

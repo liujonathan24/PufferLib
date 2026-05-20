@@ -2205,12 +2205,12 @@ int FDECL((*fn), (OBJ_P)), FDECL((*ckfn), (OBJ_P));
                welded weapons (eg, multiple daggers) will remain as merged
                unit; done to avoid splitting an object that won't be
                droppable (even if we're picking up rather than dropping). */
-            if (!yn_number) {
+            if (!current_nle_ctx->yn_number) {
                 sym = 'n';
             } else {
                 sym = 'y';
-                if (yn_number < otmp->quan && splittable(otmp))
-                    otmp = splitobj(otmp, yn_number);
+                if (current_nle_ctx->yn_number < otmp->quan && splittable(otmp))
+                    otmp = splitobj(otmp, current_nle_ctx->yn_number);
             }
         }
         switch (sym) {
