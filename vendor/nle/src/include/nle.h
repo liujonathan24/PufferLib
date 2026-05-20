@@ -4,6 +4,7 @@
 #define NLE_BZ2_TTYRECS
 
 #include <stdio.h>
+#include <time.h>  /* time_t for stage 9' ubirthday */
 
 #include <fcontext/fcontext.h>
 
@@ -25,6 +26,17 @@ struct you;
 struct flag;             /* include/flag.h */
 struct instance_flags;   /* include/flag.h */
 struct sysflag;          /* include/flag.h, only #ifdef SYSFLAGS */
+struct WinDesc;          /* include/wintty.h (stage 10') */
+struct DisplayDesc;      /* include/wintty.h (stage 10') */
+struct obj;              /* include/obj.h (stage 9') */
+struct monst;            /* include/monst.h (stage 9') */
+struct autopickup_exception; /* include/decl.h (stage 9') */
+struct dgn_topology;     /* include/decl.h (stage 6') */
+struct dungeon;          /* include/dungeon.h (stage 6') */
+struct s_level;          /* include/dungeon.h (stage 6') */
+struct stairway;         /* include/dungeon.h (stage 6') */
+struct dest_area;        /* include/dungeon.h (stage 6') */
+struct nhcoord;          /* include/coord.h (stage 6'); typedef'd as `coord` */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -121,17 +133,74 @@ typedef struct nle_globals {
      * around each nle_step). The exact layout is internal to nle.c which has
      * the full type definitions. Opaque blob here. */
     void                         *dungeon_save;
+    /* stage 10' — TTY window port state (was wintty.c/getline.c globals).
+     * Field names are distinct from the public macros (see wintty.h) so
+     * that those macros don't accidentally expand inside this struct
+     * declaration — hack.h includes wintty.h before any TU includes nle.h.
+     * Same trick as `u_ptr` field vs `u` macro (stage 4). */
+    int                  base_window;     /* macro: BASE_WINDOW */
+    struct WinDesc      *tty_wins[20];    /* macro: wins; MAXWIN=20 */
+    struct DisplayDesc  *tty_display;     /* macro: ttyDisplay */
+    char                 tty_morc;        /* macro: morc */
+    /* stage 8' — display / message state (was decl.c globals).
+     * Field names distinct from macros for the same hack.h-pulls-decl.h
+     * -before-nle.h reason as stage 10'. tc_gbl_data deferred (struct-tag
+     * self-reference; addressed in the collision batch). */
+    int                  win_message;     /* macro: WIN_MESSAGE */
+    int                  win_status;      /* macro: WIN_STATUS */
+    int                  win_map;         /* macro: WIN_MAP */
+    int                  win_inven;       /* macro: WIN_INVEN */
+    char                 vision_recalc;   /* macro: vision_full_recalc */
+    char               **vision_array;    /* macro: viz_array */
+    char                 top_lines[300];  /* macro: toplines; TBUFSZ=300 */
+    /* stage 9' batch A — scalars (no struct cascade). */
+    time_t               nle_ubirthday;       /* macro: ubirthday */
+    long                 nle_moves;           /* macro: moves */
+    long                 nle_monstermoves;    /* macro: monstermoves */
+    long                 nle_wailmsg;         /* macro: wailmsg */
+    long                 nle_domove_attempting; /* macro: domove_attempting */
+    long                 nle_domove_succeeded;  /* macro: domove_succeeded */
+    /* stage 9' batch B — already-pointers; just relocate. */
+    struct obj          *invent_p;            /* macro: invent */
+    struct obj          *uskin_p;             /* macro: uskin */
+    struct obj          *current_wand_p;      /* macro: current_wand */
+    struct obj          *thrownobj_p;         /* macro: thrownobj */
+    struct obj          *kickedobj_p;         /* macro: kickedobj */
+    struct obj          *migrating_objs_p;    /* macro: migrating_objs */
+    struct obj          *billobjs_p;          /* macro: billobjs */
+    struct monst        *mydogs_p;            /* macro: mydogs */
+    struct monst        *migrating_mons_p;    /* macro: migrating_mons */
+    struct autopickup_exception *apelist_p;   /* macro: apelist */
+    /* stage 6' — dungeon topology (heap-allocated to avoid dungeon.h
+     * cascade in nle.h). All allocated in init_nle. */
+    struct dgn_topology *s6_topology_p;       /* macro: dungeon_topology */
+    struct dungeon      *s6_dungeons_p;       /* macro: dungeons (array head) */
+    struct s_level      *s6_sp_levchn;        /* macro: sp_levchn */
+    struct stairway     *s6_upstair_p;        /* macro: upstair */
+    struct stairway     *s6_dnstair_p;        /* macro: dnstair */
+    struct stairway     *s6_upladder_p;       /* macro: upladder */
+    struct stairway     *s6_dnladder_p;       /* macro: dnladder */
+    struct stairway     *s6_sstairs_p;        /* macro: sstairs */
+    struct dest_area    *s6_updest_p;         /* macro: updest */
+    struct dest_area    *s6_dndest_p;         /* macro: dndest */
+    struct nhcoord      *s6_inv_pos_p;        /* macro: inv_pos */
 } nle_ctx_t;
 
 /*
- * Would like to annotate this with __thread, but that causes
- * the MacOS dynamic linker to not unload the library on dlclose().
- *
  * Refactor stage 3: declared extern here, defined once in nle.c. Was a
  * tentative-definition (common symbol) — that broke under ASan ODR after
  * many TUs started including nle.h.
+ *
+ * Stage 10'+: __thread enables OMP-parallel stepping. Each thread chases
+ * its own nle_ctx_t through this pointer; since all per-env state lives
+ * in nle_ctx_t (after stages 1-10 + 5'-10' migrations), threads are
+ * naturally isolated — no shared mutable globals to race on.
+ *
+ * macOS caveat: __thread on a dynamically-loaded library prevents
+ * dlclose() from unloading. Not applicable for our Linux/HPC target;
+ * if we ever need macOS dynamic-unload, gate this with #ifndef __APPLE__.
  */
-extern nle_ctx_t *current_nle_ctx;
+extern __thread nle_ctx_t *current_nle_ctx;
 
 nle_ctx_t *nle_start(nle_obs *, FILE *, nle_seeds_init_t *, nle_settings *);
 nle_ctx_t *nle_step(nle_ctx_t *, nle_obs *);

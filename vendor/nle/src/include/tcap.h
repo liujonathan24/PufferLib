@@ -22,7 +22,7 @@
 #endif
 
 #ifndef DECL_H
-extern struct tc_gbl_data { /* also declared in decl.h; defined in decl.c */
+extern NEARDATA struct tc_gbl_data { /* also declared in decl.h; defined in decl.c */
     char *tc_AS, *tc_AE;    /* graphics start and end (tty font swapping) */
     int tc_LI, tc_CO;       /* lines and columns */
 } tc_gbl_data;

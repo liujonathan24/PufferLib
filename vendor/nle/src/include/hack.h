@@ -170,7 +170,7 @@ typedef struct strbuf {
 #include "decl.h"
 #include "timeout.h"
 
-NEARDATA extern coord bhitpos; /* place where throw or zap hits or stops */
+extern NEARDATA coord bhitpos; /* place where throw or zap hits or stops */
 
 /* types of calls to bhit() */
 enum bhit_call_types {

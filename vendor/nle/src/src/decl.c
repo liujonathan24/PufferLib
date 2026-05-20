@@ -34,15 +34,15 @@ NEARDATA int in_doagain = 0;
  *      The following structure will be initialized at startup time with
  *      the level numbers of some "important" things in the game.
  */
-struct dgn_topology dungeon_topology = { DUMMY };
+/* dungeon_topology migrated to nle_ctx_t (stage 6'). Allocated in init_nle. */
 
-struct q_score quest_status = DUMMY;
+NEARDATA struct q_score quest_status = DUMMY;
 
 NEARDATA int smeq[MAXNROFROOMS + 1] = DUMMY;
 NEARDATA int doorindex = 0;
 NEARDATA char *save_cm = 0;
 
-NEARDATA struct kinfo killer = DUMMY;
+NEARDATA struct kinfo killer = DUMMY;  /* deferred (struct-value, batch C). */
 const char *nomovemsg = 0;
 NEARDATA char plname[PL_NSIZ] = DUMMY; /* player name */
 NEARDATA char pl_character[PL_CSIZ] = DUMMY;
@@ -92,16 +92,10 @@ const schar zdir[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, -1 };
    number of shots, index of current one, validity check, shoot vs throw */
 NEARDATA struct multishot m_shot = { 0, 0, STRANGE_OBJECT, FALSE };
 
-NEARDATA dungeon dungeons[MAXDUNGEON]; /* ini'ed by init_dungeon() */
-NEARDATA s_level *sp_levchn;
-NEARDATA stairway upstair = { 0, 0, { 0, 0 }, 0 },
-                  dnstair = { 0, 0, { 0, 0 }, 0 };
-NEARDATA stairway upladder = { 0, 0, { 0, 0 }, 0 },
-                  dnladder = { 0, 0, { 0, 0 }, 0 };
-NEARDATA stairway sstairs = { 0, 0, { 0, 0 }, 0 };
-NEARDATA dest_area updest = { 0, 0, 0, 0, 0, 0, 0, 0 };
-NEARDATA dest_area dndest = { 0, 0, 0, 0, 0, 0, 0, 0 };
-NEARDATA coord inv_pos = { 0, 0 };
+/* dungeons[], sp_levchn, upstair, dnstair, upladder, dnladder, sstairs,
+ * updest, dndest, inv_pos migrated to nle_ctx_t (stage 6').
+ * All heap-allocated zero-init in init_nle; equivalent to the previous
+ * { 0, 0, { 0, 0 }, 0 } / { 0, ... } / {0,0} static initializers. */
 
 NEARDATA boolean in_mklev = FALSE;
 /* weapon picked is merged with wielded one */
@@ -113,10 +107,10 @@ NEARDATA coord doors[DOORMAX] = { DUMMY };
 
 NEARDATA struct mkroom rooms[(MAXNROFROOMS + 1) * 2] = { DUMMY };
 NEARDATA struct mkroom *subrooms = &rooms[MAXNROFROOMS + 1];
-struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
+NEARDATA struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
 
-dlevel_t level; /* level map */
-struct trap *ftrap = (struct trap *) 0;
+NEARDATA dlevel_t level; /* level map */
+NEARDATA struct trap *ftrap = (struct trap *) 0;
 NEARDATA struct monst youmonst = DUMMY;
 NEARDATA struct context_info context = DUMMY;
 NEARDATA struct flag flags = DUMMY;
@@ -126,31 +120,28 @@ NEARDATA struct sysflag sysflags = DUMMY;
 NEARDATA struct instance_flags iflags = DUMMY;
 /* struct you u migrated to nle_ctx_t (stage 4). Heap-allocated in
  * init_nle, accessed via the `u` macro in decl.h. */
-NEARDATA time_t ubirthday = DUMMY;
-NEARDATA struct u_realtime urealtime = DUMMY;
+/* ubirthday migrated direct (stage 9' batch A). */
+NEARDATA struct u_realtime urealtime = DUMMY;  /* deferred (struct-value, batch C). */
 
-schar lastseentyp[COLNO][ROWNO] = {
+NEARDATA schar lastseentyp[COLNO][ROWNO] = {
     DUMMY
 }; /* last seen/touched dungeon typ */
 
+/* Body-slot pointers deferred to stage 9' batch C
+ * (worn[] table in worn.c has &uarm etc. — static-init needs rewrite). */
 NEARDATA struct obj
-    *invent = (struct obj *) 0,
     *uwep = (struct obj *) 0, *uarm = (struct obj *) 0,
     *uswapwep = (struct obj *) 0,
     *uquiver = (struct obj *) 0,       /* quiver */
         *uarmu = (struct obj *) 0,     /* under-wear, so to speak */
-            *uskin = (struct obj *) 0, /* dragon armor, if a dragon */
                 *uarmc = (struct obj *) 0, *uarmh = (struct obj *) 0,
     *uarms = (struct obj *) 0, *uarmg = (struct obj *) 0,
     *uarmf = (struct obj *) 0, *uamul = (struct obj *) 0,
     *uright = (struct obj *) 0, *uleft = (struct obj *) 0,
     *ublindf = (struct obj *) 0, *uchain = (struct obj *) 0,
     *uball = (struct obj *) 0;
-/* some objects need special handling during destruction or placement */
-NEARDATA struct obj
-    *current_wand = 0,  /* wand currently zapped/applied */
-    *thrownobj = 0,     /* object in flight due to throwing */
-    *kickedobj = 0;     /* object in flight due to kicking */
+/* invent, uskin, current_wand, thrownobj, kickedobj migrated to nle_ctx_t
+ * (stage 9' batch A/B). */
 
 #ifdef TEXTCOLOR
 /*
@@ -179,14 +170,10 @@ const int shield_static[SHIELD_COUNT] = {
 
 NEARDATA struct spell spl_book[MAXSPELL + 1] = { DUMMY };
 
-NEARDATA long moves = 1L, monstermoves = 1L;
-/* These diverge when player is Fast */
-NEARDATA long wailmsg = 0L;
+/* moves/monstermoves/wailmsg migrated direct (stage 9' batch A).
+ * Init to 1L,1L,0L deferred to init_nle / c_reset path. */
 
-/* objects that are moving to another dungeon level */
-NEARDATA struct obj *migrating_objs = (struct obj *) 0;
-/* objects not yet paid for */
-NEARDATA struct obj *billobjs = (struct obj *) 0;
+/* migrating_objs, billobjs migrated direct (stage 9' batch B). */
 
 /* used to zero all elements of a struct obj and a struct monst */
 NEARDATA const struct obj zeroobj = DUMMY;
@@ -199,16 +186,9 @@ NEARDATA char dogname[PL_PSIZ] = DUMMY;
 NEARDATA char catname[PL_PSIZ] = DUMMY;
 NEARDATA char horsename[PL_PSIZ] = DUMMY;
 char preferred_pet; /* '\0', 'c', 'd', 'n' (none) */
-/* monsters that went down/up together with @ */
-NEARDATA struct monst *mydogs = (struct monst *) 0;
-/* monsters that are moving to another dungeon level */
-NEARDATA struct monst *migrating_mons = (struct monst *) 0;
-NEARDATA struct autopickup_exception *apelist =
-                            (struct autopickup_exception *)0;
-
-NEARDATA struct mvitals mvitals[NUMMONS];
-NEARDATA long domove_attempting = 0L;
-NEARDATA long domove_succeeded = 0L;
+/* mydogs, migrating_mons, apelist migrated direct (stage 9' batch B). */
+NEARDATA struct mvitals mvitals[NUMMONS];  /* deferred — needs NUMMONS (batch C). */
+/* domove_attempting, domove_succeeded migrated direct (stage 9' batch A). */
 
 NEARDATA struct c_color_names c_color_names = {
     "black",  "amber", "golden", "light blue", "red",   "green",
@@ -257,17 +237,12 @@ const char *materialnm[] = { "mysterious", "liquid",  "wax",        "organic",
                              "platinum",   "mithril", "plastic",    "glass",
                              "gemstone",   "stone" };
 
-/* Vision */
-NEARDATA boolean vision_full_recalc = 0;
-NEARDATA char **viz_array = 0; /* used in cansee() and couldsee() macros */
+/* Vision — stage 8' migrated to nle_ctx_t (vision_full_recalc, viz_array). */
 
-/* Global windowing data, defined here for multi-window-system support */
-NEARDATA winid WIN_MESSAGE = WIN_ERR;
-NEARDATA winid WIN_STATUS = WIN_ERR;
-NEARDATA winid WIN_MAP = WIN_ERR, WIN_INVEN = WIN_ERR;
-char toplines[TBUFSZ];
-/* Windowing stuff that's really tty oriented, but present for all ports */
-struct tc_gbl_data tc_gbl_data = { 0, 0, 0, 0 }; /* AS,AE, LI,CO */
+/* Global windowing data — stage 8' migrated to nle_ctx_t
+ * (WIN_MESSAGE/STATUS/MAP/INVEN, toplines).
+ * tc_gbl_data deferred (struct-tag self-reference). */
+NEARDATA struct tc_gbl_data tc_gbl_data = { 0, 0, 0, 0 }; /* AS,AE, LI,CO */
 
 char *fqn_prefix[PREFIX_COUNT] = { (char *) 0, (char *) 0, (char *) 0,
                                    (char *) 0, (char *) 0, (char *) 0,

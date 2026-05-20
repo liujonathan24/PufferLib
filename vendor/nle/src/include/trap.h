@@ -37,7 +37,7 @@ struct trap {
 #define tnote vl.v_tnote
 };
 
-extern struct trap *ftrap;
+extern NEARDATA struct trap *ftrap;
 #define newtrap() (struct trap *) alloc(sizeof(struct trap))
 #define dealloc_trap(trap) free((genericptr_t)(trap))
 

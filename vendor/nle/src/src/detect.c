@@ -1082,15 +1082,33 @@ d_level *where;
         return "near you";
 }
 
+/* Stage 6': &oracle_level etc. are no longer compile-time constants
+ * (dungeon_topology lives in nle_ctx_t per-env). Switched to an index
+ * resolved at runtime via level_detects_where(). */
+enum level_detect_idx {
+    LD_ORACLE, LD_MEDUSA, LD_STRONGHOLD, LD_WIZ1,
+    LD_COUNT
+};
 static const struct {
     const char *what;
-    d_level *where;
+    int where_idx;
 } level_detects[] = {
-    { "Delphi", &oracle_level },
-    { "Medusa's lair", &medusa_level },
-    { "a castle", &stronghold_level },
-    { "the Wizard of Yendor's tower", &wiz1_level },
+    { "Delphi", LD_ORACLE },
+    { "Medusa's lair", LD_MEDUSA },
+    { "a castle", LD_STRONGHOLD },
+    { "the Wizard of Yendor's tower", LD_WIZ1 },
 };
+static d_level *
+level_detects_where(int idx)
+{
+    switch (idx) {
+    case LD_ORACLE:     return &oracle_level;
+    case LD_MEDUSA:     return &medusa_level;
+    case LD_STRONGHOLD: return &stronghold_level;
+    case LD_WIZ1:       return &wiz1_level;
+    }
+    return (d_level *) 0;
+}
 
 void
 use_crystal_ball(optr)
@@ -1220,7 +1238,7 @@ struct obj **optr;
             default:
                 i = rn2(SIZE(level_detects));
                 You_see("%s, %s.", level_detects[i].what,
-                        level_distance(level_detects[i].where));
+                        level_distance(level_detects_where(level_detects[i].where_idx)));
                 ret = 0;
                 break;
             }

@@ -14,19 +14,12 @@
 #include "dlb.h"
 
 #include "nle.h"
-/* Don't pull in wintty.h (it has a stale `int nle_xputs` decl that
- * conflicts with the actual void definition in nle.c). Extern-declare
- * the tty globals we need for context-switch (stage 10) directly. */
-#define MAXWIN 20  /* from wintty.h */
-struct WinDesc;
-struct DisplayDesc;
-extern winid BASE_WINDOW;
-extern struct WinDesc *wins[MAXWIN];
-extern struct DisplayDesc *ttyDisplay;
-extern char morc;
 
-/* Single definition of current_nle_ctx; declared extern in nle.h. */
-nle_ctx_t *current_nle_ctx;
+/* Single definition of current_nle_ctx; declared extern in nle.h.
+ * Stage 10'+: TLS-marked so each OMP thread chases its own context.
+ * With all per-env state routed through this pointer, threads are
+ * naturally isolated — no shared mutable globals to race on. */
+__thread nle_ctx_t *current_nle_ctx;
 
 #ifdef NLE_BZ2_TTYRECS
 #include <bzlib.h>
@@ -190,6 +183,35 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         fprintf(stderr, "init_nle: failed to allocate flags/iflags\n");
         abort();
     }
+
+    /* Stage 9' batch A — scalar globals that previously had non-zero static
+     * initializers (decl.c). With calloc-zero'd nle_ctx_t, restore them. */
+    nle->nle_moves = 1L;
+    nle->nle_monstermoves = 1L;
+
+    /* Stage 6' — dungeon topology heap allocations. All zero-init via calloc;
+     * matches the original {0,...} static initializers in decl.c. */
+    nle->s6_topology_p = calloc(1, sizeof(struct dgn_topology));
+    nle->s6_dungeons_p = calloc(MAXDUNGEON, sizeof(dungeon));
+    nle->s6_upstair_p  = calloc(1, sizeof(stairway));
+    nle->s6_dnstair_p  = calloc(1, sizeof(stairway));
+    nle->s6_upladder_p = calloc(1, sizeof(stairway));
+    nle->s6_dnladder_p = calloc(1, sizeof(stairway));
+    nle->s6_sstairs_p  = calloc(1, sizeof(stairway));
+    nle->s6_updest_p   = calloc(1, sizeof(dest_area));
+    nle->s6_dndest_p   = calloc(1, sizeof(dest_area));
+    nle->s6_inv_pos_p  = calloc(1, sizeof(coord));
+    if (!nle->s6_topology_p || !nle->s6_dungeons_p
+        || !nle->s6_upstair_p || !nle->s6_dnstair_p
+        || !nle->s6_upladder_p || !nle->s6_dnladder_p
+        || !nle->s6_sstairs_p || !nle->s6_updest_p
+        || !nle->s6_dndest_p || !nle->s6_inv_pos_p) {
+        fprintf(stderr, "init_nle: failed to allocate stage 6 state\n");
+        abort();
+    }
+    /* ubirthday/wailmsg/domove_* — zero is the original init value. */
+    /* spl_book/mvitals/killer/youmonst/m_shot/quest_status/urealtime
+     * deferred to stage 9' batch C (struct-value migration). */
 
     return nle;
 }
@@ -524,13 +546,7 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
  * lazily in nle_swap_in on first call (after init_dungeon has populated
  * the globals). */
 struct nle_dungeon_save {
-    /* stage 6 — dungeon graph */
-    struct dgn_topology topology;
-    dungeon             dungeons[MAXDUNGEON];
-    s_level            *sp_levchn;
-    stairway            upstair, dnstair, upladder, dnladder, sstairs;
-    dest_area           updest, dndest;
-    coord               inv_pos;
+    /* stage 6' — dungeon graph migrated direct to nle_ctx_t. */
     /* stage 7 — current level (biggest single struct, ~40 KB) and
      * related per-level scratch */
     dlevel_t            level;
@@ -544,56 +560,34 @@ struct nle_dungeon_save {
     struct mkroom      *sstairs_room;
     struct trap        *ftrap;
     /* stage 8 — display / message state */
-    boolean             vision_full_recalc;
-    char              **viz_array;
-    winid               WIN_MESSAGE, WIN_STATUS, WIN_MAP, WIN_INVEN;
-    char                toplines[TBUFSZ];
+    /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     struct tc_gbl_data  tc_gbl_data;
-    /* stage 9 — inventory / monsters / quest / time counters */
+    /* stage 9' — remaining swap entries (DEFERRED to batch C):
+     * struct-value types with header cascades or worn[] static-init refs.
+     * Stays in swap until per-struct heap allocation lands. */
     struct kinfo        killer;
     struct monst        youmonst;
-    time_t              ubirthday;
     struct u_realtime   urealtime;
-    /* Inventory linked-list heads + body-slot pointers */
-    struct obj         *invent;
-    struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu, *uskin;
+    /* body-slot pointers — pinned by worn[] table in worn.c (&uarm etc.) */
+    struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu;
     struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
     struct obj         *uamul, *uright, *uleft, *ublindf, *uchain, *uball;
-    struct obj         *current_wand, *thrownobj, *kickedobj;
-    struct obj         *migrating_objs, *billobjs;
     struct spell        spl_book[MAXSPELL + 1];
     struct multishot    m_shot;
-    /* monster lists */
-    struct monst       *mydogs, *migrating_mons;
     struct mvitals      mvitals[NUMMONS];
-    /* quest */
     struct q_score      quest_status;
-    /* autopickup exceptions */
-    struct autopickup_exception *apelist;
-    /* time counters */
-    long                moves, monstermoves, wailmsg;
-    long                domove_attempting, domove_succeeded;
-    /* stage 10 — TTY window port state (win/tty/wintty.c, getline.c).
-     * NetHackRL singleton (winrl.cc) asserts BASE_WINDOW==0 in its
-     * ctor; if env B's tty_init bumps it past 0, the assert is no-op
-     * in release builds and windows_[BASE_WINDOW] becomes OOB. */
-    winid               BASE_WINDOW;
-    struct WinDesc     *wins[MAXWIN];
-    struct DisplayDesc *ttyDisplay;
-    char                morc;
+    /* migrated direct to nle_ctx_t (stage 9' batches A/B):
+     *   invent, uskin, current_wand, thrownobj, kickedobj
+     *   migrating_objs, billobjs, mydogs, migrating_mons, apelist
+     *   ubirthday, moves, monstermoves, wailmsg
+     *   domove_attempting, domove_succeeded */
+    /* stage 10' — TTY window state migrated direct to nle_ctx_t. */
 };
 
 static void
 nle_dungeon_save_to(struct nle_dungeon_save *s)
 {
-    s->topology = dungeon_topology;
-    memcpy(s->dungeons, dungeons, sizeof(s->dungeons));
-    s->sp_levchn = sp_levchn;
-    s->upstair = upstair; s->dnstair = dnstair;
-    s->upladder = upladder; s->dnladder = dnladder;
-    s->sstairs = sstairs;
-    s->updest = updest; s->dndest = dndest;
-    s->inv_pos = inv_pos;
+    /* stage 6' — dungeon topology migrated direct to nle_ctx_t. */
     /* stage 7 */
     s->level = level;
     memcpy(s->level_info, level_info, sizeof(s->level_info));
@@ -605,60 +599,32 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->dnstairs_room = dnstairs_room;
     s->sstairs_room = sstairs_room;
     s->ftrap = ftrap;
-    /* stage 8 */
-    s->vision_full_recalc = vision_full_recalc;
-    s->viz_array = viz_array;
-    s->WIN_MESSAGE = WIN_MESSAGE;
-    s->WIN_STATUS = WIN_STATUS;
-    s->WIN_MAP = WIN_MAP;
-    s->WIN_INVEN = WIN_INVEN;
-    memcpy(s->toplines, toplines, sizeof(s->toplines));
+    /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     s->tc_gbl_data = tc_gbl_data;
-    /* stage 9 */
+    /* stage 9' batch C — DEFERRED struct-value swaps. */
     s->killer = killer;
     s->youmonst = youmonst;
-    s->ubirthday = ubirthday;
     s->urealtime = urealtime;
-    s->invent = invent;
     s->uwep = uwep; s->uarm = uarm; s->uswapwep = uswapwep;
-    s->uquiver = uquiver; s->uarmu = uarmu; s->uskin = uskin;
+    s->uquiver = uquiver; s->uarmu = uarmu;
     s->uarmc = uarmc; s->uarmh = uarmh; s->uarms = uarms;
     s->uarmg = uarmg; s->uarmf = uarmf;
     s->uamul = uamul; s->uright = uright; s->uleft = uleft;
     s->ublindf = ublindf; s->uchain = uchain; s->uball = uball;
-    s->current_wand = current_wand;
-    s->thrownobj = thrownobj; s->kickedobj = kickedobj;
-    s->migrating_objs = migrating_objs;
-    s->billobjs = billobjs;
     memcpy(s->spl_book, spl_book, sizeof(s->spl_book));
     s->m_shot = m_shot;
-    s->mydogs = mydogs;
-    s->migrating_mons = migrating_mons;
     memcpy(s->mvitals, mvitals, sizeof(s->mvitals));
     s->quest_status = quest_status;
-    s->apelist = apelist;
-    s->moves = moves; s->monstermoves = monstermoves;
-    s->wailmsg = wailmsg;
-    s->domove_attempting = domove_attempting;
-    s->domove_succeeded = domove_succeeded;
-    /* stage 10 — tty window state */
-    s->BASE_WINDOW = BASE_WINDOW;
-    memcpy(s->wins, wins, sizeof(s->wins));
-    s->ttyDisplay = ttyDisplay;
-    s->morc = morc;
+    /* invent, uskin, current_wand, thrownobj, kickedobj, migrating_objs,
+     * billobjs, mydogs, migrating_mons, apelist migrated direct.
+     * ubirthday, moves, monstermoves, wailmsg, domove_* migrated direct. */
+    /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
 
 static void
 nle_dungeon_load_from(const struct nle_dungeon_save *s)
 {
-    dungeon_topology = s->topology;
-    memcpy(dungeons, s->dungeons, sizeof(s->dungeons));
-    sp_levchn = s->sp_levchn;
-    upstair = s->upstair; dnstair = s->dnstair;
-    upladder = s->upladder; dnladder = s->dnladder;
-    sstairs = s->sstairs;
-    updest = s->updest; dndest = s->dndest;
-    inv_pos = s->inv_pos;
+    /* stage 6' — dungeon topology migrated direct to nle_ctx_t. */
     /* stage 7 */
     level = s->level;
     memcpy(level_info, s->level_info, sizeof(s->level_info));
@@ -670,47 +636,24 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     dnstairs_room = s->dnstairs_room;
     sstairs_room = s->sstairs_room;
     ftrap = s->ftrap;
-    /* stage 8 */
-    vision_full_recalc = s->vision_full_recalc;
-    viz_array = s->viz_array;
-    WIN_MESSAGE = s->WIN_MESSAGE;
-    WIN_STATUS = s->WIN_STATUS;
-    WIN_MAP = s->WIN_MAP;
-    WIN_INVEN = s->WIN_INVEN;
-    memcpy(toplines, s->toplines, sizeof(s->toplines));
+    /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     tc_gbl_data = s->tc_gbl_data;
-    /* stage 9 */
+    /* stage 9' batch C — DEFERRED struct-value loads. */
     killer = s->killer;
     youmonst = s->youmonst;
-    ubirthday = s->ubirthday;
     urealtime = s->urealtime;
-    invent = s->invent;
     uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
-    uquiver = s->uquiver; uarmu = s->uarmu; uskin = s->uskin;
+    uquiver = s->uquiver; uarmu = s->uarmu;
     uarmc = s->uarmc; uarmh = s->uarmh; uarms = s->uarms;
     uarmg = s->uarmg; uarmf = s->uarmf;
     uamul = s->uamul; uright = s->uright; uleft = s->uleft;
     ublindf = s->ublindf; uchain = s->uchain; uball = s->uball;
-    current_wand = s->current_wand;
-    thrownobj = s->thrownobj; kickedobj = s->kickedobj;
-    migrating_objs = s->migrating_objs;
-    billobjs = s->billobjs;
     memcpy(spl_book, s->spl_book, sizeof(s->spl_book));
     m_shot = s->m_shot;
-    mydogs = s->mydogs;
-    migrating_mons = s->migrating_mons;
     memcpy(mvitals, s->mvitals, sizeof(s->mvitals));
     quest_status = s->quest_status;
-    apelist = s->apelist;
-    moves = s->moves; monstermoves = s->monstermoves;
-    wailmsg = s->wailmsg;
-    domove_attempting = s->domove_attempting;
-    domove_succeeded = s->domove_succeeded;
-    /* stage 10 — tty window state */
-    BASE_WINDOW = s->BASE_WINDOW;
-    memcpy(wins, s->wins, sizeof(s->wins));
-    ttyDisplay = s->ttyDisplay;
-    morc = s->morc;
+    /* Migrated direct (no load needed). */
+    /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
 
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in

@@ -679,36 +679,81 @@ struct proto_dungeon *pd;
     return FALSE;
 }
 
+/* Stage 6': &air_level etc. are no longer compile-time constants
+ * (dungeon_topology lives in nle_ctx_t per-env). The table stores an
+ * enum index; lev_map_spec() resolves to the live address at runtime. */
+enum lev_map_idx {
+    LM_AIR, LM_ASMODEUS, LM_ASTRAL, LM_BAALZ, LM_BIGRM, LM_CASTLE,
+    LM_EARTH, LM_FAKEWIZ1, LM_FIRE, LM_JUIBLEX, LM_KNOX, LM_MEDUSA,
+    LM_ORACLE, LM_ORCUS, LM_ROGUE, LM_SANCTUM, LM_VALLEY, LM_WATER,
+    LM_WIZ1, LM_WIZ2, LM_WIZ3, LM_MINEND, LM_SOKOEND,
+    LM_QSTART, LM_QLOCATE, LM_NEMESIS,
+    LM_NONE
+};
 struct level_map {
     const char *lev_name;
-    d_level *lev_spec;
-} level_map[] = { { "air", &air_level },
-                  { "asmodeus", &asmodeus_level },
-                  { "astral", &astral_level },
-                  { "baalz", &baalzebub_level },
-                  { "bigrm", &bigroom_level },
-                  { "castle", &stronghold_level },
-                  { "earth", &earth_level },
-                  { "fakewiz1", &portal_level },
-                  { "fire", &fire_level },
-                  { "juiblex", &juiblex_level },
-                  { "knox", &knox_level },
-                  { "medusa", &medusa_level },
-                  { "oracle", &oracle_level },
-                  { "orcus", &orcus_level },
-                  { "rogue", &rogue_level },
-                  { "sanctum", &sanctum_level },
-                  { "valley", &valley_level },
-                  { "water", &water_level },
-                  { "wizard1", &wiz1_level },
-                  { "wizard2", &wiz2_level },
-                  { "wizard3", &wiz3_level },
-                  { "minend", &mineend_level },
-                  { "soko1", &sokoend_level },
-                  { X_START, &qstart_level },
-                  { X_LOCATE, &qlocate_level },
-                  { X_GOAL, &nemesis_level },
-                  { "", (d_level *) 0 } };
+    enum lev_map_idx lev_idx;
+} level_map[] = { { "air", LM_AIR },
+                  { "asmodeus", LM_ASMODEUS },
+                  { "astral", LM_ASTRAL },
+                  { "baalz", LM_BAALZ },
+                  { "bigrm", LM_BIGRM },
+                  { "castle", LM_CASTLE },
+                  { "earth", LM_EARTH },
+                  { "fakewiz1", LM_FAKEWIZ1 },
+                  { "fire", LM_FIRE },
+                  { "juiblex", LM_JUIBLEX },
+                  { "knox", LM_KNOX },
+                  { "medusa", LM_MEDUSA },
+                  { "oracle", LM_ORACLE },
+                  { "orcus", LM_ORCUS },
+                  { "rogue", LM_ROGUE },
+                  { "sanctum", LM_SANCTUM },
+                  { "valley", LM_VALLEY },
+                  { "water", LM_WATER },
+                  { "wizard1", LM_WIZ1 },
+                  { "wizard2", LM_WIZ2 },
+                  { "wizard3", LM_WIZ3 },
+                  { "minend", LM_MINEND },
+                  { "soko1", LM_SOKOEND },
+                  { X_START, LM_QSTART },
+                  { X_LOCATE, LM_QLOCATE },
+                  { X_GOAL, LM_NEMESIS },
+                  { "", LM_NONE } };
+static d_level *
+lev_map_spec(enum lev_map_idx idx)
+{
+    switch (idx) {
+    case LM_AIR:       return &air_level;
+    case LM_ASMODEUS:  return &asmodeus_level;
+    case LM_ASTRAL:    return &astral_level;
+    case LM_BAALZ:     return &baalzebub_level;
+    case LM_BIGRM:     return &bigroom_level;
+    case LM_CASTLE:    return &stronghold_level;
+    case LM_EARTH:     return &earth_level;
+    case LM_FAKEWIZ1:  return &portal_level;
+    case LM_FIRE:      return &fire_level;
+    case LM_JUIBLEX:   return &juiblex_level;
+    case LM_KNOX:      return &knox_level;
+    case LM_MEDUSA:    return &medusa_level;
+    case LM_ORACLE:    return &oracle_level;
+    case LM_ORCUS:     return &orcus_level;
+    case LM_ROGUE:     return &rogue_level;
+    case LM_SANCTUM:   return &sanctum_level;
+    case LM_VALLEY:    return &valley_level;
+    case LM_WATER:     return &water_level;
+    case LM_WIZ1:      return &wiz1_level;
+    case LM_WIZ2:      return &wiz2_level;
+    case LM_WIZ3:      return &wiz3_level;
+    case LM_MINEND:    return &mineend_level;
+    case LM_SOKOEND:   return &sokoend_level;
+    case LM_QSTART:    return &qstart_level;
+    case LM_QLOCATE:   return &qlocate_level;
+    case LM_NEMESIS:   return &nemesis_level;
+    case LM_NONE:      break;
+    }
+    return (d_level *) 0;
+}
 
 /* initialize the "dungeon" structs */
 void
@@ -924,16 +969,17 @@ init_dungeons()
      * locations quickly.
      */
     for (lev_map = level_map; lev_map->lev_name[0]; lev_map++) {
+        d_level *spec = lev_map_spec(lev_map->lev_idx);
         x = find_level(lev_map->lev_name);
         if (x) {
-            assign_level(lev_map->lev_spec, &x->dlevel);
+            assign_level(spec, &x->dlevel);
             if (!strncmp(lev_map->lev_name, "x-", 2)) {
                 /* This is where the name substitution on the
                  * levels of the quest dungeon occur.
                  */
                 Sprintf(x->proto, "%s%s", urole.filecode,
                         &lev_map->lev_name[1]);
-            } else if (lev_map->lev_spec == &knox_level) {
+            } else if (spec == &knox_level) {
                 branch *br;
                 /*
                  * Kludge to allow floating Knox entrance.  We

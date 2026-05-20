@@ -46,7 +46,7 @@ E int x_maze_max, y_maze_max;
 
 E NEARDATA int in_doagain;
 
-E struct dgn_topology { /* special dungeon levels for speed */
+struct dgn_topology { /* special dungeon levels for speed */
     d_level d_oracle_level;
     d_level d_bigroom_level; /* unused */
     d_level d_rogue_level;
@@ -74,7 +74,9 @@ E struct dgn_topology { /* special dungeon levels for speed */
     d_level d_knox_level;
     d_level d_mineend_level;
     d_level d_sokoend_level;
-} dungeon_topology;
+};
+/* dungeon_topology migrated to nle_ctx_t (stage 6'). */
+#define dungeon_topology (*current_nle_ctx->s6_topology_p)
 /* macros for accessing the dungeon levels by their old names */
 /* clang-format off */
 #define oracle_level            (dungeon_topology.d_oracle_level)
@@ -109,29 +111,35 @@ E struct dgn_topology { /* special dungeon levels for speed */
 #define sokoend_level           (dungeon_topology.d_sokoend_level)
 /* clang-format on */
 
-E NEARDATA stairway dnstair, upstair; /* stairs up and down */
+/* dnstair/upstair/dnladder/upladder/sstairs migrated to nle_ctx_t (stage 6'). */
+#define dnstair  (*current_nle_ctx->s6_dnstair_p)
+#define upstair  (*current_nle_ctx->s6_upstair_p)
 #define xdnstair (dnstair.sx)
 #define ydnstair (dnstair.sy)
 #define xupstair (upstair.sx)
 #define yupstair (upstair.sy)
 
-E NEARDATA stairway dnladder, upladder; /* ladders up and down */
+#define dnladder (*current_nle_ctx->s6_dnladder_p)
+#define upladder (*current_nle_ctx->s6_upladder_p)
 #define xdnladder (dnladder.sx)
 #define ydnladder (dnladder.sy)
 #define xupladder (upladder.sx)
 #define yupladder (upladder.sy)
 
-E NEARDATA stairway sstairs;
+#define sstairs  (*current_nle_ctx->s6_sstairs_p)
 
-E NEARDATA dest_area updest, dndest; /* level-change destination areas */
+/* updest/dndest migrated to nle_ctx_t (stage 6'). */
+#define updest (*current_nle_ctx->s6_updest_p)
+#define dndest (*current_nle_ctx->s6_dndest_p)
 
-E NEARDATA coord inv_pos;
-E NEARDATA dungeon dungeons[];
-E NEARDATA s_level *sp_levchn;
+/* inv_pos / dungeons / sp_levchn migrated to nle_ctx_t (stage 6'). */
+#define inv_pos   (*current_nle_ctx->s6_inv_pos_p)
+#define dungeons  (current_nle_ctx->s6_dungeons_p)
+#define sp_levchn (current_nle_ctx->s6_sp_levchn)
 #define dunlev_reached(x) (dungeons[(x)->dnum].dunlev_ureached)
 
 #include "quest.h"
-E struct q_score quest_status;
+E NEARDATA struct q_score quest_status;
 
 E NEARDATA char pl_character[PL_CSIZ];
 E NEARDATA char pl_race; /* character's race */
@@ -190,8 +198,10 @@ E NEARDATA struct multishot {
     boolean s;
 } m_shot;
 
-E NEARDATA long moves, monstermoves;
-E NEARDATA long wailmsg;
+/* moves/monstermoves/wailmsg — stage 9' migrated to nle_ctx_t. */
+#define moves        (current_nle_ctx->nle_moves)
+#define monstermoves (current_nle_ctx->nle_monstermoves)
+#define wailmsg      (current_nle_ctx->nle_wailmsg)
 
 E NEARDATA boolean in_mklev;
 /* `in_steed_dismounting` migrated to nle_ctx_t (stage 3d) */
@@ -215,15 +225,25 @@ E const struct class_sym def_monsyms[MAXMCLASSES]; /* default class symbols */
 E uchar monsyms[MAXMCLASSES];                      /* current class symbols */
 
 #include "obj.h"
-E NEARDATA struct obj *invent, *uarm, *uarmc, *uarmh, *uarms, *uarmg, *uarmf,
+/* Body-slot pointers (uarm*, uwep, uswapwep, uquiver, uamul, uleft, uright,
+ * ublindf, uchain, uball) deferred — they're referenced by worn[] table in
+ * worn.c with constant-init address-of (&uarm etc.), which forces a
+ * static-init fix. Handled in stage 9' batch C (worn[] rewrite). */
+E NEARDATA struct obj *uarm, *uarmc, *uarmh, *uarms, *uarmg, *uarmf,
     *uarmu, /* under-wear, so to speak */
-    *uskin, *uamul, *uleft, *uright, *ublindf, *uwep, *uswapwep, *uquiver;
+    *uamul, *uleft, *uright, *ublindf, *uwep, *uswapwep, *uquiver;
 
 E NEARDATA struct obj *uchain; /* defined only when punished */
 E NEARDATA struct obj *uball;
-E NEARDATA struct obj *migrating_objs;
-E NEARDATA struct obj *billobjs;
-E NEARDATA struct obj *current_wand, *thrownobj, *kickedobj;
+/* invent / uskin / current_wand / thrownobj / kickedobj / migrating_objs /
+ * billobjs migrated direct (no static-init refs to address-of). */
+#define invent         (current_nle_ctx->invent_p)
+#define uskin          (current_nle_ctx->uskin_p)
+#define current_wand   (current_nle_ctx->current_wand_p)
+#define thrownobj      (current_nle_ctx->thrownobj_p)
+#define kickedobj      (current_nle_ctx->kickedobj_p)
+#define migrating_objs (current_nle_ctx->migrating_objs_p)
+#define billobjs       (current_nle_ctx->billobjs_p)
 
 E NEARDATA const struct obj zeroobj; /* for init; also, &zeroobj is used
                                       * as special value */
@@ -237,8 +257,9 @@ E NEARDATA const anything zeroany;   /* init'd and defined in decl.c */
  * extern declaration of `current_nle_ctx`; this is already the case in
  * every src/*.c via the refactor's universal include pattern. */
 #define u (*current_nle_ctx->u_ptr)
-E NEARDATA time_t ubirthday;
-E NEARDATA struct u_realtime urealtime;
+/* ubirthday — stage 9' migrated to nle_ctx_t. */
+#define ubirthday (current_nle_ctx->nle_ubirthday)
+E NEARDATA struct u_realtime urealtime;  /* deferred — struct-value, batch C */
 
 #include "onames.h"
 #ifndef PM_H /* (pm.h has already been included via youprop.h) */
@@ -247,7 +268,9 @@ E NEARDATA struct u_realtime urealtime;
 
 E NEARDATA const struct monst zeromonst; /* for init of new or temp monsters */
 E NEARDATA struct monst youmonst; /* monster details when hero is poly'd */
-E NEARDATA struct monst *mydogs, *migrating_mons;
+/* mydogs / migrating_mons — stage 9' migrated to nle_ctx_t. */
+#define mydogs         (current_nle_ctx->mydogs_p)
+#define migrating_mons (current_nle_ctx->migrating_mons_p)
 
 E NEARDATA struct mvitals {
     uchar born;
@@ -255,8 +278,9 @@ E NEARDATA struct mvitals {
     uchar mvflags;
 } mvitals[NUMMONS];
 
-E NEARDATA long domove_attempting;
-E NEARDATA long domove_succeeded;
+/* domove_attempting / domove_succeeded — stage 9' migrated to nle_ctx_t. */
+#define domove_attempting (current_nle_ctx->nle_domove_attempting)
+#define domove_succeeded  (current_nle_ctx->nle_domove_succeeded)
 #define DOMOVE_WALK         0x00000001
 #define DOMOVE_RUSH         0x00000002
 
@@ -318,14 +342,13 @@ E const char *materialnm[];
 #define EXACT_NAME 0x0F
 #define SUPPRESS_NAME 0x10
 
-/* Vision */
-E NEARDATA boolean vision_full_recalc; /* TRUE if need vision recalc */
-E NEARDATA char **viz_array;           /* could see/in sight row pointers */
+/* Vision — stage 8' migrated to nle_ctx_t (macros in vision.h). */
 
-/* Window system stuff */
-E NEARDATA winid WIN_MESSAGE;
-E NEARDATA winid WIN_STATUS;
-E NEARDATA winid WIN_MAP, WIN_INVEN;
+/* Window system stuff — stage 8' migrated to nle_ctx_t. */
+#define WIN_MESSAGE (current_nle_ctx->win_message)
+#define WIN_STATUS  (current_nle_ctx->win_status)
+#define WIN_MAP     (current_nle_ctx->win_map)
+#define WIN_INVEN   (current_nle_ctx->win_inven)
 
 /* pline (et al) for a single string argument (suppress compiler warning) */
 #define pline1(cstr) pline("%s", cstr)
@@ -336,9 +359,10 @@ E NEARDATA winid WIN_MAP, WIN_INVEN;
 #define Sprintf1(buf, cstr) Sprintf(buf, "%s", cstr)
 #define panic1(cstr) panic("%s", cstr)
 
-E char toplines[];
+/* toplines — stage 8' migrated to nle_ctx_t (macro). */
+#define toplines (current_nle_ctx->top_lines)
 #ifndef TCAP_H
-E struct tc_gbl_data {   /* also declared in tcap.h */
+E NEARDATA struct tc_gbl_data {   /* also declared in tcap.h */
     char *tc_AS, *tc_AE; /* graphics start and end (tty font swapping) */
     int tc_LI, tc_CO;    /* lines and columns */
 } tc_gbl_data;
@@ -403,7 +427,8 @@ struct autopickup_exception {
     boolean grab;
     struct autopickup_exception *next;
 };
-E struct autopickup_exception *apelist;
+/* apelist — stage 9' migrated to nle_ctx_t. */
+#define apelist (current_nle_ctx->apelist_p)
 
 struct plinemsg_type {
     xchar msgtype;  /* one of MSGTYP_foo */

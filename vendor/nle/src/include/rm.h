@@ -608,9 +608,9 @@ typedef struct {
     struct levelflags flags;
 } dlevel_t;
 
-extern schar lastseentyp[COLNO][ROWNO]; /* last seen/touched dungeon typ */
+extern NEARDATA schar lastseentyp[COLNO][ROWNO]; /* last seen/touched dungeon typ */
 
-extern dlevel_t level; /* structure describing the current level */
+extern NEARDATA dlevel_t level; /* structure describing the current level */
 
 /*
  * Macros for compatibility with old code. Someday these will go away.

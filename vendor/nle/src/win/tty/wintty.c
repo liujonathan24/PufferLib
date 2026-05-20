@@ -138,9 +138,8 @@ struct window_procs tty_procs = {
     genl_can_suspend_yes,
 };
 
-winid BASE_WINDOW;
-struct WinDesc *wins[MAXWIN];
-struct DisplayDesc *ttyDisplay; /* the tty display descriptor */
+/* BASE_WINDOW, wins[], ttyDisplay migrated to nle_ctx_t (stage 10').
+ * The macros in wintty.h now expand to current_nle_ctx->BASE_WINDOW etc. */
 
 extern void FDECL(cmov, (int, int));   /* from termcap.c */
 extern void FDECL(nocmov, (int, int)); /* from termcap.c */
@@ -3657,7 +3656,7 @@ char *posbar;
 extern const char *status_fieldfmt[MAXBLSTATS];
 extern char *status_vals[MAXBLSTATS];
 extern boolean status_activefields[MAXBLSTATS];
-extern winid WIN_STATUS;
+/* WIN_STATUS now a macro (stage 8'); no extern needed. */
 
 #ifdef STATUS_HILITES
 #ifdef TEXTCOLOR

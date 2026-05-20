@@ -16,7 +16,7 @@
 #include "wintty.h"
 #include "func_tab.h"
 
-char morc = 0; /* tell the outside world what char you chose */
+/* morc migrated to nle_ctx_t (stage 10'). Macro in wintty.h. */
 STATIC_VAR boolean suppress_history;
 STATIC_DCL boolean FDECL(ext_cmd_getlin_hook, (char *));
 

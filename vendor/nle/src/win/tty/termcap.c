@@ -9,6 +9,7 @@
 
 #include "wintty.h"
 #include "tcap.h"
+#include "nle.h" /* current_nle_ctx (stage 10' BASE_WINDOW / ttyDisplay macros) */
 
 #ifdef MICROPORT_286_BUG
 #define Tgetstr(key) (tgetstr(key, tbuf))

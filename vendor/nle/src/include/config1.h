@@ -80,6 +80,18 @@
 #ifdef _DCC
 #define NEARDATA __near /* put some data close */
 #else
+/* Tried promoting NEARDATA to __thread to TLS the residual swap globals
+ * (flags/iflags/sysflags, dlevel_t level, level_info/rooms/doors/etc.,
+ * tc_gbl_data, killer, youmonst, body-slot pointers, …) so that the
+ * existing nle_dungeon_save swap becomes per-thread. Bailed out: too many
+ * static-init tables (options.c boolopt[]/compopt[] with hundreds of
+ * `&flags.X` / `&iflags.X` / `&sysflags.X` entries) need a rewrite to
+ * use offsets, plus options.c init plumbing, plus worn[] in worn.c, plus
+ * level_detects[] / level_map[]. Option B path (heap-pointer migration of
+ * each remaining swap entry to nle_ctx_t) avoids all of these because
+ * the source still does `&flags.X` at static-init time — flags is just
+ * a regular global. Leaving NEARDATA as empty; per-thread isolation
+ * routed entirely through current_nle_ctx (TLS in nle.h). */
 #define NEARDATA
 #endif
 #endif
