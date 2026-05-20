@@ -71,6 +71,7 @@ typedef struct nle_globals {
     unsigned long       seeds[2];
     boolean             has_strong_rngseed; /* was NEARDATA in decl.c */
     struct sinfo        program_state;      /* was NEARDATA in decl.c */
+    int                 hackpid;            /* was 'int hackpid' in decl.c */
 } nle_ctx_t;
 
 /*

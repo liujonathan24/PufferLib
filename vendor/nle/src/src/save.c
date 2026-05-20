@@ -257,7 +257,7 @@ dosave0()
             return 0;
         }
         minit(); /* ZEROCOMP */
-        getlev(ofd, hackpid, ltmp, FALSE);
+        getlev(ofd, current_nle_ctx->hackpid, ltmp, FALSE);
         (void) nhclose(ofd);
         bwrite(fd, (genericptr_t) &ltmp, sizeof ltmp); /* level number*/
         savelev(fd, ltmp, WRITE_SAVE | FREE_SAVE);     /* actual level*/
@@ -400,9 +400,9 @@ savestateinlock()
             return;
 
         (void) read(fd, (genericptr_t) &hpid, sizeof hpid);
-        if (hackpid != hpid) {
+        if (current_nle_ctx->hackpid != hpid) {
             Sprintf(whynot, "Level #0 pid (%d) doesn't match ours (%d)!",
-                    hpid, hackpid);
+                    hpid, current_nle_ctx->hackpid);
             pline1(whynot);
             Strcpy(killer.name, whynot);
             done(TRICKED);
@@ -416,7 +416,7 @@ savestateinlock()
             done(TRICKED);
             return;
         }
-        (void) write(fd, (genericptr_t) &hackpid, sizeof hackpid);
+        (void) write(fd, (genericptr_t) &current_nle_ctx->hackpid, sizeof current_nle_ctx->hackpid);
         if (flags.ins_chkpt) {
             int currlev = ledger_no(&u.uz);
 
@@ -514,7 +514,7 @@ int mode;
 #endif
         if (lev >= 0 && lev <= maxledgerno())
             level_info[lev].flags |= VISITED;
-        bwrite(fd, (genericptr_t) &hackpid, sizeof hackpid);
+        bwrite(fd, (genericptr_t) &current_nle_ctx->hackpid, sizeof current_nle_ctx->hackpid);
 #ifdef TOS
         tlev = lev;
         tlev &= 0x00ff;

@@ -50,7 +50,7 @@ int fd;
     (void) time(&date);
 #endif
     if (date - buf.st_mtime < 3L * 24L * 60L * 60L) { /* recent */
-        int lockedpid; /* should be the same size as hackpid */
+        int lockedpid; /* should be the same size as current_nle_ctx->hackpid */
 
         if (read(fd, (genericptr_t) &lockedpid, sizeof lockedpid)
             != sizeof lockedpid)
@@ -205,8 +205,8 @@ gotlock:
     if (fd == -1) {
         error("cannot creat lock file (%s).", fq_lock);
     } else {
-        if (write(fd, (genericptr_t) &hackpid, sizeof hackpid)
-            != sizeof hackpid) {
+        if (write(fd, (genericptr_t) &current_nle_ctx->hackpid, sizeof current_nle_ctx->hackpid)
+            != sizeof current_nle_ctx->hackpid) {
             error("cannot write lock (%s)", fq_lock);
         }
         if (close(fd) == -1) {

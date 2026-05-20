@@ -94,7 +94,7 @@ char *argv[];
 #endif
 
     hname = argv[0];
-    hackpid = getpid();
+    current_nle_ctx->hackpid = getpid();
     /* (void) umask(0777 & ~FCMASK); */
 
     choose_windows(DEFAULT_WINDOW_SYS);

@@ -17,7 +17,8 @@ E int NDECL((*occupation));
 E int NDECL((*afternmv));
 
 E const char *hname;
-E int hackpid;
+/* `hackpid` migrated to nle_ctx_t (stage 3c). Callers use
+ * current_nle_ctx->hackpid (and must #include "nle.h"). */
 #if defined(UNIX) || defined(VMS)
 E int locknum;
 #endif
