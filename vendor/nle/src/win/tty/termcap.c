@@ -54,7 +54,7 @@ char NEARDATA *hilites[CLR_MAX]; /* terminal escapes for the various colors */
 #endif /* TOS */
 #endif /* TEXTCOLOR */
 
-static char *KS = (char *) 0, *KE = (char *) 0; /* keypad sequences */
+static __thread char *KS = (char *) 0, *KE = (char *) 0; /* keypad sequences */
 static char nullstr[] = "";
 
 #if defined(ASCIIGRAPH) && !defined(NO_TERMS)

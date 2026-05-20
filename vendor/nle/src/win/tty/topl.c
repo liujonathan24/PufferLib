@@ -542,7 +542,7 @@ char def;
 }
 
 /* shared by tty_getmsghistory() and tty_putmsghistory() */
-static char **snapshot_mesgs = 0;
+static __thread char **snapshot_mesgs = 0;
 
 /* collect currently available message history data into a sequential array;
    optionally, purge that data from the active circular buffer set as we go */
