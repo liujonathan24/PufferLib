@@ -509,12 +509,25 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
  * lazily in nle_swap_in on first call (after init_dungeon has populated
  * the globals). */
 struct nle_dungeon_save {
+    /* stage 6 — dungeon graph */
     struct dgn_topology topology;
     dungeon             dungeons[MAXDUNGEON];
     s_level            *sp_levchn;
     stairway            upstair, dnstair, upladder, dnladder, sstairs;
     dest_area           updest, dndest;
     coord               inv_pos;
+    /* stage 7 — current level (biggest single struct, ~40 KB) and
+     * related per-level scratch */
+    dlevel_t            level;
+    struct linfo        level_info[MAXLINFO];
+    schar               lastseentyp[COLNO][ROWNO];
+    coord               doors[DOORMAX];
+    struct mkroom       rooms[(MAXNROFROOMS + 1) * 2];
+    struct mkroom      *subrooms;
+    struct mkroom      *upstairs_room;
+    struct mkroom      *dnstairs_room;
+    struct mkroom      *sstairs_room;
+    struct trap        *ftrap;
 };
 
 static void
@@ -528,6 +541,17 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->sstairs = sstairs;
     s->updest = updest; s->dndest = dndest;
     s->inv_pos = inv_pos;
+    /* stage 7 */
+    s->level = level;
+    memcpy(s->level_info, level_info, sizeof(s->level_info));
+    memcpy(s->lastseentyp, lastseentyp, sizeof(s->lastseentyp));
+    memcpy(s->doors, doors, sizeof(s->doors));
+    memcpy(s->rooms, rooms, sizeof(s->rooms));
+    s->subrooms = subrooms;
+    s->upstairs_room = upstairs_room;
+    s->dnstairs_room = dnstairs_room;
+    s->sstairs_room = sstairs_room;
+    s->ftrap = ftrap;
 }
 
 static void
@@ -541,6 +565,17 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     sstairs = s->sstairs;
     updest = s->updest; dndest = s->dndest;
     inv_pos = s->inv_pos;
+    /* stage 7 */
+    level = s->level;
+    memcpy(level_info, s->level_info, sizeof(s->level_info));
+    memcpy(lastseentyp, s->lastseentyp, sizeof(s->lastseentyp));
+    memcpy(doors, s->doors, sizeof(s->doors));
+    memcpy(rooms, s->rooms, sizeof(s->rooms));
+    subrooms = s->subrooms;
+    upstairs_room = s->upstairs_room;
+    dnstairs_room = s->dnstairs_room;
+    sstairs_room = s->sstairs_room;
+    ftrap = s->ftrap;
 }
 
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
