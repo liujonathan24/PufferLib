@@ -534,6 +534,30 @@ struct nle_dungeon_save {
     winid               WIN_MESSAGE, WIN_STATUS, WIN_MAP, WIN_INVEN;
     char                toplines[TBUFSZ];
     struct tc_gbl_data  tc_gbl_data;
+    /* stage 9 — inventory / monsters / quest / time counters */
+    struct kinfo        killer;
+    struct monst        youmonst;
+    time_t              ubirthday;
+    struct u_realtime   urealtime;
+    /* Inventory linked-list heads + body-slot pointers */
+    struct obj         *invent;
+    struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu, *uskin;
+    struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
+    struct obj         *uamul, *uright, *uleft, *ublindf, *uchain, *uball;
+    struct obj         *current_wand, *thrownobj, *kickedobj;
+    struct obj         *migrating_objs, *billobjs;
+    struct spell        spl_book[MAXSPELL + 1];
+    struct multishot    m_shot;
+    /* monster lists */
+    struct monst       *mydogs, *migrating_mons;
+    struct mvitals      mvitals[NUMMONS];
+    /* quest */
+    struct q_score      quest_status;
+    /* autopickup exceptions */
+    struct autopickup_exception *apelist;
+    /* time counters */
+    long                moves, monstermoves, wailmsg;
+    long                domove_attempting, domove_succeeded;
 };
 
 static void
@@ -567,6 +591,33 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->WIN_INVEN = WIN_INVEN;
     memcpy(s->toplines, toplines, sizeof(s->toplines));
     s->tc_gbl_data = tc_gbl_data;
+    /* stage 9 */
+    s->killer = killer;
+    s->youmonst = youmonst;
+    s->ubirthday = ubirthday;
+    s->urealtime = urealtime;
+    s->invent = invent;
+    s->uwep = uwep; s->uarm = uarm; s->uswapwep = uswapwep;
+    s->uquiver = uquiver; s->uarmu = uarmu; s->uskin = uskin;
+    s->uarmc = uarmc; s->uarmh = uarmh; s->uarms = uarms;
+    s->uarmg = uarmg; s->uarmf = uarmf;
+    s->uamul = uamul; s->uright = uright; s->uleft = uleft;
+    s->ublindf = ublindf; s->uchain = uchain; s->uball = uball;
+    s->current_wand = current_wand;
+    s->thrownobj = thrownobj; s->kickedobj = kickedobj;
+    s->migrating_objs = migrating_objs;
+    s->billobjs = billobjs;
+    memcpy(s->spl_book, spl_book, sizeof(s->spl_book));
+    s->m_shot = m_shot;
+    s->mydogs = mydogs;
+    s->migrating_mons = migrating_mons;
+    memcpy(s->mvitals, mvitals, sizeof(s->mvitals));
+    s->quest_status = quest_status;
+    s->apelist = apelist;
+    s->moves = moves; s->monstermoves = monstermoves;
+    s->wailmsg = wailmsg;
+    s->domove_attempting = domove_attempting;
+    s->domove_succeeded = domove_succeeded;
 }
 
 static void
@@ -600,6 +651,33 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     WIN_INVEN = s->WIN_INVEN;
     memcpy(toplines, s->toplines, sizeof(s->toplines));
     tc_gbl_data = s->tc_gbl_data;
+    /* stage 9 */
+    killer = s->killer;
+    youmonst = s->youmonst;
+    ubirthday = s->ubirthday;
+    urealtime = s->urealtime;
+    invent = s->invent;
+    uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
+    uquiver = s->uquiver; uarmu = s->uarmu; uskin = s->uskin;
+    uarmc = s->uarmc; uarmh = s->uarmh; uarms = s->uarms;
+    uarmg = s->uarmg; uarmf = s->uarmf;
+    uamul = s->uamul; uright = s->uright; uleft = s->uleft;
+    ublindf = s->ublindf; uchain = s->uchain; uball = s->uball;
+    current_wand = s->current_wand;
+    thrownobj = s->thrownobj; kickedobj = s->kickedobj;
+    migrating_objs = s->migrating_objs;
+    billobjs = s->billobjs;
+    memcpy(spl_book, s->spl_book, sizeof(s->spl_book));
+    m_shot = s->m_shot;
+    mydogs = s->mydogs;
+    migrating_mons = s->migrating_mons;
+    memcpy(mvitals, s->mvitals, sizeof(s->mvitals));
+    quest_status = s->quest_status;
+    apelist = s->apelist;
+    moves = s->moves; monstermoves = s->monstermoves;
+    wailmsg = s->wailmsg;
+    domove_attempting = s->domove_attempting;
+    domove_succeeded = s->domove_succeeded;
 }
 
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
