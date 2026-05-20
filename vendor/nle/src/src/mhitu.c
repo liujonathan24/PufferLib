@@ -2199,7 +2199,7 @@ struct attack *mattk;
             }
             if (useeit)
                 pline("%s is turned to stone!", Monnam(mtmp));
-            stoned = TRUE;
+            current_nle_ctx->stoned = TRUE;
             killed(mtmp);
 
             if (!DEADMONSTER(mtmp))
@@ -2844,7 +2844,7 @@ struct attack *mattk;
                 return 1;
             }
             pline("%s turns to stone!", Monnam(mtmp));
-            stoned = 1;
+            current_nle_ctx->stoned = 1;
             xkilled(mtmp, XKILL_NOMSG);
             if (!DEADMONSTER(mtmp))
                 return 1;

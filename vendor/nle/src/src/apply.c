@@ -209,7 +209,7 @@ int rx, ry, *resp;
     } else if (Hallucination) {
         if (!corpse) {
             /* it's a statue */
-            Strcpy(buf, "You're both stoned");
+            Strcpy(buf, "You're both current_nle_ctx->stoned");
         } else if (corpse->quan == 1L && !more_corpses) {
             int gndr = 2; /* neuter: "it" */
             struct monst *mtmp = get_mtraits(corpse, FALSE);
@@ -946,7 +946,7 @@ struct obj *obj;
             return 1;
         if (vis)
             pline("%s is turned to stone!", Monnam(mtmp));
-        stoned = TRUE;
+        current_nle_ctx->stoned = TRUE;
         killed(mtmp);
     } else if (monable && mtmp->data == &mons[PM_FLOATING_EYE]) {
         int tmp = d((int) mtmp->m_lev, (int) mtmp->data->mattk[0].damd);

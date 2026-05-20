@@ -666,7 +666,7 @@ unsigned int *stuckid, *steedid;
      * side-effects too early in the game.
      * Disable see_monsters() here, re-enable it at the top of moveloop()
      */
-    defer_see_monsters = TRUE;
+    current_nle_ctx->defer_see_monsters = TRUE;
 
     /* this comes after inventory has been loaded */
     for (otmp = invent; otmp; otmp = otmp->nobj)
@@ -681,7 +681,7 @@ unsigned int *stuckid, *steedid;
     uwep = 0;      /* clear it and have setuwep() reinit */
     setuwep(otmp); /* (don't need any null check here) */
     if (!uwep || uwep->otyp == PICK_AXE || uwep->otyp == GRAPPLING_HOOK)
-        unweapon = TRUE;
+        current_nle_ctx->unweapon = TRUE;
 
     restore_dungeon(fd);
     restlevchn(fd);

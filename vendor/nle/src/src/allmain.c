@@ -76,8 +76,8 @@ boolean resuming;
     }
 
     (void) encumber_msg(); /* in case they auto-picked up something */
-    if (defer_see_monsters) {
-        defer_see_monsters = FALSE;
+    if (current_nle_ctx->defer_see_monsters) {
+        current_nle_ctx->defer_see_monsters = FALSE;
         see_monsters();
     }
     initrack();

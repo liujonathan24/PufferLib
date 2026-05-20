@@ -122,7 +122,7 @@ boolean restore;
                presumably in case they came from score file.
                [TODO: this ought to be done differently--names
                which came from such a source or came from any
-               stoned or killed monster should be flagged in
+               current_nle_ctx->stoned or killed monster should be flagged in
                some manner; then we could just check the flag
                here and keep "real" names (dead pets, &c) while
                discarding player notes attached to statues.] */

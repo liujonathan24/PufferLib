@@ -351,7 +351,7 @@ boolean force;      /* Quietly force this animal */
     }
     /* setuwep handles polearms differently when you're mounted */
     if (uwep && is_pole(uwep))
-        unweapon = FALSE;
+        current_nle_ctx->unweapon = FALSE;
     u.usteed = mtmp;
     remove_monster(mtmp->mx, mtmp->my);
     teleds(mtmp->mx, mtmp->my, TRUE);
@@ -684,7 +684,7 @@ int reason; /* Player was thrown off etc. */
         context.botl = TRUE;
     /* polearms behave differently when not mounted */
     if (uwep && is_pole(uwep))
-        unweapon = TRUE;
+        current_nle_ctx->unweapon = TRUE;
     return;
 }
 

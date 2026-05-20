@@ -201,10 +201,6 @@ E NEARDATA long moves, monstermoves;
 E NEARDATA long wailmsg;
 
 E NEARDATA boolean in_mklev;
-E NEARDATA boolean stoned;
-E NEARDATA boolean unweapon;
-E NEARDATA boolean mrg_to_wielded;
-E NEARDATA boolean defer_see_monsters;
 /* `in_steed_dismounting` migrated to nle_ctx_t (stage 3d) */
 
 /* `has_strong_rngseed` migrated into nle_ctx_t (refactor stage 3a, NLE

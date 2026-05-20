@@ -109,11 +109,7 @@ NEARDATA dest_area updest = { 0, 0, 0, 0, 0, 0, 0, 0 };
 NEARDATA dest_area dndest = { 0, 0, 0, 0, 0, 0, 0, 0 };
 NEARDATA coord inv_pos = { 0, 0 };
 
-NEARDATA boolean defer_see_monsters = FALSE;
 NEARDATA boolean in_mklev = FALSE;
-NEARDATA boolean stoned = FALSE; /* done to monsters hit by 'c' */
-NEARDATA boolean unweapon = FALSE;
-NEARDATA boolean mrg_to_wielded = FALSE;
 /* weapon picked is merged with wielded one */
 
 /* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */

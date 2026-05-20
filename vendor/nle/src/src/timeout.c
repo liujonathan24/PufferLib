@@ -138,7 +138,7 @@ stoned_dialogue()
     case 3: /* limbs turned to stone */
         stop_occupation();
         nomul(-3); /* can't move anymore */
-        current_nle_ctx->multi_reason = "getting stoned";
+        current_nle_ctx->multi_reason = "getting current_nle_ctx->stoned";
         nomovemsg = You_can_move_again; /* not unconscious */
         /* "your limbs have turned to stone" so terminate wounded legs */
         if (Wounded_legs && !u.usteed)

@@ -536,10 +536,10 @@ static const struct {
     int why, unmulti;
     const char *exclude, *include;
 } death_fixups[] = {
-    /* "petrified by <foo>, while getting stoned" -- "while getting stoned"
+    /* "petrified by <foo>, while getting current_nle_ctx->stoned" -- "while getting current_nle_ctx->stoned"
        prevented any last-second recovery, but it was not the cause of
        "petrified by <foo>" */
-    { STONING, 1, "getting stoned", (char *) 0 },
+    { STONING, 1, "getting current_nle_ctx->stoned", (char *) 0 },
     /* "died of starvation, while fainted from lack of food" is accurate
        but sounds a fairly silly (and doesn't actually appear unless you
        splice together death and while-helpless from xlogfile) */
@@ -547,7 +547,7 @@ static const struct {
 };
 
 /* clear away while-helpless when the cause of death caused that
-   helplessness (ie, "petrified by <foo> while getting stoned") */
+   helplessness (ie, "petrified by <foo> while getting current_nle_ctx->stoned") */
 STATIC_DCL void
 fixup_death(how)
 int how;

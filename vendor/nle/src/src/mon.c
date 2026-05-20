@@ -2387,7 +2387,7 @@ int xkill_flags; /* 1: suppress message, 2: suppress corpse, 4: pacifist */
     vamp_rise_msg = FALSE; /* might get set in mondead(); only checked below */
     disintegested = nocorpse; /* alternate vamp_rise message needed if true */
     /* dispose of monster and make cadaver */
-    if (stoned)
+    if (current_nle_ctx->stoned)
         monstone(mtmp);
     else
         mondead(mtmp);
@@ -2398,7 +2398,7 @@ int xkill_flags; /* 1: suppress message, 2: suppress corpse, 4: pacifist */
          * lifesaved_monster() since the message appears only when _you_
          * kill it (as opposed to visible lifesaving which always appears).
          */
-        stoned = FALSE;
+        current_nle_ctx->stoned = FALSE;
         if (!cansee(x, y) && !vamp_rise_msg)
             pline("Maybe not...");
         return;
@@ -2407,8 +2407,8 @@ int xkill_flags; /* 1: suppress message, 2: suppress corpse, 4: pacifist */
     mdat = mtmp->data; /* note: mondead can change mtmp->data */
     mndx = monsndx(mdat);
 
-    if (stoned) {
-        stoned = FALSE;
+    if (current_nle_ctx->stoned) {
+        current_nle_ctx->stoned = FALSE;
         goto cleanup;
     }
 

@@ -2782,7 +2782,7 @@ boolean byplayer;
     if (cansee(mon->mx, mon->my))
         pline("%s turns to stone.", Monnam(mon));
     if (byplayer) {
-        stoned = TRUE;
+        current_nle_ctx->stoned = TRUE;
         xkilled(mon, XKILL_NOMSG);
     } else
         monstone(mon);

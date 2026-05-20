@@ -1284,7 +1284,7 @@ see_monsters()
     register struct monst *mon;
     int new_warn_obj_cnt = 0;
 
-    if (defer_see_monsters)
+    if (current_nle_ctx->defer_see_monsters)
         return;
 
     for (mon = fmon; mon; mon = mon->nmon) {

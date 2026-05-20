@@ -9,6 +9,7 @@
  *      code for monsters.
  */
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL void FDECL(give_may_advance_msg, (int));
 STATIC_DCL boolean FDECL(could_advance, (int));
@@ -976,7 +977,7 @@ boolean verbose;
     /* if hero is wielding this towel, don't give "you begin bashing
        with your wet towel" message on next attack with it */
     if (obj == uwep)
-        unweapon = !is_wet_towel(obj);
+        current_nle_ctx->unweapon = !is_wet_towel(obj);
 }
 
 /* decrease a towel's wetness */
@@ -1005,7 +1006,7 @@ boolean verbose;
     /* if hero is wielding this towel and it is now dry, give "you begin
        bashing with your towel" message on next attack with it */
     if (obj == uwep)
-        unweapon = !is_wet_towel(obj);
+        current_nle_ctx->unweapon = !is_wet_towel(obj);
 }
 
 /* copy the skill level name into the given buffer */

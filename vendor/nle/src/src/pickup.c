@@ -1544,11 +1544,11 @@ boolean telekinesis; /* not picking it up directly by hand */
     obj = pick_obj(obj);
 
     if (uwep && uwep == obj)
-        mrg_to_wielded = TRUE;
+        current_nle_ctx->mrg_to_wielded = TRUE;
     nearload = near_capacity();
     prinv(nearload == SLT_ENCUMBER ? moderateloadmsg : (char *) 0, obj,
           count);
-    mrg_to_wielded = FALSE;
+    current_nle_ctx->mrg_to_wielded = FALSE;
     return 1;
 }
 

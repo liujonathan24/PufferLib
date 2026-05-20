@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL boolean FDECL(known_hitum, (struct monst *, struct obj *, int *,
                                        int, int, struct attack *, int));
@@ -411,8 +412,8 @@ register struct monst *mtmp;
     if (u.twoweap && !can_twoweapon())
         untwoweapon();
 
-    if (unweapon) {
-        unweapon = FALSE;
+    if (current_nle_ctx->unweapon) {
+        current_nle_ctx->unweapon = FALSE;
         if (flags.verbose) {
             if (uwep)
                 You("begin bashing monsters with %s.", yname(uwep));
@@ -755,7 +756,7 @@ int dieroll;
                           mon_nam(mon), more_than_1 ? "one of " : "",
                           yname(obj));
                     if (!more_than_1)
-                        uwepgone(); /* set unweapon */
+                        uwepgone(); /* set current_nle_ctx->unweapon */
                     useup(obj);
                     if (!more_than_1)
                         obj = (struct obj *) 0;
@@ -936,7 +937,7 @@ int dieroll;
                     /* egg is always either used up or transformed, so next
                        hand-to-hand attack should yield a "bashing" mesg */
                     if (obj == uwep)
-                        unweapon = TRUE;
+                        current_nle_ctx->unweapon = TRUE;
                     if (obj->spe && obj->corpsenm >= LOW_PM) {
                         if (obj->quan < 5L)
                             change_luck((schar) - (obj->quan));
@@ -1158,7 +1159,7 @@ int dieroll;
             /* (must be either primary or secondary weapon to get here) */
             u.twoweap = FALSE; /* untwoweapon() is too verbose here */
             if (obj == uwep)
-                uwepgone(); /* set unweapon */
+                uwepgone(); /* set current_nle_ctx->unweapon */
             /* minor side-effect: broken lance won't split puddings */
             useup(obj);
             obj = 0;
@@ -2222,7 +2223,7 @@ register struct attack *mattk;
                         if (Slow_digestion)
                             tmp *= 2;
                         nomul(-tmp);
-                        multi_reason = "digesting something";
+                        current_nle_ctx->multi_reason = "digesting something";
                         nomovemsg = msgbuf;
                     } else
                         pline1(msgbuf);
@@ -2895,7 +2896,7 @@ boolean wep_was_destroyed;
                     } else {
                         You("are frozen by %s gaze!", s_suffix(mon_nam(mon)));
                         nomul((ACURR(A_WIS) > 12 || rn2(4)) ? -tmp : -127);
-                        multi_reason = "frozen by a monster's gaze";
+                        current_nle_ctx->multi_reason = "frozen by a monster's gaze";
                         nomovemsg = 0;
                     }
                 } else {
@@ -2910,7 +2911,7 @@ boolean wep_was_destroyed;
                 You("are frozen by %s!", mon_nam(mon));
                 nomovemsg = You_can_move_again;
                 nomul(-tmp);
-                multi_reason = "frozen by a monster";
+                current_nle_ctx->multi_reason = "frozen by a monster";
                 exercise(A_DEX, FALSE);
             }
             break;

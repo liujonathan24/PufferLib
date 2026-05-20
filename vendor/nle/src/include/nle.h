@@ -83,6 +83,11 @@ typedef struct nle_globals {
     int                 doorindex;          /* was decl.c (doors[] write idx) */
     boolean             in_mklev;           /* was decl.c (inside mklev()) */
     int                 in_doagain;         /* was decl.c (input replay state) */
+    /* stage 3g — combat / inventory transient flags */
+    boolean             stoned;             /* was decl.c (monster being stoned) */
+    boolean             unweapon;           /* was decl.c (player unwielded) */
+    boolean             mrg_to_wielded;     /* was decl.c (merge picked-up to wield) */
+    boolean             defer_see_monsters; /* was decl.c (suppress see_monsters refresh) */
 } nle_ctx_t;
 
 /*

@@ -1184,7 +1184,7 @@ unsigned doname_flags;
         break;
     }
 
-    if ((obj->owornmask & W_WEP) && !mrg_to_wielded) {
+    if ((obj->owornmask & W_WEP) && !current_nle_ctx->mrg_to_wielded) {
         if (obj->quan != 1L) {
             Strcat(bp, " (wielded)");
         } else {
