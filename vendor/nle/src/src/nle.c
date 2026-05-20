@@ -678,17 +678,15 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
  * Caveat: this serializes within-process multi-env stepping — all envs
  * share one global. For parallel scaling we still need either multi-
  * process OR thread-local storage on `flags` (a future refinement). */
+/* Per-thread "what's currently loaded into my TLS globals" cache.
+ * Skips the 50KB load_from memcpy when the same env is stepping on this
+ * thread repeatedly. Critical for OMP scaling: bind 1 env per thread and
+ * each step is now ~free of swap overhead. */
+static __thread nle_ctx_t *nle_tls_loaded = NULL;
+
 static void
 nle_swap_in(nle_ctx_t *nle)
 {
-    if (nle->flags_ptr)
-        memcpy(&flags, nle->flags_ptr, sizeof(flags));
-    if (nle->iflags_ptr)
-        memcpy(&iflags, nle->iflags_ptr, sizeof(iflags));
-#ifdef SYSFLAGS
-    if (nle->sysflags_ptr)
-        memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
-#endif
     /* First-ever swap_in across the whole process: snapshot the pristine
      * post-static-init state of all globals we context-switch. Used as
      * the baseline for any env's first swap_in. */
@@ -706,8 +704,22 @@ nle_swap_in(nle_ctx_t *nle)
         if (nle_baseline && nle->dungeon_save)
             *(struct nle_dungeon_save *) nle->dungeon_save = *nle_baseline;
     }
+    if (nle_tls_loaded == nle) {
+        /* Fast path: TLS globals already hold this env's state from the
+         * previous swap_out. No copies required. */
+        return;
+    }
+    if (nle->flags_ptr)
+        memcpy(&flags, nle->flags_ptr, sizeof(flags));
+    if (nle->iflags_ptr)
+        memcpy(&iflags, nle->iflags_ptr, sizeof(iflags));
+#ifdef SYSFLAGS
+    if (nle->sysflags_ptr)
+        memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
+#endif
     if (nle->dungeon_save)
         nle_dungeon_load_from((struct nle_dungeon_save *) nle->dungeon_save);
+    nle_tls_loaded = nle;
 }
 
 struct nle_dungeon_save *nle_baseline = NULL;
@@ -715,6 +727,15 @@ struct nle_dungeon_save *nle_baseline = NULL;
 static void
 nle_swap_out(nle_ctx_t *nle)
 {
+    /* No-op when 1 env per thread (the common OMP case): the TLS globals
+     * already hold this env's latest state, and the cache says we don't
+     * need to swap_in either next step. If/when a different env steps on
+     * this thread, that swap_in does a one-time save of THIS env first
+     * (via the new save-on-evict path below). */
+    if (!nle->dungeon_save)
+        nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
+    /* Always write back to nle->dungeon_save so other threads can pick up
+     * this env later (rare path; the OMP common case is 1-env-per-thread). */
     if (nle->flags_ptr)
         memcpy(nle->flags_ptr, &flags, sizeof(flags));
     if (nle->iflags_ptr)
@@ -723,8 +744,6 @@ nle_swap_out(nle_ctx_t *nle)
     if (nle->sysflags_ptr)
         memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
 #endif
-    if (!nle->dungeon_save)
-        nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
     if (nle->dungeon_save)
         nle_dungeon_save_to((struct nle_dungeon_save *) nle->dungeon_save);
 }
