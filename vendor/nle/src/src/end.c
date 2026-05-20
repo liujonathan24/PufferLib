@@ -1431,7 +1431,7 @@ int how;
 
     /* update gold for the rip output, which can't use hidden_gold()
        (containers will be gone by then if bones just got saved...) */
-    done_money = umoney;
+    current_nle_ctx->done_money = umoney;
 
     /* clean up unneeded windows */
     if (have_windows) {

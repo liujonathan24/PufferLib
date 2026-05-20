@@ -1197,10 +1197,10 @@ unsigned doname_flags;
             Sprintf(eos(bp), " (%sweapon in %s)",
                     (obj->otyp == AKLYS) ? "tethered " : "", hand_s);
 
-            if (warn_obj_cnt && obj == uwep && (EWarn_of_mon & W_WEP) != 0L) {
+            if (current_nle_ctx->warn_obj_cnt && obj == uwep && (EWarn_of_mon & W_WEP) != 0L) {
                 if (!Blind) /* we know bp[] ends with ')'; overwrite that */
                     Sprintf(eos(bp) - 1, ", %s %s)",
-                            glow_verb(warn_obj_cnt, TRUE),
+                            glow_verb(current_nle_ctx->warn_obj_cnt, TRUE),
                             glow_color(obj->oartifact));
             }
         }

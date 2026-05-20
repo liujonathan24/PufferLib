@@ -12,7 +12,6 @@ int NDECL((*occupation));
 const char *hname = 0; /* name of the game (argv[0] of main) */
 /* hackpid migrated to nle_ctx_t (refactor stage 3c). */
 #if defined(UNIX) || defined(VMS)
-int locknum = 0; /* max num of simultaneous users */
 #endif
 #ifdef DEF_PAGER
 char *catmore = 0; /* default pager */
@@ -39,13 +38,11 @@ struct dgn_topology dungeon_topology = { DUMMY };
 
 struct q_score quest_status = DUMMY;
 
-NEARDATA int warn_obj_cnt = 0;
 NEARDATA int smeq[MAXNROFROOMS + 1] = DUMMY;
 NEARDATA int doorindex = 0;
 NEARDATA char *save_cm = 0;
 
 NEARDATA struct kinfo killer = DUMMY;
-NEARDATA long done_money = 0;
 const char *nomovemsg = 0;
 NEARDATA char plname[PL_NSIZ] = DUMMY; /* player name */
 NEARDATA char pl_character[PL_CSIZ] = DUMMY;

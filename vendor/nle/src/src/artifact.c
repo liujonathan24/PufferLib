@@ -1890,20 +1890,20 @@ boolean ingsfx;
 /* use for warning "glow" for Sting, Orcrist, and Grimtooth */
 void
 Sting_effects(orc_count)
-int orc_count; /* new count (warn_obj_cnt is old count); -1 is a flag value */
+int orc_count; /* new count (current_nle_ctx->warn_obj_cnt is old count); -1 is a flag value */
 {
     if (uwep
         && (uwep->oartifact == ART_STING
             || uwep->oartifact == ART_ORCRIST
             || uwep->oartifact == ART_GRIMTOOTH)) {
-        int oldstr = glow_strength(warn_obj_cnt),
+        int oldstr = glow_strength(current_nle_ctx->warn_obj_cnt),
             newstr = glow_strength(orc_count);
 
-        if (orc_count == -1 && warn_obj_cnt > 0) {
+        if (orc_count == -1 && current_nle_ctx->warn_obj_cnt > 0) {
             /* -1 means that blindness has just been toggled; give a
                'continue' message that eventual 'stop' message will match */
             pline("%s is %s.", bare_artifactname(uwep),
-                  glow_verb(Blind ? 0 : warn_obj_cnt, TRUE));
+                  glow_verb(Blind ? 0 : current_nle_ctx->warn_obj_cnt, TRUE));
         } else if (newstr > 0 && newstr != oldstr) {
             /* 'start' message */
             if (!Blind)
@@ -1914,10 +1914,10 @@ int orc_count; /* new count (warn_obj_cnt is old count); -1 is a flag value */
             else if (oldstr == 0) /* quivers */
                 pline("%s %s slightly.", bare_artifactname(uwep),
                       otense(uwep, glow_verb(0, FALSE)));
-        } else if (orc_count == 0 && warn_obj_cnt > 0) {
+        } else if (orc_count == 0 && current_nle_ctx->warn_obj_cnt > 0) {
             /* 'stop' message */
             pline("%s stops %s.", bare_artifactname(uwep),
-                  glow_verb(Blind ? 0 : warn_obj_cnt, TRUE));
+                  glow_verb(Blind ? 0 : current_nle_ctx->warn_obj_cnt, TRUE));
         }
     }
 }

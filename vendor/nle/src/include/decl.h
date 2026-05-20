@@ -20,7 +20,6 @@ E const char *hname;
 /* `hackpid` migrated to nle_ctx_t (stage 3c). Callers use
  * current_nle_ctx->hackpid (and must #include "nle.h"). */
 #if defined(UNIX) || defined(VMS)
-E int locknum;
 #endif
 #ifdef DEF_PAGER
 E char *catmore;
@@ -43,7 +42,6 @@ E NEARDATA int nsubroom;
 
 #define WARNCOUNT 6 /* number of different warning levels */
 E nhsym warnsyms[WARNCOUNT];
-E NEARDATA int warn_obj_cnt; /* count of monsters meeting criteria */
 
 E int x_maze_max, y_maze_max;
 
@@ -175,7 +173,6 @@ E NEARDATA struct kinfo {
     char name[BUFSZ]; /* actual killer name */
 } killer;
 
-E long done_money;
 E NEARDATA char plname[PL_NSIZ];
 E NEARDATA char dogname[];
 E NEARDATA char catname[];

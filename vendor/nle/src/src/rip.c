@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 #if defined(TTY_GRAPHICS) || defined(X11_GRAPHICS) || defined(GEM_GRAPHICS) \
     || defined(MSWIN_GRAPHICS) || defined(DUMPLOG) || defined(CURSES_GRAPHICS)
@@ -107,7 +108,7 @@ time_t when;
     center(NAME_LINE, buf);
 
     /* Put $ on stone */
-    Sprintf(buf, "%ld Au", done_money);
+    Sprintf(buf, "%ld Au", current_nle_ctx->done_money);
     buf[STONE_LINE_LEN] = 0; /* It could be a *lot* of gold :-) */
     center(GOLD_LINE, buf);
 

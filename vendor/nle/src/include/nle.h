@@ -93,6 +93,11 @@ typedef struct nle_globals {
     schar               tby;                /* was decl.c (throw target y) */
     int                 otg_temp;           /* was decl.c (object_to_glyph scratch) */
     long                yn_number;          /* was decl.c (last numeric y/n response) */
+    /* stage 3i — trivial-scope globals */
+    int                 locknum;            /* was decl.c (UNIX simultaneous-user count) */
+    long                done_money;         /* was decl.c (cash at death) */
+    int                 warn_obj_cnt;       /* was decl.c (warn-mon counter) */
+    /* bhitpos (coord) defer to later — needs coord.h include in nle.h */
 } nle_ctx_t;
 
 /*
