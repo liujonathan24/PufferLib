@@ -8,6 +8,7 @@
 #include <fcontext/fcontext.h>
 
 #include "nleobs.h"
+#include "isaac64.h"
 
 /* TODO: Fix this. */
 #undef SIG_RET_TYPE
@@ -32,6 +33,12 @@ typedef struct nle_globals {
 
     boolean done;
     nle_obs *observation;
+
+    /* nle_state refactor — RNG subsystem (first migration from rnd.c).
+     * Storage was `static struct rnglist_t rnglist[2]` in rnd.c.
+     * Accessed via nle_rng_state(idx) / nle_rng_init(idx) helpers. */
+    isaac64_ctx rng_state[2];
+    int rng_init[2]; /* boolean flag per rng; 0 = uninitialized */
 } nle_ctx_t;
 
 /*
@@ -46,5 +53,11 @@ void nle_end(nle_ctx_t *);
 
 void nle_set_seed(nle_ctx_t *, unsigned long, unsigned long, boolean);
 void nle_get_seed(nle_ctx_t *, unsigned long *, unsigned long *, boolean *);
+
+/* nle_state refactor — per-instance accessors. Called from rnd.c (and
+ * other subsystems as they migrate). Each returns a pointer into the
+ * current nle_ctx_t. CORE = 0 (gameplay RNG), DISP = 1 (display RNG). */
+isaac64_ctx *nle_rng_state(int idx);
+int          *nle_rng_init_flag(int idx);
 
 #endif /* NLE_H */

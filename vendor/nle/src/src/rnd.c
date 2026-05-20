@@ -6,22 +6,17 @@
 
 #ifdef USE_ISAAC64
 #include "isaac64.h"
+#include "nle.h" /* nle_rng_state / nle_rng_init_flag — per-instance storage. */
 
-#if 0
-static isaac64_ctx rng_state;
-#endif
-
-struct rnglist_t {
-    int FDECL((*fn), (int));
-    boolean init;
-    isaac64_ctx rng_state;
-};
+/* nle_state refactor stage 1: RNG state moved out of static storage and
+ * into per-instance nle_ctx_t. The (constant) function-pointer side of
+ * each entry stays static because it's the same across all instances. */
 
 enum { CORE = 0, DISP = 1 };
 
-static struct rnglist_t rnglist[] = {
-    { rn2, FALSE, { 0 } },                      /* CORE */
-    { rn2_on_display_rng, FALSE, { 0 } },       /* DISP */
+static int FDECL((*rnglist_fn[2]), (int)) = {
+    rn2,                  /* CORE */
+    rn2_on_display_rng,   /* DISP */
 };
 
 int
@@ -30,8 +25,8 @@ int FDECL((*fn), (int));
 {
     int i;
 
-    for (i = 0; i < SIZE(rnglist); ++i)
-        if (rnglist[i].fn == fn)
+    for (i = 0; i < 2; ++i)
+        if (rnglist_fn[i] == fn)
             return i;
     return -1;
 }
@@ -52,14 +47,14 @@ int FDECL((*fn), (int));
         new_rng_state[i] = (unsigned char) (seed & 0xFF);
         seed >>= 8;
     }
-    isaac64_init(&rnglist[rngindx].rng_state, new_rng_state,
+    isaac64_init(nle_rng_state(rngindx), new_rng_state,
                  (int) sizeof seed);
 }
 
 static int
 RND(int x)
 {
-    return (isaac64_next_uint64(&rnglist[CORE].rng_state) % x);
+    return (isaac64_next_uint64(nle_rng_state(CORE)) % x);
 }
 
 /* 0 <= rn2(x) < x, but on a different sequence from the "main" rn2;
@@ -69,7 +64,7 @@ int
 rn2_on_display_rng(x)
 register int x;
 {
-    return (isaac64_next_uint64(&rnglist[DISP].rng_state) % x);
+    return (isaac64_next_uint64(nle_rng_state(DISP)) % x);
 }
 
 #else   /* USE_ISAAC64 */

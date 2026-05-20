@@ -117,10 +117,25 @@ nle_vt_callback(tmt_msg_t m, TMT *vt, const void *a, void *p)
     }
 }
 
+/* nle_state refactor: helpers for moving subsystems out of process-global
+ * storage into nle_ctx_t. Stage 1 ports the RNG state (was static rnglist
+ * in rnd.c). Call from non-NLE TUs via the prototypes declared in nle.h. */
+isaac64_ctx *
+nle_rng_state(int idx)
+{
+    return &current_nle_ctx->rng_state[idx];
+}
+
+int *
+nle_rng_init_flag(int idx)
+{
+    return &current_nle_ctx->rng_init[idx];
+}
+
 nle_ctx_t *
 init_nle(FILE *ttyrec, nle_obs *obs)
 {
-    nle_ctx_t *nle = malloc(sizeof(nle_ctx_t));
+    nle_ctx_t *nle = calloc(1, sizeof(nle_ctx_t));
 
     nle->ttyrec = ttyrec;
 
@@ -140,6 +155,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
 
     nle->outbuf_write_ptr = nle->outbuf;
     nle->outbuf_write_end = nle->outbuf + sizeof(nle->outbuf);
+
+    /* RNG state cleared by calloc; init_isaac64 will populate it via the
+     * set_random() / init_random() chain during NetHack's early setup. */
 
     return nle;
 }
