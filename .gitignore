@@ -190,3 +190,16 @@ vendor/nle/nethackdir
 # NLE from-source build artifacts (we vendor the source, not the build dir)
 vendor/nle/src/build/
 vendor/nle/src/nle.egg-info/
+
+# Standalone bench binaries (rebuilt via build.sh)
+/nethack_fr
+/nethack_slow
+/verify_determinism
+
+# srun job output directories (regenerated)
+ocean/nethack/experiments/exp_004_srun_scaling/random_50k/
+ocean/nethack/experiments/exp_004_srun_scaling/wait_50k/
+ocean/nethack/experiments/exp_011_compute_node_scaling/random_100k/
+ocean/nethack/experiments/exp_011_compute_node_scaling/wait_100k/
+ocean/nethack/experiments/exp_011_compute_node_scaling/north_100k/
+ocean/nethack/experiments/*/scaling.out

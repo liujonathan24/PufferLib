@@ -39,6 +39,19 @@ typedef nle_ctx_t* (*nle_start_fn)(nle_obs*, FILE*, nle_seeds_init_t*, nle_setti
 typedef nle_ctx_t* (*nle_step_fn)(nle_ctx_t*, nle_obs*);
 typedef void       (*nle_end_fn)(nle_ctx_t*);
 
+// Fast-reset extension (see vendor/nle/src/src/nle_fast_reset.c). Resolved
+// only if the patched libnethack.so is loaded; absence falls back to the
+// dlopen-per-reset path.
+typedef void* (*nle_fr_snapshot_fn)(nle_ctx_t*);
+typedef void  (*nle_fr_restore_fn) (nle_ctx_t*, void*);
+typedef void  (*nle_fr_destroy_fn) (void*);
+
+// Build flag: -DNETHACK_FAST_RESET=1 enables the snapshot/restore path.
+// Default is OFF so we can A/B against the existing dlopen-per-reset behavior.
+#ifndef NETHACK_FAST_RESET
+#define NETHACK_FAST_RESET 0
+#endif
+
 // ---------------------------------------------------------------------------
 // Geometry constants
 // ---------------------------------------------------------------------------
@@ -202,6 +215,10 @@ typedef struct Nethack {
     nle_start_fn fn_start;
     nle_step_fn  fn_step;
     nle_end_fn   fn_end;
+    nle_fr_snapshot_fn fn_fr_snapshot;  // NULL if patched lib not present
+    nle_fr_restore_fn  fn_fr_restore;
+    nle_fr_destroy_fn  fn_fr_destroy;
+    void* fr_snapshot;  // populated after first c_reset
 
     // NLE state
     nle_ctx_t* ctx;
@@ -320,6 +337,10 @@ static int nethack_load_lib(Nethack* env) {
         close(dst);
         return -1;
     }
+    // Optional fast-reset extension. NULL on the prebuilt unpatched .so.
+    env->fn_fr_snapshot = (nle_fr_snapshot_fn) dlsym(h, "nle_fr_snapshot");
+    env->fn_fr_restore  = (nle_fr_restore_fn)  dlsym(h, "nle_fr_restore");
+    env->fn_fr_destroy  = (nle_fr_destroy_fn)  dlsym(h, "nle_fr_destroy");
     PROF_END(reload, PROF_RESET_RELOAD);
     return 0;
 }
@@ -498,6 +519,10 @@ void init(Nethack* env) {
     env->episode_length = 0;
     env->vardir[0] = '\0';
     env->dl_handle = NULL; env->dl_fd = 0;
+    env->fn_fr_snapshot = NULL;
+    env->fn_fr_restore = NULL;
+    env->fn_fr_destroy = NULL;
+    env->fr_snapshot = NULL;
     // Don't load_lib here — c_reset will do it on first call. Avoids a
     // redundant ~180 ms dlopen+nle_start before the user even resets.
     nethack_init_settings(env);
@@ -505,6 +530,10 @@ void init(Nethack* env) {
 }
 
 void c_close(Nethack* env) {
+    if (env->fr_snapshot && env->fn_fr_destroy) {
+        env->fn_fr_destroy(env->fr_snapshot);
+        env->fr_snapshot = NULL;
+    }
     if (env->ctx != NULL && env->fn_end) {
         env->fn_end(env->ctx);
         env->ctx = NULL;
@@ -565,46 +594,9 @@ static void nethack_add_log(Nethack* env) {
     env->log.n               += 1.0f;
 }
 
-void c_reset(Nethack* env) {
-    PROF_INIT_IF_NEEDED();
-    PROF_START(reset_total);
-    PROF_COUNT(PROF_C_RESETS, 1);
-
-    PROF_START(nle_end);
-    if (env->ctx != NULL && env->fn_end) {
-        env->fn_end(env->ctx);
-        env->ctx = NULL;
-    }
-    if (env->dl_handle != NULL) {
-        nethack_unload_lib(env);
-    }
-    PROF_END(nle_end, PROF_RESET_NLE_END);
-
-    // nle_load_lib has its own PROF_RESET_RELOAD timer inside.
-    if (nethack_load_lib(env) != 0) {
-        fprintf(stderr, "nethack: failed to reload libnethack on reset\n");
-        return;
-    }
-    nethack_bind_obs(env);
-    env->obs.action = 0;
-    env->obs.done = 0;
-    env->obs.in_normal_game = 0;
-    env->obs.how_done = 0;
-
-    if (env->fn_start == NULL) {
-        fprintf(stderr, "nethack: fn_start is NULL — load_lib failed\n");
-        return;
-    }
-    PROF_START(nle_start);
-    env->ctx = env->fn_start(&env->obs, NULL, NULL, &env->settings);
-    PROF_END(nle_start, PROF_RESET_NLE_START);
-
-    // Drain the welcome screen / initial prompts so the first c_step actually
-    // applies the agent's action to a clean game state.
-    PROF_START(reset_drain);
-    nethack_drain_prompts_cat(env, PROF_FN_STEPS_RESET_DRAIN);
-    PROF_END(reset_drain, PROF_RESET_DRAIN);
-
+// Per-episode bookkeeping reset (counters, exploration bitmap, obs pack).
+// Called by both the slow and fast c_reset paths.
+static void nethack_reset_bookkeeping(Nethack* env) {
     env->tick = 0;
     env->prev_score = 0;
 #if NETHACK_USE_BLSTATS
@@ -625,6 +617,92 @@ void c_reset(Nethack* env) {
     PROF_START(reset_obs_pack);
     nethack_pack_obs(env);
     PROF_END(reset_obs_pack, PROF_OBS_PACK);
+}
+
+// Slow path: dlopen + nle_start + drain welcome. Called on first c_reset
+// (and on every reset when NETHACK_FAST_RESET is disabled).
+static void nethack_slow_reset(Nethack* env) {
+    PROF_START(nle_end);
+    if (env->ctx != NULL && env->fn_end) {
+        env->fn_end(env->ctx);
+        env->ctx = NULL;
+    }
+    if (env->dl_handle != NULL) {
+        nethack_unload_lib(env);
+    }
+    PROF_END(nle_end, PROF_RESET_NLE_END);
+
+    if (nethack_load_lib(env) != 0) {
+        fprintf(stderr, "nethack: failed to reload libnethack on reset\n");
+        return;
+    }
+    nethack_bind_obs(env);
+    env->obs.action = 0;
+    env->obs.done = 0;
+    env->obs.in_normal_game = 0;
+    env->obs.how_done = 0;
+
+    if (env->fn_start == NULL) {
+        fprintf(stderr, "nethack: fn_start is NULL — load_lib failed\n");
+        return;
+    }
+    PROF_START(nle_start);
+    env->ctx = env->fn_start(&env->obs, NULL, NULL, &env->settings);
+    PROF_END(nle_start, PROF_RESET_NLE_START);
+
+    PROF_START(reset_drain);
+    nethack_drain_prompts_cat(env, PROF_FN_STEPS_RESET_DRAIN);
+    PROF_END(reset_drain, PROF_RESET_DRAIN);
+}
+
+void c_reset(Nethack* env) {
+    PROF_INIT_IF_NEEDED();
+    PROF_START(reset_total);
+    PROF_COUNT(PROF_C_RESETS, 1);
+
+#if NETHACK_FAST_RESET
+    // Fast path: if a snapshot exists, restore it. Skips dlopen + nle_start
+    // + welcome drain entirely. Snapshot covers libnethack's writable
+    // segments + the fcontext stack + the nle_ctx_t struct.
+    if (env->fr_snapshot && env->fn_fr_restore) {
+        env->fn_fr_restore(env->ctx, env->fr_snapshot);
+        // Re-bind obs pointers since the restored .data clobbered any of NLE's
+        // internal obs-ptr caching (next nle_step rebinds via fcontext arg,
+        // but we still need the local struct re-bound for hook reads here).
+        nethack_bind_obs(env);
+        env->obs.done = 0;
+        env->obs.in_normal_game = 0;
+        env->obs.how_done = 0;
+        nethack_reset_bookkeeping(env);
+        PROF_END(reset_total, PROF_C_RESET_TOTAL);
+        return;
+    }
+#endif
+
+    // First reset (or fast-reset disabled): take the slow path.
+    nethack_slow_reset(env);
+
+#if NETHACK_FAST_RESET
+    // After the first reset finishes, capture a snapshot so subsequent
+    // resets can use the fast path. Requires the patched libnethack.so.
+    if (env->fn_fr_snapshot && env->fr_snapshot == NULL && env->ctx) {
+        env->fr_snapshot = env->fn_fr_snapshot(env->ctx);
+        if (env->fr_snapshot == NULL) {
+            fprintf(stderr, "nethack: nle_fr_snapshot returned NULL; "
+                            "fast-reset will fall back to slow path\n");
+        }
+    } else if (env->fn_fr_snapshot == NULL && env->fr_snapshot == NULL) {
+        static int warned = 0;
+        if (!warned) {
+            fprintf(stderr, "nethack: NETHACK_FAST_RESET=1 but loaded "
+                            "libnethack.so does not export nle_fr_snapshot; "
+                            "falling back to slow path\n");
+            warned = 1;
+        }
+    }
+#endif
+
+    nethack_reset_bookkeeping(env);
     PROF_END(reset_total, PROF_C_RESET_TOTAL);
 }
 
