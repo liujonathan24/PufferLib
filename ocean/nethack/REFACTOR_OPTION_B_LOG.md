@@ -252,3 +252,110 @@ Last good state: `git rev-parse HEAD` → aec522d6 / d371f66b.
     matches.
   - `./multi_threaded 1 2000 1` succeeds at ~45-95K SPS.
   - `./multi_threaded 2 100 2` segfaults (race in the swap, as expected).
+
+---
+
+## Final session state (TLS hybrid + swap-skip)
+
+After bailing on pure Option B (would require renaming `flags`/`iflags`
+fields in 7 NetHack headers + worn[] rewrite — too invasive in this
+session), shipped a hybrid that achieved measurable thread safety:
+
+1. **TLS NEARDATA** flipped on (config1.h). All NEARDATA-marked globals
+   are now per-thread. Static-init breakage in 3 known places fixed:
+   - `options.c boolopt[]`: 87 `&flags.X` / `&iflags.X` / `&sysflags.X`
+     entries set to NULL in the static table; runtime name-keyed
+     patcher inside `initoptions_init` (mirrors the table's #ifdef
+     skeleton so only live entries patch).
+   - `worn.c worn[]`: demoted from `const`; addresses NULL; populated
+     via `worn_init()` called from `init_nle()`.
+   - `decl.c subrooms = &rooms[MAXNROFROOMS+1]`: populated via
+     `subrooms_init()` from `init_nle()`.
+
+2. **winrl.cc thread_local**: `NetHackRL::instance` and
+   `win_proc_calls` deque are `thread_local`.
+
+3. **wintty.c statics TLS'd**: tty_status[2][MAXBLSTATS],
+   tty_colormasks, tty_condition_bits, hpbar_*, finalx[3][2],
+   windowdata_init, cond_shrinklvl, enclev, enc_shrinklvl,
+   dlvl_shrinklvl, truncation_expected, do_field_opt, fieldorder, obuf,
+   clip*, vt_tile_current_window.
+
+4. **src/*.c list-head TLS sweep**: light_base, dfr_pre_msg, soundmap,
+   oracle_loc, status_hilite_str, spl_orderindx, you_buf, you_buf_siz,
+   eatmbuf, animal_list, id_map, chain, last_winchoice,
+   config_error_data, pline_flags, prevmsg.
+
+5. **tty/{topl,termcap}.c**: snapshot_mesgs, KS, KE TLS'd.
+
+6. **Python-scripted bulk TLS** of 35 file-scope statics across src/
+   with simple constant initializers (int/long/boolean/short/char
+   names initialized to 0/NULL/FALSE/TRUE/digits).
+
+7. **nle.c swap-skip optimization**: per-thread `nle_tls_loaded`
+   cache. When same env steps repeatedly on a thread, both swap_in
+   load_from AND swap_out save_to are no-ops. The 50KB swap memcpy
+   that was running every step drops to zero on the steady-state OMP
+   path (1 env per thread). Eviction path (different env on same
+   thread) still writes back correctly.
+
+### Measurements
+
+| Threads | Aggregate SPS (steady) | Per-thread SPS | Reliability |
+|---------|------------------------|----------------|-------------|
+| 1       | ~100K-1M (variance)    | same           | Solid       |
+| 2       | ~100-3300K            | up to 1.6M     | Solid (super-linear in cache-warm case) |
+| 4       | ~60-250K              | ~15-65K        | Crashes when many envs die at once |
+| 8       | ~120K (short runs)    | ~15K            | Crashes on longer runs |
+
+Variance is high because the bench's "wait" policy kills envs at
+different rates per run, and dying envs trigger `done_in_by →
+display_inventory → tty_end_menu` which still has process-shared
+state (the remaining work).
+
+### Thread safety verdict
+
+- **2 OMP threads stepping concurrently: SAFE** (validated across
+  multiple runs at various step counts).
+- **4 threads: SAFE for short runs**, intermittent crashes on longer
+  runs as env death rate increases.
+- **8+ threads: intermittent crashes** in the inventory-on-death path.
+
+### Linear-scaling verdict
+
+NOT achieved. Best observed:
+- 2 threads gives up to 3x of 1 thread (super-linear) in cache-warm
+  short runs; typical 1.3-1.6x.
+- 4 threads typically 1.5-2.5x of 1 thread on stable runs.
+
+Ideal would be 2x/4x/8x. Bottlenecks (in priority order):
+1. **paniclog file I/O**: tty_status_update calls into paniclog
+   when its status checks fail. fopen+fwrite per call hits glibc
+   serialization. Fix: per-thread paniclog file, or no-op out.
+2. **Remaining process-shared statics**: ~150 more in src/*.c with
+   complex (non-constant) initializers — case-by-case TLS or rewrite.
+3. **Inventory-on-death path**: tty_end_menu retains shared state
+   when concurrent envs die in the same step batch.
+
+### Build / verify
+
+- Single-thread golden replay: `./verify_determinism replay ...` matches.
+- Multi-thread bench: `./multi_threaded N steps N` (see file header).
+- Library: `vendor/nle/lib/libnethack.so` is the built artifact;
+  rebuild with `make -j8 nethack` from `vendor/nle/src/build`.
+
+### Commits (this session)
+
+- aec522d6  Option B stages 6'/8'/9'AB/10' direct migration + TLS pointer
+- d371f66b  multi_threaded.c bench
+- b70ad95a  REFACTOR_OPTION_B_LOG initial comparison
+- 39300c67  Option A: NEARDATA → __thread + options.c/worn.c rewrites
+- 3fb34db1  wintty.c TLS file-scope statics
+- 160f9aaa  light.c TLS light_base
+- a9e2a84c  src/*.c TLS list heads + pline state
+- c22eeb2e  bulk-TLS via Python script
+- c219527e  tty/{topl,termcap}.c TLS
+- 962b40f5  nle.c skip swap_in load when same env
+- 13eac46a  nle.c skip swap_out — fully lazy via eviction
+
+11 commits, ~700 lines of churn, partial-but-real thread safety.
