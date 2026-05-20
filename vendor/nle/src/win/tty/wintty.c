@@ -145,7 +145,7 @@ extern void FDECL(cmov, (int, int));   /* from termcap.c */
 extern void FDECL(nocmov, (int, int)); /* from termcap.c */
 #if defined(UNIX) || defined(VMS)
 #ifndef RL_GRAPHICS
-static char obuf[BUFSIZ]; /* BUFSIZ is defined in stdio.h */
+static __thread char obuf[BUFSIZ]; /* BUFSIZ is defined in stdio.h */
 #endif
 #endif
 
@@ -157,10 +157,10 @@ char defmorestr[] = "--More--";
 boolean clipping = FALSE; /* clipping on? */
 int clipx = 0, clipxmax = 0;
 #else
-static boolean clipping = FALSE; /* clipping on? */
-static int clipx = 0, clipxmax = 0;
+static __thread boolean clipping = FALSE; /* clipping on? */
+static __thread int clipx = 0, clipxmax = 0;
 #endif
-static int clipy = 0, clipymax = 0;
+static __thread int clipy = 0, clipymax = 0;
 #endif /* CLIPPING */
 
 #if defined(USE_TILES) && defined(MSDOS)
@@ -230,7 +230,7 @@ static const char default_menu_cmds[] = {
 };
 
 #ifdef TTY_TILES_ESCCODES
-static int vt_tile_current_window = -2;
+static __thread int vt_tile_current_window = -2;
 
 void
 print_vt_code(i, c, d)
@@ -3663,10 +3663,10 @@ extern boolean status_activefields[MAXBLSTATS];
 STATIC_DCL int FDECL(condcolor, (long, unsigned long *));
 #endif
 STATIC_DCL int FDECL(condattr, (long, unsigned long *));
-static unsigned long *tty_colormasks;
-static long tty_condition_bits;
-static struct tty_status_fields tty_status[2][MAXBLSTATS]; /* 2: NOW,BEFORE */
-static int hpbar_percent, hpbar_color;
+static __thread unsigned long *tty_colormasks;
+static __thread long tty_condition_bits;
+static __thread struct tty_status_fields tty_status[2][MAXBLSTATS]; /* 2: NOW,BEFORE */
+static __thread int hpbar_percent, hpbar_color;
 static struct condition_t {
     long mask;
     const char *text[3]; /* 3: potential display vals, progressively shorter */
@@ -3715,14 +3715,14 @@ static const enum statusfields
     { BL_LEVELDESC, BL_TIME, BL_CONDITION, BL_FLUSH, blPAD, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
-static const enum statusfields (*fieldorder)[MAX_PER_ROW];
+static __thread const enum statusfields (*fieldorder)[MAX_PER_ROW];
 
-static int finalx[3][2];    /* [rows][NOW or BEFORE] */
-static boolean windowdata_init = FALSE;
-static int cond_shrinklvl = 0;
-static int enclev = 0, enc_shrinklvl = 0;
-static int dlvl_shrinklvl = 0;
-static boolean truncation_expected = FALSE;
+static __thread int finalx[3][2];    /* [rows][NOW or BEFORE] */
+static __thread boolean windowdata_init = FALSE;
+static __thread int cond_shrinklvl = 0;
+static __thread int enclev = 0, enc_shrinklvl = 0;
+static __thread int dlvl_shrinklvl = 0;
+static __thread boolean truncation_expected = FALSE;
 #define FORCE_RESET TRUE
 #define NO_RESET FALSE
 
@@ -3734,7 +3734,7 @@ static boolean truncation_expected = FALSE;
  * for all platforms eventually and the conditional
  * setting below can be removed.
  */
-static int do_field_opt =
+static __thread int do_field_opt =
 #if defined(DISABLE_TTY_FIELD_OPT)
     0;
 #else
