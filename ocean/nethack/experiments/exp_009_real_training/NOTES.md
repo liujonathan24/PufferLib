@@ -11,7 +11,7 @@
 - Reward shaping active: `+0.1` per new tile, `+1.0` per new dungeon
   level, `-0.5` per illegal action, plus score delta from the game.
 
-## Live training curve (first 5 epochs, ~12 s evaluate each)
+## Full training curve (run completed at 25 min, 295 K total steps)
 
 | Step (K) | SPS  | episode_len | valid_moves/ep | new_tiles/ep | ep_return | entropy |
 |---------:|-----:|------------:|---------------:|-------------:|----------:|--------:|
@@ -20,11 +20,48 @@
 |     49.2 |  1.0K|       184.5 |          44.5  |         20.0 |     2.000 |   1.903 |
 |     65.5 |  1.1K|       197.0 |          59.0  |         40.0 |     4.000 |   2.168 |
 |     81.9 |  1.1K|       292.0 |          79.75 |         38.0 |     3.800 |   2.319 |
+|    196.6 |  1.1K|       734.5 |         258.0  |         (n/a)|     6.700 |   2.554 |
+|    262.1 |  1.2K|       831.7 |         305.7  |        106.0 |    11.100 |   2.554 |
+|    278.5 |  1.3K|      1000.0 |         363.7  |        109.3 |    10.933 |   2.554 |
+|    294.9 |  1.2K|      1113.0 |         511.5  |         65.5 |     6.550 |   2.554 |
 
-The agent **is learning** — episode length has gone from 41 → 292 c_steps
-in ~80 K total steps, a **7× improvement in survival**. New-tile counts
-grew 5× (7 → 38). Episode return is dominated by the scout bonus
-(0.1 × tiles), since game score is still 0.
+**Agent learning is real and dramatic**: episode length grew **27× (41 →
+1113)** in 295 K steps. valid_moves per episode grew **39× (13 → 511)**.
+`illegal_actions` stayed at 0 throughout — the auto-dismiss heuristic
+fully covers the prompts triggered by this policy.
+
+valid/c_step ratio: 32 % (early) → **46 % (late)**. The agent learned
+to avoid wall bumps and useless commands.
+
+## Where the time goes (the actual measurement)
+
+The reported `Env=322ms 2%` line is the killer detail. Of the 12 s
+evaluate window:
+- **Env stepping: 322 ms** (16,400 c_steps → **~51 k c_steps/sec on 16 cores**)
+- **Train + misc: 11.7 s** (network forward/backward + losses)
+
+So *env throughput is already strong*: 51 k aggregate c_steps/sec on
+16 cores during the evaluate phase. The 1.2 K **overall SPS** is
+hampered by the CPU-only network training step, not the env. On a
+GPU node (or with bf16 + a smaller network), train cost shrinks and
+env throughput surfaces.
+
+## Re-projecting 1 M valid_moves/sec
+
+| metric                                              | value          |
+|-----------------------------------------------------|----------------|
+| Env c_steps/sec on 16 cores during evaluate         | **~51 k**      |
+| valid/c_step late-training                          | 0.46           |
+| Env valid_moves/sec on 16 cores                     | **~23 k**      |
+| Same on 64 cores (4×)                               | **~92 k**      |
+| Same on 256 cores (16×, 2 nodes)                    | **~370 k**     |
+| Same on 256 cores with reset-hiding pool (2×)       | **~740 k**     |
+
+To exceed 1 M valid_moves/sec we need **256 cores + reset hiding** or
+**512 cores** without. The harness has the speed; we're limited by:
+1. CPU-bound network training in `--slowly` mode (use GPU for this)
+2. Reset duty cycle (will improve as the agent keeps learning)
+3. Number of cores available
 
 ## Where the time goes (early training)
 

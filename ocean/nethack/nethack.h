@@ -142,16 +142,32 @@ typedef void       (*nle_end_fn)(nle_ctx_t*);
 #error "At least one NETHACK_USE_* field must be enabled."
 #endif
 
-#define NETHACK_NUM_ACTIONS 23
+// Compile-time action set selection.
+//   NETHACK_ACTION_SET == 0  (default, 23 actions) — full reduced set:
+//       8 compass + 8 long-compass + > < . s \r ESC ,
+//   NETHACK_ACTION_SET == 1  (18 actions) — drops the "rarely useful"
+//       keystrokes (`>`, `<`, `,`, `\r`, `ESC`) that early-training
+//       random play burns on no-op/menu states. Keeps movement + wait
+//       + search. Helps lift SPS during the high-reset-rate phase.
+#ifndef NETHACK_ACTION_SET
+#define NETHACK_ACTION_SET 0
+#endif
 
-// Reduced action set: ASCII codes passed straight to nle as obs->action.
-// 0-7 compass, 8-15 compass-long, 16 down, 17 up, 18 wait/.
-// 19 search, 20 MORE (CR), 21 ESC, 22 pickup ','.
+#if NETHACK_ACTION_SET == 1
+#define NETHACK_NUM_ACTIONS 18
+static const int NETHACK_ACTION_TABLE[NETHACK_NUM_ACTIONS] = {
+    'k','j','h','l','y','u','b','n',
+    'K','J','H','L','Y','U','B','N',
+    '.','s',
+};
+#else
+#define NETHACK_NUM_ACTIONS 23
 static const int NETHACK_ACTION_TABLE[NETHACK_NUM_ACTIONS] = {
     'k','j','h','l','y','u','b','n',
     'K','J','H','L','Y','U','B','N',
     '>','<','.','s','\r',27,',',
 };
+#endif
 
 #define NETHACK_DEFAULT_OPTIONS \
     "name:Agent-mon-hum-neu-mal," \
