@@ -706,8 +706,27 @@ nle_swap_in(nle_ctx_t *nle)
     }
     if (nle_tls_loaded == nle) {
         /* Fast path: TLS globals already hold this env's state from the
-         * previous swap_out. No copies required. */
+         * previous step. No copies required. */
         return;
+    }
+    /* Evicting a different env from this thread's TLS — flush its state
+     * back to its dungeon_save first so a subsequent thread can pick it
+     * up. (When the same env is stepped, swap_out is skipped — see
+     * nle_swap_out — so the eviction path is the only writeback.) */
+    if (nle_tls_loaded) {
+        nle_ctx_t *out = nle_tls_loaded;
+        if (out->flags_ptr)
+            memcpy(out->flags_ptr, &flags, sizeof(flags));
+        if (out->iflags_ptr)
+            memcpy(out->iflags_ptr, &iflags, sizeof(iflags));
+#ifdef SYSFLAGS
+        if (out->sysflags_ptr)
+            memcpy(out->sysflags_ptr, &sysflags, sizeof(sysflags));
+#endif
+        if (!out->dungeon_save)
+            out->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
+        if (out->dungeon_save)
+            nle_dungeon_save_to((struct nle_dungeon_save *) out->dungeon_save);
     }
     if (nle->flags_ptr)
         memcpy(&flags, nle->flags_ptr, sizeof(flags));
@@ -727,25 +746,26 @@ struct nle_dungeon_save *nle_baseline = NULL;
 static void
 nle_swap_out(nle_ctx_t *nle)
 {
-    /* No-op when 1 env per thread (the common OMP case): the TLS globals
-     * already hold this env's latest state, and the cache says we don't
-     * need to swap_in either next step. If/when a different env steps on
-     * this thread, that swap_in does a one-time save of THIS env first
-     * (via the new save-on-evict path below). */
-    if (!nle->dungeon_save)
+    /* No-op: the TLS globals already hold this env's latest state. If
+     * another env later steps on this thread, swap_in's evict path
+     * writes the outgoing state back then. nle_start uses this same
+     * helper to push initial state into nle->dungeon_save; we still
+     * need to honor that. */
+    (void) nle;
+    if (nle && !nle->dungeon_save) {
         nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
-    /* Always write back to nle->dungeon_save so other threads can pick up
-     * this env later (rare path; the OMP common case is 1-env-per-thread). */
-    if (nle->flags_ptr)
-        memcpy(nle->flags_ptr, &flags, sizeof(flags));
-    if (nle->iflags_ptr)
-        memcpy(nle->iflags_ptr, &iflags, sizeof(iflags));
+        if (nle->dungeon_save) {
+            if (nle->flags_ptr)
+                memcpy(nle->flags_ptr, &flags, sizeof(flags));
+            if (nle->iflags_ptr)
+                memcpy(nle->iflags_ptr, &iflags, sizeof(iflags));
 #ifdef SYSFLAGS
-    if (nle->sysflags_ptr)
-        memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
+            if (nle->sysflags_ptr)
+                memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
 #endif
-    if (nle->dungeon_save)
-        nle_dungeon_save_to((struct nle_dungeon_save *) nle->dungeon_save);
+            nle_dungeon_save_to((struct nle_dungeon_save *) nle->dungeon_save);
+        }
+    }
 }
 
 nle_ctx_t *
