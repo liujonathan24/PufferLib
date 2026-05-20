@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL boolean FDECL(tele_jump_ok, (int, int, int, int));
 STATIC_DCL boolean FDECL(teleok, (int, int, BOOLEAN_P));
@@ -936,11 +937,11 @@ level_tele()
     if (newlev < 0 && !force_dest) {
         if (*u.ushops0) {
             /* take unpaid inventory items off of shop bills */
-            in_mklev = TRUE; /* suppress map update */
+            current_nle_ctx->in_mklev = TRUE; /* suppress map update */
             u_left_shop(u.ushops0, TRUE);
             /* you're now effectively out of the shop */
             *u.ushops0 = *u.ushops = '\0';
-            in_mklev = FALSE;
+            current_nle_ctx->in_mklev = FALSE;
         }
         if (newlev <= -10) {
             You("arrive in heaven.");

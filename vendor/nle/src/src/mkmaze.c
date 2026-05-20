@@ -288,7 +288,7 @@ d_level *lev;
          * if there are rooms and this a branch, let place_branch choose
          * the branch location (to avoid putting branches in corridors).
          */
-        if (rtype == LR_BRANCH && nroom) {
+        if (rtype == LR_BRANCH && current_nle_ctx->nroom) {
             place_branch(Is_branchlev(&u.uz), 0, 0);
             return;
         }

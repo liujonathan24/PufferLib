@@ -387,7 +387,7 @@ dofire()
         if (!obj) {
             /* in case we're using ^A to repeat prior 'f' command, don't
                use direction of previous throw as getobj()'s choice here */
-            in_doagain = 0;
+            current_nle_ctx->in_doagain = 0;
             /* choose something from inventory, then usually quiver it */
             obj = getobj(uslinging() ? bullets : toss_objs, "throw");
             /* Q command doesn't allow gold in quiver */

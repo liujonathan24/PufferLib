@@ -77,6 +77,12 @@ typedef struct nle_globals {
     boolean             in_steed_dismounting; /* was decl.c flag (steed) */
     const char         *multi_reason;       /* was decl.c ('Speed', 'Slowness', ...) */
     int                 occtime;            /* was decl.c (occupation duration) */
+    /* stage 3f — level-building + input replay state */
+    int                 nroom;              /* was decl.c (rooms on current level) */
+    int                 nsubroom;           /* was decl.c (subrooms in shop/temple) */
+    int                 doorindex;          /* was decl.c (doors[] write idx) */
+    boolean             in_mklev;           /* was decl.c (inside mklev()) */
+    int                 in_doagain;         /* was decl.c (input replay state) */
 } nle_ctx_t;
 
 /*

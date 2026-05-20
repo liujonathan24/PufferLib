@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
 extern char bones[]; /* from files.c */
@@ -431,9 +432,9 @@ struct obj *corpse;
         /* trick makemon() into allowing monster creation
          * on your location
          */
-        in_mklev = TRUE;
+        current_nle_ctx->in_mklev = TRUE;
         mtmp = makemon(&mons[PM_GHOST], u.ux, u.uy, MM_NONAME);
-        in_mklev = FALSE;
+        current_nle_ctx->in_mklev = FALSE;
         if (!mtmp)
             return;
         mtmp = christen_monst(mtmp, plname);
@@ -441,9 +442,9 @@ struct obj *corpse;
             (void) obj_attach_mid(corpse, mtmp->m_id);
     } else {
         /* give your possessions to the monster you become */
-        in_mklev = TRUE; /* use <u.ux,u.uy> as-is */
+        current_nle_ctx->in_mklev = TRUE; /* use <u.ux,u.uy> as-is */
         mtmp = makemon(&mons[u.ugrave_arise], u.ux, u.uy, NO_MINVENT);
-        in_mklev = FALSE;
+        current_nle_ctx->in_mklev = FALSE;
         if (!mtmp) { /* arise-type might have been genocided */
             drop_upon_death((struct monst *) 0, (struct obj *) 0, u.ux, u.uy);
             u.ugrave_arise = NON_PM; /* in case caller cares */

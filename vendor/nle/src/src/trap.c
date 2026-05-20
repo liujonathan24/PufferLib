@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 extern const char *const destroy_strings[][3]; /* from zap.c */
 
@@ -4945,7 +4946,7 @@ boolean disarm;
             if (!Free_action) {
                 pline("Suddenly you are frozen in place!");
                 nomul(-d(5, 6));
-                multi_reason = "frozen by a trap";
+                current_nle_ctx->multi_reason = "frozen by a trap";
                 exercise(A_DEX, FALSE);
                 nomovemsg = You_can_move_again;
             } else
@@ -5451,7 +5452,7 @@ maybe_finish_sokoban()
 {
     struct trap *t;
 
-    if (Sokoban && !in_mklev) {
+    if (Sokoban && !current_nle_ctx->in_mklev) {
         /* scan all remaining traps, ignoring any created by the hero;
            if this level has no more pits or holes, the current sokoban
            puzzle has been solved */

@@ -739,7 +739,7 @@ register int x, y;
     register int see_it;
     register xchar worm_tail;
 
-    if (in_mklev)
+    if (current_nle_ctx->in_mklev)
         return;
 #ifdef HANGUPHANDLING
     if (current_nle_ctx->program_state.done_hup)

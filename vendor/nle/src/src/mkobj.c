@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL void FDECL(mkbox_cnts, (struct obj *));
 STATIC_DCL unsigned FDECL(nextoid, (struct obj *, struct obj *));
@@ -293,7 +294,7 @@ struct obj *box;
     case SACK:
     case OILSKIN_SACK:
         /* initial inventory: sack starts out empty */
-        if (moves <= 1 && !in_mklev) {
+        if (moves <= 1 && !current_nle_ctx->in_mklev) {
             n = 0;
             break;
         }
@@ -1190,7 +1191,7 @@ struct obj *body;
         return;
 
     action = ROT_CORPSE;             /* default action: rot away */
-    rot_adjust = in_mklev ? 25 : 10; /* give some variation */
+    rot_adjust = current_nle_ctx->in_mklev ? 25 : 10; /* give some variation */
     corpse_age = monstermoves - body->age;
     if (corpse_age > ROT_AGE)
         when = rot_adjust;

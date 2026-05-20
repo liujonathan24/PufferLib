@@ -10,6 +10,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "dlb.h"
 #include "sp_lev.h"
 
@@ -769,7 +770,7 @@ maybe_add_door(x, y, droom)
 int x, y;
 struct mkroom *droom;
 {
-    if (droom->hx >= 0 && doorindex < DOORMAX && inside_room(droom, x, y))
+    if (droom->hx >= 0 && current_nle_ctx->doorindex < DOORMAX && inside_room(droom, x, y))
         add_door(x, y, droom);
 }
 
@@ -787,7 +788,7 @@ link_doors_rooms()
                    directive, set/clear levl[][].horizontal for it */
                 set_door_orientation(x, y);
 
-                for (tmpi = 0; tmpi < nroom; tmpi++) {
+                for (tmpi = 0; tmpi < current_nle_ctx->nroom; tmpi++) {
                     maybe_add_door(x, y, &rooms[tmpi]);
                     for (m = 0; m < rooms[tmpi].nsubrooms; m++) {
                         maybe_add_door(x, y, rooms[tmpi].sbrooms[m]);
@@ -801,7 +802,7 @@ fill_rooms()
 {
     int tmpi, m;
 
-    for (tmpi = 0; tmpi < nroom; tmpi++) {
+    for (tmpi = 0; tmpi < current_nle_ctx->nroom; tmpi++) {
         if (rooms[tmpi].needfill)
             fill_room(&rooms[tmpi], (rooms[tmpi].needfill == 2));
         for (m = 0; m < rooms[tmpi].nsubrooms; m++)
@@ -1200,10 +1201,10 @@ xchar rtype, rlit;
                    + rn2(hx - (lx > 0 ? lx : 3) - dx - xborder + 1);
             yabs = ly + (ly > 0 ? ylim : 2)
                    + rn2(hy - (ly > 0 ? ly : 2) - dy - yborder + 1);
-            if (ly == 0 && hy >= (ROWNO - 1) && (!nroom || !rn2(nroom))
+            if (ly == 0 && hy >= (ROWNO - 1) && (!current_nle_ctx->nroom || !rn2(current_nle_ctx->nroom))
                 && (yabs + dy > ROWNO / 2)) {
                 yabs = rn1(3, 2);
-                if (nroom < 4 && dy > 1)
+                if (current_nle_ctx->nroom < 4 && dy > 1)
                     dy--;
             }
             if (!check_room(&xabs, &dx, &yabs, &dy, vault)) {
@@ -1281,12 +1282,12 @@ xchar rtype, rlit;
     split_rects(r1, &r2);
 
     if (!vault) {
-        smeq[nroom] = nroom;
+        smeq[current_nle_ctx->nroom] = current_nle_ctx->nroom;
         add_room(xabs, yabs, xabs + wtmp - 1, yabs + htmp - 1, rlit, rtype,
                  FALSE);
     } else {
-        rooms[nroom].lx = xabs;
-        rooms[nroom].ly = yabs;
+        rooms[current_nle_ctx->nroom].lx = xabs;
+        rooms[current_nle_ctx->nroom].ly = yabs;
     }
     return TRUE;
 }
@@ -2337,7 +2338,7 @@ fix_stair_rooms()
         && !((dnstairs_room->lx <= xdnstair && xdnstair <= dnstairs_room->hx)
              && (dnstairs_room->ly <= ydnstair
                  && ydnstair <= dnstairs_room->hy))) {
-        for (i = 0; i < nroom; i++) {
+        for (i = 0; i < current_nle_ctx->nroom; i++) {
             croom = &rooms[i];
             if ((croom->lx <= xdnstair && xdnstair <= croom->hx)
                 && (croom->ly <= ydnstair && ydnstair <= croom->hy)) {
@@ -2345,14 +2346,14 @@ fix_stair_rooms()
                 break;
             }
         }
-        if (i == nroom)
+        if (i == current_nle_ctx->nroom)
             panic("Couldn't find dnstair room in fix_stair_rooms!");
     }
     if (xupstair
         && !((upstairs_room->lx <= xupstair && xupstair <= upstairs_room->hx)
              && (upstairs_room->ly <= yupstair
                  && yupstair <= upstairs_room->hy))) {
-        for (i = 0; i < nroom; i++) {
+        for (i = 0; i < current_nle_ctx->nroom; i++) {
             croom = &rooms[i];
             if ((croom->lx <= xupstair && xupstair <= croom->hx)
                 && (croom->ly <= yupstair && yupstair <= croom->hy)) {
@@ -2360,7 +2361,7 @@ fix_stair_rooms()
                 break;
             }
         }
-        if (i == nroom)
+        if (i == current_nle_ctx->nroom)
             panic("Couldn't find upstair room in fix_stair_rooms!");
     }
 }
@@ -2500,10 +2501,10 @@ struct mkroom *mkr;
     xchar rtype = (!r->chance || rn2(100) < r->chance) ? r->rtype : OROOM;
 
     if (mkr) {
-        aroom = &subrooms[nsubroom];
+        aroom = &subrooms[current_nle_ctx->nsubroom];
         okroom = create_subroom(mkr, r->x, r->y, r->w, r->h, rtype, r->rlit);
     } else {
-        aroom = &rooms[nroom];
+        aroom = &rooms[current_nle_ctx->nroom];
         okroom = create_room(r->x, r->y, r->w, r->h, r->xalign, r->yalign,
                              rtype, r->rlit);
     }
@@ -4630,7 +4631,7 @@ struct sp_coder *coder;
        an actual room to be created (such rooms are used to
        control placement of migrating monster arrivals) */
     room_not_needed = (OV_i(rtype) == OROOM && !irregular && !prefilled);
-    if (room_not_needed || nroom >= MAXNROFROOMS) {
+    if (room_not_needed || current_nle_ctx->nroom >= MAXNROFROOMS) {
         region tmpregion;
         if (!room_not_needed)
             impossible("Too many rooms on new level!");
@@ -4649,7 +4650,7 @@ struct sp_coder *coder;
         return;
     }
 
-    troom = &rooms[nroom];
+    troom = &rooms[current_nle_ctx->nroom];
 
     /* mark rooms that must be filled, but do it later */
     if (OV_i(rtype) != OROOM)
@@ -4660,8 +4661,8 @@ struct sp_coder *coder;
     if (irregular) {
         min_rx = max_rx = dx1;
         min_ry = max_ry = dy1;
-        smeq[nroom] = nroom;
-        flood_fill_rm(dx1, dy1, nroom + ROOMOFFSET, OV_i(rlit), TRUE);
+        smeq[current_nle_ctx->nroom] = current_nle_ctx->nroom;
+        flood_fill_rm(dx1, dy1, current_nle_ctx->nroom + ROOMOFFSET, OV_i(rlit), TRUE);
         add_room(min_rx, min_ry, max_rx, max_ry, FALSE, OV_i(rtype), TRUE);
         troom->rlit = OV_i(rlit);
         troom->irregular = TRUE;

@@ -159,7 +159,7 @@ gottype:
     for (sroom = &rooms[0];; sroom++) {
         if (sroom->hx < 0)
             return;
-        if (sroom - rooms >= nroom) {
+        if (sroom - rooms >= current_nle_ctx->nroom) {
             pline("rooms not closed by -1?");
             return;
         }
@@ -212,10 +212,10 @@ pick_room(strict)
 register boolean strict;
 {
     register struct mkroom *sroom;
-    register int i = nroom;
+    register int i = current_nle_ctx->nroom;
 
-    for (sroom = &rooms[rn2(nroom)]; i--; sroom++) {
-        if (sroom == &rooms[nroom])
+    for (sroom = &rooms[rn2(current_nle_ctx->nroom)]; i--; sroom++) {
+        if (sroom == &rooms[current_nle_ctx->nroom])
             sroom = &rooms[0];
         if (sroom->hx < 0)
             return (struct mkroom *) 0;
@@ -519,7 +519,7 @@ mkswamp() /* Michiel Huisjes & Fred de Wilde */
     register int sx, sy, i, eelct = 0;
 
     for (i = 0; i < 5; i++) { /* turn up to 5 rooms swampy */
-        sroom = &rooms[rn2(nroom)];
+        sroom = &rooms[rn2(current_nle_ctx->nroom)];
         if (sroom->hx < 0 || sroom->rtype != OROOM || has_upstairs(sroom)
             || has_dnstairs(sroom))
             continue;
@@ -826,8 +826,8 @@ int fd;
     short i;
 
     /* First, write the number of rooms */
-    bwrite(fd, (genericptr_t) &nroom, sizeof(nroom));
-    for (i = 0; i < nroom; i++)
+    bwrite(fd, (genericptr_t) &current_nle_ctx->nroom, sizeof(current_nle_ctx->nroom));
+    for (i = 0; i < current_nle_ctx->nroom; i++)
         save_room(fd, &rooms[i]);
 }
 
@@ -840,9 +840,9 @@ struct mkroom *r;
 
     mread(fd, (genericptr_t) r, sizeof(struct mkroom));
     for (i = 0; i < r->nsubrooms; i++) {
-        r->sbrooms[i] = &subrooms[nsubroom];
-        rest_room(fd, &subrooms[nsubroom]);
-        subrooms[nsubroom++].resident = (struct monst *) 0;
+        r->sbrooms[i] = &subrooms[current_nle_ctx->nsubroom];
+        rest_room(fd, &subrooms[current_nle_ctx->nsubroom]);
+        subrooms[current_nle_ctx->nsubroom++].resident = (struct monst *) 0;
     }
 }
 
@@ -856,14 +856,14 @@ int fd;
 {
     short i;
 
-    mread(fd, (genericptr_t) &nroom, sizeof(nroom));
-    nsubroom = 0;
-    for (i = 0; i < nroom; i++) {
+    mread(fd, (genericptr_t) &current_nle_ctx->nroom, sizeof(current_nle_ctx->nroom));
+    current_nle_ctx->nsubroom = 0;
+    for (i = 0; i < current_nle_ctx->nroom; i++) {
         rest_room(fd, &rooms[i]);
         rooms[i].resident = (struct monst *) 0;
     }
-    rooms[nroom].hx = -1; /* restore ending flags */
-    subrooms[nsubroom].hx = -1;
+    rooms[current_nle_ctx->nroom].hx = -1; /* restore ending flags */
+    subrooms[current_nle_ctx->nsubroom].hx = -1;
 }
 
 /* convert a display symbol for terrain into topology type;

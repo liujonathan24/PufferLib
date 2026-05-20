@@ -7,13 +7,14 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 struct rogueroom {
     xchar rlx, rly;
     xchar dx, dy;
     boolean real;
     uchar doortable;
-    int nroom; /* Only meaningful for "real" rooms */
+    int nroom; /* struct field, NOT the migrated global */
 };
 #define UP 1
 #define DOWN 2
@@ -224,13 +225,13 @@ makeroguerooms()
      */
 #define here r[x][y]
 
-    nroom = 0;
+    current_nle_ctx->nroom = 0;
     for (y = 0; y < 3; y++)
         for (x = 0; x < 3; x++) {
             /* Note: we want to insure at least 1 room.  So, if the
              * first 8 are all dummies, force the last to be a room.
              */
-            if (!rn2(5) && (nroom || (x < 2 && y < 2))) {
+            if (!rn2(5) && (current_nle_ctx->nroom || (x < 2 && y < 2))) {
                 /* Arbitrary: dummy rooms may only go where real
                  * ones do.
                  */
@@ -245,19 +246,19 @@ makeroguerooms()
                 /* boundaries of room floor */
                 here.rlx = rnd(23 - here.dx + 1);
                 here.rly = rnd(((y == 2) ? 5 : 4) - here.dy + 1);
-                nroom++;
+                current_nle_ctx->nroom++;
             }
             here.doortable = 0;
         }
     miniwalk(rn2(3), rn2(3));
-    nroom = 0;
+    current_nle_ctx->nroom = 0;
     for (y = 0; y < 3; y++)
         for (x = 0; x < 3; x++) {
             if (here.real) { /* Make a room */
                 int lowx, lowy, hix, hiy;
 
-                r[x][y].nroom = nroom;
-                smeq[nroom] = nroom;
+                r[x][y].nroom = current_nle_ctx->nroom;
+                smeq[current_nle_ctx->nroom] = current_nle_ctx->nroom;
 
                 lowx = 1 + 26 * x + here.rlx;
                 lowy = 7 * y + here.rly;
@@ -305,9 +306,9 @@ makerogueghost()
     struct mkroom *croom;
     int x, y;
 
-    if (!nroom)
+    if (!current_nle_ctx->nroom)
         return; /* Should never happen */
-    croom = &rooms[rn2(nroom)];
+    croom = &rooms[rn2(current_nle_ctx->nroom)];
     x = somex(croom);
     y = somey(croom);
     if (!(ghost = makemon(&mons[PM_GHOST], x, y, NO_MM_FLAGS)))

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 #include <ctype.h>
 
@@ -251,7 +252,7 @@ register struct monst *mtmp;
                 break;
             }
             if (mm == PM_ELVENKING) {
-                if (rn2(3) || (in_mklev && Is_earthlevel(&u.uz)))
+                if (rn2(3) || (current_nle_ctx->in_mklev && Is_earthlevel(&u.uz)))
                     (void) mongets(mtmp, PICK_AXE);
                 if (!rn2(50))
                     (void) mongets(mtmp, CRYSTAL_BALL);
@@ -705,7 +706,7 @@ register struct monst *mtmp;
         break;
     case S_GIANT:
         if (ptr == &mons[PM_MINOTAUR]) {
-            if (!rn2(3) || (in_mklev && Is_earthlevel(&u.uz)))
+            if (!rn2(3) || (current_nle_ctx->in_mklev && Is_earthlevel(&u.uz)))
                 (void) mongets(mtmp, WAN_DIGGING);
         } else if (is_giant(ptr)) {
             for (cnt = rn2((int) (mtmp->m_lev / 2)); cnt; cnt--) {
@@ -775,7 +776,7 @@ register struct monst *mtmp;
         }
         break;
     case S_GNOME:
-        if (!rn2((In_mines(&u.uz) && in_mklev) ? 20 : 60)) {
+        if (!rn2((In_mines(&u.uz) && current_nle_ctx->in_mklev) ? 20 : 60)) {
             otmp = mksobj(rn2(4) ? TALLOW_CANDLE : WAX_CANDLE, TRUE, FALSE);
             otmp->quan = 1;
             otmp->owt = weight(otmp);
@@ -1043,7 +1044,7 @@ coord *cc;
     do {
         nx = rn1(COLNO - 3, 2);
         ny = rn2(ROWNO);
-        good = (!in_mklev && cansee(nx,ny)) ? FALSE
+        good = (!current_nle_ctx->in_mklev && cansee(nx,ny)) ? FALSE
                                             : goodpos(nx, ny, mon, gpflags);
     } while ((++tryct < 50) && !good);
 
@@ -1054,7 +1055,7 @@ coord *cc;
         int xofs = nx;
         int yofs = ny;
         int dx,dy;
-        int bl = (in_mklev || Blind) ? 1 : 0;
+        int bl = (current_nle_ctx->in_mklev || Blind) ? 1 : 0;
 
         for ( ; bl < 2; bl++) {
             for (dx = 0; dx < COLNO; dx++)
@@ -1098,7 +1099,7 @@ coord *cc;
 /*
  * called with [x,y] = coordinates;
  *      [0,0] means anyplace
- *      [u.ux,u.uy] means: near player (if !in_mklev)
+ *      [u.ux,u.uy] means: near player (if !current_nle_ctx->in_mklev)
  *
  *      In case we make a monster group, only return the one at [x,y].
  */
@@ -1129,7 +1130,7 @@ int mmflags;
             return (struct monst *) 0;
         x = cc.x;
         y = cc.y;
-    } else if (byyou && !in_mklev) {
+    } else if (byyou && !current_nle_ctx->in_mklev) {
         if (!enexto_core(&cc, u.ux, u.uy, ptr, gpflags))
             return (struct monst *) 0;
         x = cc.x;
@@ -1241,7 +1242,7 @@ int mmflags;
         break;
     case S_SPIDER:
     case S_SNAKE:
-        if (in_mklev)
+        if (current_nle_ctx->in_mklev)
             if (x && y)
                 (void) mkobj_at(0, x, y, TRUE);
         (void) hideunder(mtmp);
@@ -1315,7 +1316,7 @@ int mmflags;
     if (mitem && allow_minvent)
         (void) mongets(mtmp, mitem);
 
-    if (in_mklev) {
+    if (current_nle_ctx->in_mklev) {
         if ((is_ndemon(ptr) || mndx == PM_WUMPUS
              || mndx == PM_LONG_WORM || mndx == PM_GIANT_EEL)
             && !u.uhave.amulet && rn2(5))
@@ -1408,7 +1409,7 @@ int mmflags;
     if (allow_minvent && migrating_objs)
         deliver_obj_to_mon(mtmp, 1, DF_NONE); /* in case of waiting items */
 
-    if (!in_mklev)
+    if (!current_nle_ctx->in_mklev)
         newsym(mtmp->mx, mtmp->my); /* make sure the mon shows up */
 
     return mtmp;

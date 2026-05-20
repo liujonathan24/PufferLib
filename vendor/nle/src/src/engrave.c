@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
 STATIC_VAR NEARDATA struct engr *head_engr;
@@ -406,7 +407,7 @@ xchar e_type;
     ep->engr_txt = (char *) (ep + 1);
     Strcpy(ep->engr_txt, s);
     /* engraving Elbereth shows wisdom */
-    if (!in_mklev && !strcmp(s, "Elbereth"))
+    if (!current_nle_ctx->in_mklev && !strcmp(s, "Elbereth"))
         exercise(A_WIS, TRUE);
     ep->engr_time = e_time;
     ep->engr_type = e_type > 0 ? e_type : rnd(N_ENGRAVE - 1);

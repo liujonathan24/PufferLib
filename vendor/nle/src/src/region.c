@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
 /*
@@ -909,7 +910,7 @@ long ttl;
         tmprect.hy--;
     }
     ff->ttl = ttl;
-    if (!in_mklev && !context.mon_moving)
+    if (!current_nle_ctx->in_mklev && !context.mon_moving)
         set_heros_fault(ff); /* assume player has created it */
  /* ff->can_enter_f = enter_force_field; */
  /* ff->can_leave_f = enter_force_field; */
@@ -1052,7 +1053,7 @@ int damage;
         tmprect.hy--;
     }
     cloud->ttl = rn1(3, 4);
-    if (!in_mklev && !context.mon_moving)
+    if (!current_nle_ctx->in_mklev && !context.mon_moving)
         set_heros_fault(cloud); /* assume player has created it */
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;

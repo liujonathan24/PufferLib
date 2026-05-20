@@ -248,7 +248,7 @@ int adjust;      /* positive => increase speed, negative => decrease */
 struct obj *obj; /* item to make known if effect can be seen */
 {
     struct obj *otmp;
-    boolean give_msg = !in_mklev, petrify = FALSE;
+    boolean give_msg = !current_nle_ctx->in_mklev, petrify = FALSE;
     unsigned int oldspeed = mon->mspeed;
 
     switch (adjust) {
@@ -341,11 +341,11 @@ boolean on, silently;
             mon->minvis = !mon->invis_blkd;
             break;
         case FAST: {
-            boolean save_in_mklev = in_mklev;
+            boolean save_in_mklev = current_nle_ctx->in_mklev;
             if (silently)
-                in_mklev = TRUE;
+                current_nle_ctx->in_mklev = TRUE;
             mon_adjust_speed(mon, 0, obj);
-            in_mklev = save_in_mklev;
+            current_nle_ctx->in_mklev = save_in_mklev;
             break;
         }
         /* properties handled elsewhere */
@@ -381,11 +381,11 @@ boolean on, silently;
             mon->minvis = mon->perminvis;
             break;
         case FAST: {
-            boolean save_in_mklev = in_mklev;
+            boolean save_in_mklev = current_nle_ctx->in_mklev;
             if (silently)
-                in_mklev = TRUE;
+                current_nle_ctx->in_mklev = TRUE;
             mon_adjust_speed(mon, 0, obj);
-            in_mklev = save_in_mklev;
+            current_nle_ctx->in_mklev = save_in_mklev;
             break;
         }
         case FIRE_RES:

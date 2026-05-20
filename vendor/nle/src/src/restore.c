@@ -1084,10 +1084,10 @@ boolean ghostly;
     mread(fd, (genericptr_t) &level.flags, sizeof(level.flags));
     mread(fd, (genericptr_t) doors, sizeof(doors));
     rest_rooms(fd); /* No joke :-) */
-    if (nroom)
-        doorindex = rooms[nroom - 1].fdoor + rooms[nroom - 1].doorct;
+    if (current_nle_ctx->nroom)
+        current_nle_ctx->doorindex = rooms[current_nle_ctx->nroom - 1].fdoor + rooms[current_nle_ctx->nroom - 1].doorct;
     else
-        doorindex = 0;
+        current_nle_ctx->doorindex = 0;
 
     restore_timers(fd, RANGE_LEVEL, ghostly, elapsed);
     restore_light_sources(fd);
