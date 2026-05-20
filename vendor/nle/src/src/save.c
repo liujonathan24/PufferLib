@@ -678,9 +678,9 @@ int fd;
     return;
 }
 
-static int bw_fd = -1;
+static __thread int bw_fd = -1;
 static FILE *bw_FILE = 0;
-static boolean buffering = FALSE;
+static __thread boolean buffering = FALSE;
 
 STATIC_OVL void
 def_bufon(fd)

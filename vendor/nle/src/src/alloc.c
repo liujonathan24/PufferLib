@@ -134,7 +134,7 @@ register unsigned int lth;
 #define PTRBUFCNT 4
 #define PTRBUFSIZ 32
 static char ptrbuf[PTRBUFCNT][PTRBUFSIZ];
-static int ptrbufidx = 0;
+static __thread int ptrbufidx = 0;
 
 char *
 fmt_ptr(ptr)

@@ -311,7 +311,7 @@ static NEARDATA const char *ends[] = {
     "escaped", "ascended"
 };
 
-static boolean Schroedingers_cat = FALSE;
+static __thread boolean Schroedingers_cat = FALSE;
 
 /*ARGSUSED*/
 void

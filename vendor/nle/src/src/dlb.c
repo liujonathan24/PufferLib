@@ -462,7 +462,7 @@ const dlb_procs_t rsrc_dlb_procs = { rsrc_dlb_init,  rsrc_dlb_cleanup,
 #define do_dlb_ftell (*dlb_procs->dlb_ftell_proc)
 
 static const dlb_procs_t *dlb_procs;
-static boolean dlb_initialized = FALSE;
+static __thread boolean dlb_initialized = FALSE;
 
 boolean
 dlb_init()

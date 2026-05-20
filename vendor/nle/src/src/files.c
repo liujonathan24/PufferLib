@@ -1657,10 +1657,10 @@ boolean uncomp;
 
 /* ----------  BEGIN FILE LOCKING HANDLING ----------- */
 
-static int nesting = 0;
+static __thread int nesting = 0;
 
 #if defined(NO_FILE_LINKS) || defined(USE_FCNTL) /* implies UNIX */
-static int lockfd = -1; /* for lock_file() to pass to unlock_file() */
+static __thread int lockfd = -1; /* for lock_file() to pass to unlock_file() */
 #endif
 #ifdef USE_FCNTL
 struct flock sflock; /* for unlocking, same as above */
@@ -3230,9 +3230,9 @@ boolean FDECL((*proc), (char *));
 extern struct symsetentry *symset_list;  /* options.c */
 extern const char *known_handling[];     /* drawing.c */
 extern const char *known_restrictions[]; /* drawing.c */
-static int symset_count = 0;             /* for pick-list building only */
+static __thread int symset_count = 0;             /* for pick-list building only */
 static boolean chosen_symset_start = FALSE, chosen_symset_end = FALSE;
-static int symset_which_set = 0;
+static __thread int symset_which_set = 0;
 
 STATIC_OVL
 FILE *

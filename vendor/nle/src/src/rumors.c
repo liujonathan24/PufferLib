@@ -53,7 +53,7 @@ static unsigned long true_rumor_start, false_rumor_start;
 /* rumor end offsets are signed because they're compared with [dlb_]ftell() */
 static long true_rumor_end, false_rumor_end;
 /* oracles are handled differently from rumors... */
-static int oracle_flg = 0; /* -1=>don't use, 0=>need init, 1=>init done */
+static __thread int oracle_flg = 0; /* -1=>don't use, 0=>need init, 1=>init done */
 static unsigned oracle_cnt = 0;
 static __thread unsigned long *oracle_loc = 0;
 

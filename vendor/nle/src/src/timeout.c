@@ -1695,7 +1695,7 @@ STATIC_DCL int FDECL(maybe_write_timer, (int, int, BOOLEAN_P));
 
 /* ordered timer list */
 static timer_element *timer_base; /* "active" */
-static unsigned long timer_id = 1;
+static __thread unsigned long timer_id = 1;
 
 /* If defined, then include names when printing out the timer queue */
 #define VERBOSE_TIMER

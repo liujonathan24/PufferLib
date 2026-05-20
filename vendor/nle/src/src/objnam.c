@@ -80,7 +80,7 @@ register const char *pref;
 
 /* manage a pool of BUFSZ buffers, so callers don't have to */
 static char NEARDATA obufs[NUMOBUF][BUFSZ];
-static int obufidx = 0;
+static __thread int obufidx = 0;
 
 STATIC_OVL char *
 nextobuf()
@@ -238,7 +238,7 @@ struct obj *obj;
 /* used by distant_name() to pass extra information to xname_flags();
    it would be much cleaner if this were a parameter, but that would
    require all of the xname() and doname() calls to be modified */
-static int distantname = 0;
+static __thread int distantname = 0;
 
 /* Give the name of an object seen at a distance.  Unlike xname/doname,
  * we don't want to set dknown if it's not set already.

@@ -542,7 +542,7 @@ static const menu_cmd_t default_menu_cmd_info[] = {
 #define MAX_MENU_MAPPED_CMDS 32 /* some number */
 char mapped_menu_cmds[MAX_MENU_MAPPED_CMDS + 1]; /* exported */
 static char mapped_menu_op[MAX_MENU_MAPPED_CMDS + 1];
-static short n_menu_mapped = 0;
+static __thread short n_menu_mapped = 0;
 
 static boolean initial, from_file;
 

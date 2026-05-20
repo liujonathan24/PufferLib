@@ -2106,7 +2106,7 @@ int dropflag; /* 0==don't drop, 1==drop all, 2==drop weapon */
         clear_bypasses(); /* reset upon final exit */
 }
 
-static int mkot_trap_warn_count = 0;
+static __thread int mkot_trap_warn_count = 0;
 
 STATIC_OVL int
 count_surround_traps(x, y)

@@ -2950,8 +2950,8 @@ int min_range, max_range;
     return TRUE;
 }
 
-static int polearm_range_min = -1;
-static int polearm_range_max = -1;
+static __thread int polearm_range_min = -1;
+static __thread int polearm_range_max = -1;
 
 STATIC_OVL boolean
 get_valid_polearm_position(x, y)

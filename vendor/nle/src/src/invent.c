@@ -40,7 +40,7 @@ STATIC_DCL void FDECL(menu_identify, (int));
 STATIC_DCL boolean FDECL(tool_in_use, (struct obj *));
 STATIC_DCL char FDECL(obj_to_let, (struct obj *));
 
-static int lastinvnr = 51; /* 0 ... 51 (never saved&restored) */
+static __thread int lastinvnr = 51; /* 0 ... 51 (never saved&restored) */
 
 /* wizards can wish for venom, which will become an invisible inventory
  * item without this.  putting it in inv_order would mean venom would

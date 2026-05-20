@@ -13,8 +13,8 @@
  */
 
 static NhRegion **regions;
-static int n_regions = 0;
-static int max_regions = 0;
+static __thread int n_regions = 0;
+static __thread int max_regions = 0;
 
 #define NO_CALLBACK (-1)
 

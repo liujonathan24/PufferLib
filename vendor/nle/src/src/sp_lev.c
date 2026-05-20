@@ -203,12 +203,12 @@ char *lev_message = 0;
 lev_region *lregions = 0;
 int num_lregions = 0;
 
-static boolean splev_init_present = FALSE;
-static boolean icedpools = FALSE;
+static __thread boolean splev_init_present = FALSE;
+static __thread boolean icedpools = FALSE;
 static int mines_prize_count = 0, soko_prize_count = 0; /* achievements */
 
 static struct obj *container_obj[MAX_CONTAINMENT];
-static int container_idx = 0;
+static __thread int container_idx = 0;
 static struct monst *invent_carrying_monster = NULL;
 
 #define SPLEV_STACK_RESERVE 128

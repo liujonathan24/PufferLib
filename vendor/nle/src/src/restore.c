@@ -73,7 +73,7 @@ struct bucket {
 STATIC_DCL void NDECL(clear_id_mapping);
 STATIC_DCL void FDECL(add_id_mapping, (unsigned, unsigned));
 
-static int n_ids_mapped = 0;
+static __thread int n_ids_mapped = 0;
 static __thread struct bucket *id_map = 0;
 
 #ifdef AMII_GRAPHICS

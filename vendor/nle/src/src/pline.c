@@ -520,7 +520,7 @@ VA_DECL(const char *, s)
 }
 
 #if defined(MSGHANDLER) && (defined(POSIX_TYPES) || defined(__GNUC__))
-static boolean use_pline_handler = TRUE;
+static __thread boolean use_pline_handler = TRUE;
 
 static void
 execplinehandler(line)

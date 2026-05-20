@@ -3005,7 +3005,7 @@ static char sell_response = 'a';
 static int sell_how = SELL_NORMAL;
 /* can't just use sell_response='y' for auto_credit because the 'a' response
    shouldn't carry over from ordinary selling to credit selling */
-static boolean auto_credit = FALSE;
+static __thread boolean auto_credit = FALSE;
 
 void
 sellobj_state(deliberate)

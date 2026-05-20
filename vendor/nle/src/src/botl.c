@@ -549,7 +549,7 @@ struct istat_s blstats[2][MAXBLSTATS];
 static boolean blinit = FALSE, update_all = FALSE;
 static boolean valset[MAXBLSTATS];
 #ifdef STATUS_HILITES
-static long bl_hilite_moves = 0L;
+static __thread long bl_hilite_moves = 0L;
 #endif
 
 /* we don't put this next declaration in #ifdef STATUS_HILITES.
@@ -560,7 +560,7 @@ static long bl_hilite_moves = 0L;
  * without STATUS_HILITES.
  */
 static unsigned long cond_hilites[BL_ATTCLR_MAX];
-static int now_or_before_idx = 0; /* 0..1 for array[2][] first index */
+static __thread int now_or_before_idx = 0; /* 0..1 for array[2][] first index */
 
 STATIC_OVL void
 bot_via_windowport()
@@ -2645,7 +2645,7 @@ struct _status_hilite_line_str {
 };
 
 static __thread struct _status_hilite_line_str *status_hilite_str = 0;
-static int status_hilite_str_id = 0;
+static __thread int status_hilite_str_id = 0;
 
 STATIC_OVL void
 status_hilite_linestr_add(fld, hl, mask, str)

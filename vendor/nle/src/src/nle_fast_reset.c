@@ -60,7 +60,7 @@ extern char  *nle_arena_base;
 extern size_t nle_arena_used;
 extern size_t nle_arena_cap;
 #else
-static char  *nle_arena_base = NULL;
+static __thread char  *nle_arena_base = NULL;
 static size_t nle_arena_used = 0;
 static size_t nle_arena_cap  = 0;
 #endif

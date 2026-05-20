@@ -1614,7 +1614,7 @@ doterrain(VOID_ARGS)
 
 /* -enlightenment and conduct- */
 static winid en_win = WIN_ERR;
-static boolean en_via_menu = FALSE;
+static __thread boolean en_via_menu = FALSE;
 static const char You_[] = "You ", are[] = "are ", were[] = "were ",
                   have[] = "have ", had[] = "had ", can[] = "can ",
                   could[] = "could ";

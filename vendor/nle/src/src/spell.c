@@ -1438,7 +1438,7 @@ static const char *spl_sortchoices[NUM_SPELL_SORTBY] = {
     /* a menu choice rather than a sort choice */
     "reassign casting letters to retain current order",
 };
-static int spl_sortmode = 0;   /* index into spl_sortchoices[] */
+static __thread int spl_sortmode = 0;   /* index into spl_sortchoices[] */
 static __thread int *spl_orderindx = 0; /* array of spl_book[] indices */
 
 /* qsort callback routine */
