@@ -220,7 +220,8 @@ E NEARDATA boolean mrg_to_wielded;
 E NEARDATA boolean defer_see_monsters;
 
 E NEARDATA boolean in_steed_dismounting;
-E NEARDATA boolean has_strong_rngseed;
+/* `has_strong_rngseed` migrated into nle_ctx_t (refactor stage 3a, NLE
+ * subsystem). Callers now use current_nle_ctx->has_strong_rngseed. */
 
 E const int shield_static[];
 

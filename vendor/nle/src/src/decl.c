@@ -120,7 +120,7 @@ NEARDATA boolean mrg_to_wielded = FALSE;
 /* weapon picked is merged with wielded one */
 
 NEARDATA boolean in_steed_dismounting = FALSE;
-NEARDATA boolean has_strong_rngseed = FALSE;
+/* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */
 
 NEARDATA coord bhitpos = DUMMY;
 NEARDATA coord doors[DOORMAX] = { DUMMY };

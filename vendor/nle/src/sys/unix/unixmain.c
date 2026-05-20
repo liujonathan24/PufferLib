@@ -7,6 +7,7 @@
 
 #include "hack.h"
 #include "dlb.h"
+#include "nle.h" /* current_nle_ctx for migrated has_strong_rngseed */
 
 #include <ctype.h>
 #include <sys/stat.h>
@@ -790,7 +791,7 @@ sys_random_seed()
     fptr = fopen(DEV_RANDOM, "r");
     if (fptr) {
         fread(&seed, sizeof (long), 1, fptr);
-        has_strong_rngseed = TRUE;  /* decl.c */
+        current_nle_ctx->has_strong_rngseed = TRUE;  /* was decl.c */
         no_seed = FALSE;
         (void) fclose(fptr);
     } else {

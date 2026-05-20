@@ -911,7 +911,7 @@ int FDECL((*fn), (int));
 {
    /* only reseed if we are certain that the seed generation is unguessable
     * by the players. */
-    if (has_strong_rngseed)
+    if (current_nle_ctx->has_strong_rngseed)
         init_random(fn);
 }
 

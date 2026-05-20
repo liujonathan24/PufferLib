@@ -433,7 +433,7 @@ init_random(int FDECL((*fn), (int) ))
     nle_seeds_init_t *si = current_nle_ctx->seeds_init;
     if (si) {
         set_random(si->seeds[whichrng(fn)], fn);
-        has_strong_rngseed = si->reseed;
+        current_nle_ctx->has_strong_rngseed = si->reseed;
         return;
     }
 #endif
@@ -555,7 +555,7 @@ nle_set_seed(nle_ctx_t *nle, unsigned long core, unsigned long disp,
     set_random(disp, rn2_on_display_rng);
 
     /* Determines logic in reseed_random() in hacklib.c. */
-    has_strong_rngseed = reseed;
+    current_nle_ctx->has_strong_rngseed = reseed;
 };
 
 /* nle_seeds[] moved into nle_ctx_t (refactor stage 2). Below uses
@@ -567,7 +567,7 @@ nle_get_seed(nle_ctx_t *nle, unsigned long *core, unsigned long *disp,
 {
     *core = current_nle_ctx->seeds[0];
     *disp = current_nle_ctx->seeds[1];
-    *reseed = has_strong_rngseed;
+    *reseed = current_nle_ctx->has_strong_rngseed;
 }
 #endif
 
