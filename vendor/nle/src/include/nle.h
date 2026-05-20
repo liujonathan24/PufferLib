@@ -34,11 +34,15 @@ typedef struct nle_globals {
     boolean done;
     nle_obs *observation;
 
-    /* nle_state refactor — RNG subsystem (first migration from rnd.c).
-     * Storage was `static struct rnglist_t rnglist[2]` in rnd.c.
-     * Accessed via nle_rng_state(idx) / nle_rng_init(idx) helpers. */
+    /* nle_state refactor — RNG subsystem (stage 1, was static rnglist
+     * in rnd.c). Accessed via nle_rng_state(idx) / nle_rng_init_flag(idx). */
     isaac64_ctx rng_state[2];
     int rng_init[2]; /* boolean flag per rng; 0 = uninitialized */
+
+    /* nle_state refactor — NLE wrapper layer (stage 2). Moved out of
+     * file-scope statics in nle.c (`settings`, `nle_seeds_init`). */
+    nle_settings        settings;
+    nle_seeds_init_t   *seeds_init;
 } nle_ctx_t;
 
 /*

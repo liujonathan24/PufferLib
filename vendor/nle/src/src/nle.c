@@ -162,7 +162,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     return nle;
 }
 
-nle_settings settings;
+/* `settings` moved into nle_ctx_t (refactor stage 2). Below uses
+ * `current_nle_ctx->settings` since mainloop and friends always run
+ * with current_nle_ctx anchored to the active env. */
 
 /* TODO: Consider copying the relevant parts of main() in unixmain.c. */
 void
@@ -181,32 +183,33 @@ mainloop(fcontext_transfer_t ctx_transfer)
                                 stack->ssize);
 #endif
 
-    int len = strnlen(settings.hackdir, sizeof(settings.hackdir));
+    nle_settings *s = &current_nle_ctx->settings;
+    int len = strnlen(s->hackdir, sizeof(s->hackdir));
 
-    if (len >= sizeof(settings.hackdir) - 1) {
+    if (len >= sizeof(s->hackdir) - 1) {
         error("HACKDIR too long");
         return;
     }
-    if (settings.hackdir[len - 1] != '/') {
-        settings.hackdir[len] = '/';
-        settings.hackdir[len + 1] = '\0';
+    if (s->hackdir[len - 1] != '/') {
+        s->hackdir[len] = '/';
+        s->hackdir[len + 1] = '\0';
     } else {
-        settings.hackdir[len] = '\0';
+        s->hackdir[len] = '\0';
     }
 
-    char *scoreprefix = (settings.scoreprefix[0] != '\0')
-                            ? settings.scoreprefix
-                            : settings.hackdir;
-    fqn_prefix[SYSCONFPREFIX] = settings.hackdir;
-    fqn_prefix[CONFIGPREFIX] = settings.hackdir;
-    fqn_prefix[HACKPREFIX] = settings.hackdir;
-    fqn_prefix[SAVEPREFIX] = settings.hackdir;
-    fqn_prefix[LEVELPREFIX] = settings.hackdir;
-    fqn_prefix[BONESPREFIX] = settings.hackdir;
+    char *scoreprefix = (s->scoreprefix[0] != '\0')
+                            ? s->scoreprefix
+                            : s->hackdir;
+    fqn_prefix[SYSCONFPREFIX] = s->hackdir;
+    fqn_prefix[CONFIGPREFIX] = s->hackdir;
+    fqn_prefix[HACKPREFIX] = s->hackdir;
+    fqn_prefix[SAVEPREFIX] = s->hackdir;
+    fqn_prefix[LEVELPREFIX] = s->hackdir;
+    fqn_prefix[BONESPREFIX] = s->hackdir;
     fqn_prefix[SCOREPREFIX] = scoreprefix;
-    fqn_prefix[LOCKPREFIX] = settings.hackdir;
-    fqn_prefix[TROUBLEPREFIX] = settings.hackdir;
-    fqn_prefix[DATAPREFIX] = settings.hackdir;
+    fqn_prefix[LOCKPREFIX] = s->hackdir;
+    fqn_prefix[TROUBLEPREFIX] = s->hackdir;
+    fqn_prefix[DATAPREFIX] = s->hackdir;
 
     char *argv[1] = { "nethack" };
 
@@ -373,16 +376,17 @@ nle_done(int how)
 char *
 nle_ttyrecname()
 {
-    return settings.ttyrecname;
+    return current_nle_ctx->settings.ttyrecname;
 }
 
 int
 nle_spawn_monsters()
 {
-    return settings.spawn_monsters;
+    return current_nle_ctx->settings.spawn_monsters;
 }
 
-nle_seeds_init_t *nle_seeds_init;
+/* `nle_seeds_init` moved into nle_ctx_t (refactor stage 2). Below uses
+ * `current_nle_ctx->seeds_init`. */
 
 /* See rng.c. */
 extern int FDECL(whichrng, (int FDECL((*fn), (int) )));
@@ -401,7 +405,7 @@ nle_getenv(const char *name)
         return "ansi";
     }
     if (strcmp(name, "NETHACKOPTIONS") == 0) {
-        return settings.options;
+        return current_nle_ctx->settings.options;
     }
     /* Don't return anything for "SHOPTYPE" or "SPLEVTYPE". */
     return (char *) 0;
@@ -410,11 +414,12 @@ nle_getenv(const char *name)
 FILE *
 nle_fopen_wizkit_file()
 {
-    size_t len = strnlen(settings.wizkit, sizeof(settings.wizkit));
+    nle_settings *s = &current_nle_ctx->settings;
+    size_t len = strnlen(s->wizkit, sizeof(s->wizkit));
     if (!len) {
         return (FILE *) 0;
     }
-    return fmemopen(settings.wizkit, len, "r");
+    return fmemopen(s->wizkit, len, "r");
 }
 
 /*
@@ -425,9 +430,10 @@ void
 init_random(int FDECL((*fn), (int) ))
 {
 #ifdef NLE_ALLOW_SEEDING
-    if (nle_seeds_init) {
-        set_random(nle_seeds_init->seeds[whichrng(fn)], fn);
-        has_strong_rngseed = nle_seeds_init->reseed;
+    nle_seeds_init_t *si = current_nle_ctx->seeds_init;
+    if (si) {
+        set_random(si->seeds[whichrng(fn)], fn);
+        has_strong_rngseed = si->reseed;
         return;
     }
 #endif
@@ -442,10 +448,9 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
     CO = NLE_TERM_CO;
     LI = NLE_TERM_LI;
 
-    settings = *settings_p;
-
     nle_ctx_t *nle = init_nle(ttyrec, obs);
-    nle_seeds_init = seed_init;
+    nle->settings = *settings_p;
+    nle->seeds_init = seed_init;
 
     nle->stack = create_fcontext_stack(STACK_SIZE);
     nle->generatorcontext =
@@ -456,7 +461,7 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
     nle->generatorcontext = t.ctx;
     nle->done = (t.data == NULL);
     obs->done = nle->done;
-    nle_seeds_init =
+    nle->seeds_init =
         NULL; /* Don't set to *these* seeds on subsequent reseeds, if any. */
 
     if (nle->ttyrec) {
