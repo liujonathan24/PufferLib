@@ -504,6 +504,45 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
     return nle;
 }
 
+/* Stage 6 dungeon topology save bundle. Holds copies of all the
+ * dungeon-graph globals from decl.c so each env has its own. Allocated
+ * lazily in nle_swap_in on first call (after init_dungeon has populated
+ * the globals). */
+struct nle_dungeon_save {
+    struct dgn_topology topology;
+    dungeon             dungeons[MAXDUNGEON];
+    s_level            *sp_levchn;
+    stairway            upstair, dnstair, upladder, dnladder, sstairs;
+    dest_area           updest, dndest;
+    coord               inv_pos;
+};
+
+static void
+nle_dungeon_save_to(struct nle_dungeon_save *s)
+{
+    s->topology = dungeon_topology;
+    memcpy(s->dungeons, dungeons, sizeof(s->dungeons));
+    s->sp_levchn = sp_levchn;
+    s->upstair = upstair; s->dnstair = dnstair;
+    s->upladder = upladder; s->dnladder = dnladder;
+    s->sstairs = sstairs;
+    s->updest = updest; s->dndest = dndest;
+    s->inv_pos = inv_pos;
+}
+
+static void
+nle_dungeon_load_from(const struct nle_dungeon_save *s)
+{
+    dungeon_topology = s->topology;
+    memcpy(dungeons, s->dungeons, sizeof(s->dungeons));
+    sp_levchn = s->sp_levchn;
+    upstair = s->upstair; dnstair = s->dnstair;
+    upladder = s->upladder; dnladder = s->dnladder;
+    sstairs = s->sstairs;
+    updest = s->updest; dndest = s->dndest;
+    inv_pos = s->inv_pos;
+}
+
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
  * from nle_ctx_t before resuming NetHack, then back out after.
  *
@@ -529,6 +568,8 @@ nle_swap_in(nle_ctx_t *nle)
     if (nle->sysflags_ptr)
         memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
 #endif
+    if (nle->dungeon_save)
+        nle_dungeon_load_from((struct nle_dungeon_save *) nle->dungeon_save);
 }
 
 static void
@@ -542,6 +583,10 @@ nle_swap_out(nle_ctx_t *nle)
     if (nle->sysflags_ptr)
         memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
 #endif
+    if (!nle->dungeon_save)
+        nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
+    if (nle->dungeon_save)
+        nle_dungeon_save_to((struct nle_dungeon_save *) nle->dungeon_save);
 }
 
 nle_ctx_t *

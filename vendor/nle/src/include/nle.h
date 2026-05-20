@@ -117,6 +117,10 @@ typedef struct nle_globals {
     struct flag                  *flags_ptr;  /* was 'struct flag flags' */
     struct instance_flags        *iflags_ptr; /* was 'struct instance_flags iflags' */
     struct sysflag               *sysflags_ptr; /* was 'struct sysflag sysflags' */
+    /* stage 6 — dungeon topology (multiple structs/arrays, context-switched
+     * around each nle_step). The exact layout is internal to nle.c which has
+     * the full type definitions. Opaque blob here. */
+    void                         *dungeon_save;
 } nle_ctx_t;
 
 /*
