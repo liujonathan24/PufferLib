@@ -80,19 +80,30 @@
 #ifdef _DCC
 #define NEARDATA __near /* put some data close */
 #else
-/* Tried promoting NEARDATA to __thread to TLS the residual swap globals
- * (flags/iflags/sysflags, dlevel_t level, level_info/rooms/doors/etc.,
- * tc_gbl_data, killer, youmonst, body-slot pointers, …) so that the
- * existing nle_dungeon_save swap becomes per-thread. Bailed out: too many
- * static-init tables (options.c boolopt[]/compopt[] with hundreds of
- * `&flags.X` / `&iflags.X` / `&sysflags.X` entries) need a rewrite to
- * use offsets, plus options.c init plumbing, plus worn[] in worn.c, plus
- * level_detects[] / level_map[]. Option B path (heap-pointer migration of
- * each remaining swap entry to nle_ctx_t) avoids all of these because
- * the source still does `&flags.X` at static-init time — flags is just
- * a regular global. Leaving NEARDATA as empty; per-thread isolation
- * routed entirely through current_nle_ctx (TLS in nle.h). */
-#define NEARDATA
+/* Stage 5 / 7 / 8'tc / 9'C: promoted to __thread. The residual swap
+ * globals — flags/iflags/sysflags, dlevel_t level, level_info[], rooms[]
+ * doors[] subrooms upstairs_room/dnstairs_room/sstairs_room, ftrap,
+ * tc_gbl_data, killer, youmonst, urealtime, body-slot pointers,
+ * spl_book[], m_shot, mvitals[], quest_status, etc. — now each have a
+ * per-thread instance. With current_nle_ctx also __thread (nle.h), the
+ * existing nle_dungeon_save swap copies per-env state into the running
+ * thread's private globals; no cross-thread races.
+ *
+ * Static-init breakage was fixed by:
+ *   options.c boolopt[]: addresses set to (boolean *)0 in static init,
+ *     patched in initoptions_init() by string-name lookup that mirrors
+ *     the table's #ifdef structure (so only live entries are patched).
+ *   worn.c worn[]: changed from const struct to non-const, addresses
+ *     replaced with NULL, populated by worn_init() called from init_nle.
+ *   detect.c level_detects[] / dungeon.c level_map[]: rewritten earlier
+ *     (stage 6') to use index + accessor functions.
+ *   decl.c subrooms = &rooms[N]: still constant — rooms is per-thread
+ *     and the offset is a compile-time integer in NetHack's address
+ *     arithmetic. Verify if linker objects.
+ *
+ * macOS caveat: __thread + dynamic library prevents dlclose(). Linux
+ * (this build) is fine. Gate with #ifndef __APPLE__ when porting. */
+#define NEARDATA __thread
 #endif
 #endif
 #ifdef AMIGA

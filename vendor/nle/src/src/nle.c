@@ -189,6 +189,14 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->nle_moves = 1L;
     nle->nle_monstermoves = 1L;
 
+    /* Stage 5 Option-A: worn[] in worn.c can no longer have
+     * `&uarm` etc. as compile-time initializers under __thread. Patch the
+     * table once at startup (idempotent across env inits, since uarm/etc.
+     * have stable per-thread addresses). Same for decl.c subrooms. */
+    extern void subrooms_init(void);
+    worn_init();
+    subrooms_init();
+
     /* Stage 6' — dungeon topology heap allocations. All zero-init via calloc;
      * matches the original {0,...} static initializers in decl.c. */
     nle->s6_topology_p = calloc(1, sizeof(struct dgn_topology));

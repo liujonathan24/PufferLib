@@ -137,32 +137,58 @@ int main(int argc, char** argv) {
 
     Env* envs = (Env*) calloc(num_envs, sizeof(Env));
 
-    double t_init0 = now_sec();
+    /* Per-thread NetHack globals (flags, level, dungeon, Cmd, ...) are
+     * __thread. Each env's nle_start must run on the SAME thread that
+     * will subsequently call nle_step on it, otherwise the worker thread
+     * sees zero-initialized TLS for the half of state that isn't covered
+     * by the swap (Cmd, dlb pointers, ttyrec writers, etc.) — crash in
+     * rhack on the first NULL function pointer.
+     *
+     * So: init runs INSIDE the parallel region. Each OMP thread inits
+     * AND steps its own env. */
+    omp_set_num_threads(num_threads);
+    printf("running OMP with %d threads on %d envs, %ld steps/env\n",
+           num_threads, num_envs, steps_per_env);
     for (int i = 0; i < num_envs; i++) {
         envs[i].rng = 0xC0FFEEu + (unsigned)i * 0x9E3779B1u;
-        bind_obs(&envs[i]);
         if (make_vardir(nhdir, envs[i].vardir, sizeof(envs[i].vardir))) {
             fprintf(stderr, "vardir setup failed for env %d\n", i); return 1;
         }
+    }
+
+    double t_init0 = now_sec();
+    int init_failed = 0;
+    /* nle_start path touches process-wide state (dlb_init opens a shared
+     * .dlb file). Serialize init across threads via #pragma omp critical
+     * to avoid clobbering — but the per-thread TLS NetHack globals get
+     * populated on each thread because the call still RUNS on each
+     * thread, just one at a time. */
+    #pragma omp parallel for schedule(static) reduction(|:init_failed)
+    for (int i = 0; i < num_envs; i++) {
+        bind_obs(&envs[i]);
         memset(&envs[i].settings, 0, sizeof(envs[i].settings));
         snprintf(envs[i].settings.hackdir, sizeof(envs[i].settings.hackdir), "%s", envs[i].vardir);
         snprintf(envs[i].settings.scoreprefix, sizeof(envs[i].settings.scoreprefix), "%s/", envs[i].vardir);
         snprintf(envs[i].settings.options, sizeof(envs[i].settings.options), "%s", DEFAULT_OPTIONS);
         envs[i].settings.spawn_monsters = 1;
-        envs[i].ctx = fn_start(&envs[i].obs, NULL, NULL, &envs[i].settings);
-        if (!envs[i].ctx) { fprintf(stderr, "env %d start failed\n", i); return 1; }
-        drain_prompts(&envs[i], fn_step);
+        #pragma omp critical(nle_init)
+        {
+            envs[i].ctx = fn_start(&envs[i].obs, NULL, NULL, &envs[i].settings);
+            if (envs[i].ctx) {
+                if (drain_prompts(&envs[i], fn_step) < 0) { init_failed |= 1; }
+            } else {
+                init_failed |= 1;
+            }
+        }
     }
+    if (init_failed) { fprintf(stderr, "init failed in OMP region\n"); return 1; }
     double init_dt = now_sec() - t_init0;
-    printf("init+drain: %d envs in %.3fs (%.1f ms/env)\n",
+    printf("init+drain (parallel): %d envs in %.3fs (%.1f ms/env)\n",
            num_envs, init_dt, init_dt * 1000.0 / num_envs);
 
-    /* Bench: each thread owns one env (or a chunk if envs > threads).
-     * Inner loop is steps_per_env iterations of nle_step. */
-    omp_set_num_threads(num_threads);
-    printf("running OMP with %d threads on %d envs, %ld steps/env\n",
-           num_threads, num_envs, steps_per_env);
-
+    /* Debug knob: NLE_SERIALIZE_STEP=1 wraps step in critical to isolate
+     * whether stepping concurrency is the issue (vs some init residue). */
+    int serialize_step = getenv("NLE_SERIALIZE_STEP") && atoi(getenv("NLE_SERIALIZE_STEP"));
     double t0 = now_sec();
     #pragma omp parallel for schedule(static)
     for (int i = 0; i < num_envs; i++) {
@@ -173,7 +199,14 @@ int main(int argc, char** argv) {
             r ^= r << 13; r ^= r >> 17; r ^= r << 5;
             e->rng = r;
             e->obs.action = '.';   /* wait — stays alive longest */
-            e->ctx = fn_step(e->ctx, &e->obs);
+            if (serialize_step) {
+                #pragma omp critical(nle_step_dbg)
+                {
+                    e->ctx = fn_step(e->ctx, &e->obs);
+                }
+            } else {
+                e->ctx = fn_step(e->ctx, &e->obs);
+            }
             e->steps_taken++;
             if (e->obs.done) e->done = 1;
         }

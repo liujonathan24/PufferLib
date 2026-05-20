@@ -63,7 +63,8 @@ const int nul_glyph = cmap_to_glyph(S_stone);
 
 namespace nethack_rl
 {
-std::deque<std::string> win_proc_calls;
+/* thread_local: each OMP thread tracks its own win-procedure stack. */
+thread_local std::deque<std::string> win_proc_calls;
 bool in_yn_function = false;
 bool in_getlin = false;
 
@@ -190,7 +191,11 @@ class NetHackRL
         std::string object_class_name;
     };
 
-    static std::unique_ptr<NetHackRL> instance;
+    /* thread_local so each OMP thread has its own NetHackRL singleton.
+     * Each thread's env runs through its own instance; no cross-thread
+     * data sharing in this layer. Parent: per-thread NetHack state via
+     * __thread NEARDATA (config1.h) and __thread current_nle_ctx (nle.h). */
+    static thread_local std::unique_ptr<NetHackRL> instance;
 
     // TODO: Don't heap allocate this stuff.
     std::vector<std::unique_ptr<rl_window> > windows_;
@@ -239,7 +244,7 @@ class NetHackRL
     void destroy_nhwindow_method(winid wid);
 };
 
-std::unique_ptr<NetHackRL> NetHackRL::instance =
+thread_local std::unique_ptr<NetHackRL> NetHackRL::instance =
     std::unique_ptr<NetHackRL>(nullptr);
 
 NetHackRL::NetHackRL(int &argc, char **argv) : glyphs_(), blstats_{}

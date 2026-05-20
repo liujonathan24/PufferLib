@@ -11,27 +11,55 @@ STATIC_DCL void FDECL(m_dowear_type,
                       (struct monst *, long, BOOLEAN_P, BOOLEAN_P));
 STATIC_DCL int FDECL(extra_pref, (struct monst *, struct obj *));
 
-const struct worn {
+/* Stage 5 Option-A: under __thread NEARDATA, &uarm etc. are not
+ * compile-time constants. w_obj is patched at runtime by worn_init().
+ * Marked non-const so worn_init() can populate it. */
+struct worn {
     long w_mask;
     struct obj **w_obj;
-} worn[] = { { W_ARM, &uarm },
-             { W_ARMC, &uarmc },
-             { W_ARMH, &uarmh },
-             { W_ARMS, &uarms },
-             { W_ARMG, &uarmg },
-             { W_ARMF, &uarmf },
-             { W_ARMU, &uarmu },
-             { W_RINGL, &uleft },
-             { W_RINGR, &uright },
-             { W_WEP, &uwep },
-             { W_SWAPWEP, &uswapwep },
-             { W_QUIVER, &uquiver },
-             { W_AMUL, &uamul },
-             { W_TOOL, &ublindf },
-             { W_BALL, &uball },
-             { W_CHAIN, &uchain },
+} worn[] = { { W_ARM, (struct obj **) 0 },
+             { W_ARMC, (struct obj **) 0 },
+             { W_ARMH, (struct obj **) 0 },
+             { W_ARMS, (struct obj **) 0 },
+             { W_ARMG, (struct obj **) 0 },
+             { W_ARMF, (struct obj **) 0 },
+             { W_ARMU, (struct obj **) 0 },
+             { W_RINGL, (struct obj **) 0 },
+             { W_RINGR, (struct obj **) 0 },
+             { W_WEP, (struct obj **) 0 },
+             { W_SWAPWEP, (struct obj **) 0 },
+             { W_QUIVER, (struct obj **) 0 },
+             { W_AMUL, (struct obj **) 0 },
+             { W_TOOL, (struct obj **) 0 },
+             { W_BALL, (struct obj **) 0 },
+             { W_CHAIN, (struct obj **) 0 },
              { 0, 0 }
 };
+
+/* Initialize worn[] w_obj pointers at runtime (called once early during
+ * init, before any setworn / setnotworn). Idempotent (re-running is a
+ * no-op since the addresses are stable per-thread once set). */
+void
+worn_init(void)
+{
+    int i = 0;
+    worn[i++].w_obj = &uarm;
+    worn[i++].w_obj = &uarmc;
+    worn[i++].w_obj = &uarmh;
+    worn[i++].w_obj = &uarms;
+    worn[i++].w_obj = &uarmg;
+    worn[i++].w_obj = &uarmf;
+    worn[i++].w_obj = &uarmu;
+    worn[i++].w_obj = &uleft;
+    worn[i++].w_obj = &uright;
+    worn[i++].w_obj = &uwep;
+    worn[i++].w_obj = &uswapwep;
+    worn[i++].w_obj = &uquiver;
+    worn[i++].w_obj = &uamul;
+    worn[i++].w_obj = &ublindf;
+    worn[i++].w_obj = &uball;
+    worn[i++].w_obj = &uchain;
+}
 
 /* This only allows for one blocking item per property */
 #define w_blocks(o, m) \

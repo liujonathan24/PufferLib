@@ -106,11 +106,20 @@ NEARDATA coord bhitpos = DUMMY;
 NEARDATA coord doors[DOORMAX] = { DUMMY };
 
 NEARDATA struct mkroom rooms[(MAXNROFROOMS + 1) * 2] = { DUMMY };
-NEARDATA struct mkroom *subrooms = &rooms[MAXNROFROOMS + 1];
+/* `&rooms[MAXNROFROOMS+1]` is no longer constant under __thread. Init
+ * deferred to subrooms_init() (called from init_nle). */
+NEARDATA struct mkroom *subrooms;
 NEARDATA struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
 
 NEARDATA dlevel_t level; /* level map */
 NEARDATA struct trap *ftrap = (struct trap *) 0;
+
+/* Stage 5 Option-A: patch subrooms once at startup. Called from init_nle. */
+void
+subrooms_init(void)
+{
+    subrooms = &rooms[MAXNROFROOMS + 1];
+}
 NEARDATA struct monst youmonst = DUMMY;
 NEARDATA struct context_info context = DUMMY;
 NEARDATA struct flag flags = DUMMY;
