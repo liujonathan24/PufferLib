@@ -16,6 +16,13 @@
 
 typedef struct TMT TMT;
 
+/* Forward declarations for migrated NetHack structs (stage 4 — player).
+ * Real definitions in include/you.h, which is too heavy to pull into nle.h
+ * (would force monst.h, prop.h, skills.h cascade into util binaries).
+ * Use heap pointers in nle_ctx_t and let nle.c (which includes hack.h)
+ * allocate them. */
+struct you;
+
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
  * a per-instance copy. The original macro storm in decl.h is replaced
@@ -100,6 +107,8 @@ typedef struct nle_globals {
     /* bhitpos (coord) defer to later — needs coord.h include in nle.h */
     /* stage 3j — turn loop state (big migration, ~40 callsites) */
     int                 multi;              /* was decl.c (multi-step action counter) */
+    /* stage 4 — player state (the big one — ~94 files, hundreds of refs) */
+    struct you         *u_ptr;              /* was 'struct you u' in decl.c */
 } nle_ctx_t;
 
 /*

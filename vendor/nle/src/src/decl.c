@@ -124,7 +124,8 @@ NEARDATA struct flag flags = DUMMY;
 NEARDATA struct sysflag sysflags = DUMMY;
 #endif
 NEARDATA struct instance_flags iflags = DUMMY;
-NEARDATA struct you u = DUMMY;
+/* struct you u migrated to nle_ctx_t (stage 4). Heap-allocated in
+ * init_nle, accessed via the `u` macro in decl.h. */
 NEARDATA time_t ubirthday = DUMMY;
 NEARDATA struct u_realtime urealtime = DUMMY;
 

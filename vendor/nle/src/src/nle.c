@@ -162,6 +162,14 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* RNG state cleared by calloc; init_isaac64 will populate it via the
      * set_random() / init_random() chain during NetHack's early setup. */
 
+    /* Stage 4 player state: allocate the struct you on the heap so the
+     * `u` macro in decl.h can resolve to (*current_nle_ctx->u_ptr). */
+    nle->u_ptr = (struct you *) calloc(1, sizeof(struct you));
+    if (!nle->u_ptr) {
+        fprintf(stderr, "init_nle: failed to allocate struct you\n");
+        abort();
+    }
+
     return nle;
 }
 

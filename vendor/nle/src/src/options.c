@@ -95,7 +95,10 @@ static struct Bool_Opt {
 #else
     { "BIOS", (boolean *) 0, FALSE, SET_IN_FILE },
 #endif
-    { "blind", &u.uroleplay.blind, FALSE, DISP_IN_GAME },
+    /* Refactor stage 4: &u.X is no longer a compile-time constant since
+     * `u` is per-instance heap-allocated. Set NULL here and patch the
+     * address at runtime in initoptions_init (below). */
+    { "blind", (boolean *) 0 /* &u.uroleplay.blind */, FALSE, DISP_IN_GAME },
     { "bones", &flags.bones, TRUE, SET_IN_FILE },
 #ifdef INSURANCE
     { "checkpoint", &flags.ins_chkpt, TRUE, SET_IN_GAME },
@@ -174,7 +177,8 @@ static struct Bool_Opt {
 #else
     { "news", (boolean *) 0, FALSE, SET_IN_FILE },
 #endif
-    { "nudist", &u.uroleplay.nudist, FALSE, DISP_IN_GAME },
+    /* Refactor stage 4: see "blind" above. */
+    { "nudist", (boolean *) 0 /* &u.uroleplay.nudist */, FALSE, DISP_IN_GAME },
     { "null", &flags.null, TRUE, SET_IN_GAME },
 #if defined(SYSFLAGS) && defined(MAC)
     { "page_wait", &sysflags.page_wait, TRUE, SET_IN_GAME },
@@ -711,6 +715,17 @@ initoptions_init()
 
     /* for detection of configfile options specified multiple times */
     iflags.opt_booldup = iflags.opt_compdup = (int *) 0;
+
+    /* Refactor stage 4: patch in addresses for boolopt entries that
+     * point into u.* (now per-instance, can't be in static init). Find
+     * by name and assign the runtime address. */
+    for (i = 0; boolopt[i].name; i++) {
+        if (!boolopt[i].name) continue;
+        if (!strcmp(boolopt[i].name, "blind"))
+            boolopt[i].addr = &u.uroleplay.blind;
+        else if (!strcmp(boolopt[i].name, "nudist"))
+            boolopt[i].addr = &u.uroleplay.nudist;
+    }
 
     for (i = 0; boolopt[i].name; i++) {
         if (boolopt[i].addr)

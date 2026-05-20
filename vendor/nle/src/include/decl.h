@@ -231,7 +231,12 @@ E NEARDATA const struct obj zeroobj; /* for init; also, &zeroobj is used
 E NEARDATA const anything zeroany;   /* init'd and defined in decl.c */
 
 #include "you.h"
-E NEARDATA struct you u;
+/* Player state migrated to nle_ctx_t (stage 4 — was 'struct you u' here).
+ * Macro form keeps NetHack code using `u.field` unchanged; expansion is
+ * (*current_nle_ctx->u_ptr).field. Note: `nle.h` is included for the
+ * extern declaration of `current_nle_ctx`; this is already the case in
+ * every src/*.c via the refactor's universal include pattern. */
+#define u (*current_nle_ctx->u_ptr)
 E NEARDATA time_t ubirthday;
 E NEARDATA struct u_realtime urealtime;
 
