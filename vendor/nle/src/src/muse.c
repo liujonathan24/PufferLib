@@ -7,6 +7,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 boolean m_using = FALSE;
 
@@ -1114,7 +1115,7 @@ struct monst *mtmp;
                 m.has_offense = MUSE_WAN_DEATH;
             }
             nomore(MUSE_WAN_SLEEP);
-            if (obj->otyp == WAN_SLEEP && obj->spe > 0 && multi >= 0) {
+            if (obj->otyp == WAN_SLEEP && obj->spe > 0 && current_nle_ctx->multi >= 0) {
                 m.offensive = obj;
                 m.has_offense = MUSE_WAN_SLEEP;
             }
@@ -1173,7 +1174,7 @@ struct monst *mtmp;
         }
 #endif
         nomore(MUSE_POT_PARALYSIS);
-        if (obj->otyp == POT_PARALYSIS && multi >= 0) {
+        if (obj->otyp == POT_PARALYSIS && current_nle_ctx->multi >= 0) {
             m.offensive = obj;
             m.has_offense = MUSE_POT_PARALYSIS;
         }
@@ -1999,7 +2000,7 @@ struct monst *mtmp;
     display_nhwindow(WIN_MAP, TRUE);
     docrt();
     if (unconscious()) {
-        multi = -1;
+        current_nle_ctx->multi = -1;
         nomovemsg = "Aggravated, you are jolted into full consciousness.";
     }
     newsym(mtmp->mx, mtmp->my);

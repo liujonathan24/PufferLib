@@ -774,7 +774,7 @@ int dieroll;
                     || (hand_to_hand && obj->oartifact == ART_CLEAVER)) {
                     ; /* no special bonuses */
                 } else if (mon->mflee && Role_if(PM_ROGUE) && !Upolyd
-                           /* multi-shot throwing is too powerful here */
+                           /* current_nle_ctx->multi-shot throwing is too powerful here */
                            && hand_to_hand) {
                     You("strike %s from behind!", mon_nam(mon));
                     tmp += rnd(u.ulevel);
@@ -2725,7 +2725,7 @@ register struct monst *mon;
             break;
         if (!Upolyd)
             break; /* No extra attacks if no longer a monster */
-        if (multi < 0)
+        if (current_nle_ctx->multi < 0)
             break; /* If paralyzed while attacking, i.e. floating eye */
     }
     /* return value isn't used, but make it match hitum()'s */

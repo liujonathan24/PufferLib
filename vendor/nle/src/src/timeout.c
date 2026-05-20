@@ -124,7 +124,7 @@ stoned_dialogue()
     switch ((int) i) {
     case 5: /* slowing down */
         HFast = 0L;
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
         break;
     case 4: /* limbs stiffening */
@@ -132,7 +132,7 @@ stoned_dialogue()
            don't stop attempt to eat tin--might be lizard or acidic */
         if (!Popeye(STONED))
             stop_occupation();
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
         break;
     case 3: /* limbs turned to stone */
@@ -190,7 +190,7 @@ vomiting_dialogue()
     /*FALLTHRU*/
     case 9:
         make_confused((HConfusion & TIMEOUT) + (long) d(2, 4), FALSE);
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
         break;
     case 8:
@@ -344,7 +344,7 @@ slime_dialogue()
         HFast = 0L; /* lose intrinsic speed */
         if (!Popeye(SLIMED))
             stop_occupation();
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
         break;
     case 2L: /* skin begins to peel */
@@ -744,7 +744,7 @@ boolean wakeup_msg;
     nomul(how_long);
     current_nle_ctx->multi_reason = "sleeping";
     /* generally don't notice sounds while sleeping */
-    if (wakeup_msg && multi == how_long) {
+    if (wakeup_msg && current_nle_ctx->multi == how_long) {
         /* caller can follow with a direct call to Hear_again() if
            there's a need to override this when wakeup_msg is true */
         incr_itimeout(&HDeaf, how_long);

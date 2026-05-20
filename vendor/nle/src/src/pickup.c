@@ -500,7 +500,7 @@ int what; /* should be a long */
        and read_engr_at in addition to bypassing autopickup itself
        [probably ought to check whether hero is using a cockatrice
        corpse for a pillow here... (also at initial faint/sleep)] */
-    if (autopickup && multi < 0 && unconscious())
+    if (autopickup && current_nle_ctx->multi < 0 && unconscious())
         return 0;
 
     if (what < 0) /* pick N of something */
@@ -520,17 +520,17 @@ int what; /* should be a long */
         }
         /* no pickup if levitating & not on air or water level */
         if (!can_reach_floor(TRUE)) {
-            if ((multi && !context.run) || (autopickup && !flags.pickup)
+            if ((current_nle_ctx->multi && !context.run) || (autopickup && !flags.pickup)
                 || ((ttmp = t_at(u.ux, u.uy)) != 0
                     && (uteetering_at_seen_pit(ttmp) || uescaped_shaft(ttmp))))
                 read_engr_at(u.ux, u.uy);
             return 0;
         }
-        /* multi && !context.run means they are in the middle of some other
+        /* current_nle_ctx->multi && !context.run means they are in the middle of some other
          * action, or possibly paralyzed, sleeping, etc.... and they just
          * teleported onto the object.  They shouldn't pick it up.
          */
-        if ((multi && !context.run) || (autopickup && !flags.pickup)) {
+        if ((current_nle_ctx->multi && !context.run) || (autopickup && !flags.pickup)) {
             check_here(FALSE);
             return 0;
         }
@@ -2542,7 +2542,7 @@ boolean more_containers; /* True iff #loot multiple and this isn't last one */
             You("open %s...", the(xname(obj)));
         (void) chest_trap(obj, HAND, FALSE);
         /* even if the trap fails, you've used up this turn */
-        if (multi >= 0) { /* in case we didn't become paralyzed */
+        if (current_nle_ctx->multi >= 0) { /* in case we didn't become paralyzed */
             nomul(-1);
             current_nle_ctx->multi_reason = "opening a container";
             nomovemsg = "";
@@ -3152,7 +3152,7 @@ struct obj *box; /* or bag */
         /* we're not reaching inside but we're still handling it... */
         (void) chest_trap(box, HAND, FALSE);
         /* even if the trap fails, you've used up this turn */
-        if (multi >= 0) { /* in case we didn't become paralyzed */
+        if (current_nle_ctx->multi >= 0) { /* in case we didn't become paralyzed */
             nomul(-1);
             current_nle_ctx->multi_reason = "tipping a container";
             nomovemsg = "";

@@ -231,11 +231,20 @@ void
 close_library(lp)
 library *lp;
 {
+#ifdef NLE_USE_ARENA_FREE
+    /* When the arena allocator is active, leak the DLB resources rather
+     * than closing the FILE* and freeing arena pointers. This keeps the
+     * FILE* valid across snapshot/restore cycles: NetHack's death
+     * sequence calls dlb_cleanup, but with fast-reset we want the
+     * library to remain usable after restore. */
+    (void) lp;
+#else
     (void) fclose(lp->fdata);
     free((genericptr_t) lp->dir);
     free((genericptr_t) lp->sspace);
 
     (void) memset((char *) lp, 0, sizeof(library));
+#endif
 }
 
 /*

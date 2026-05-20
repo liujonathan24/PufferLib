@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 void
 newemin(mtmp)
@@ -244,7 +245,7 @@ register struct monst *mtmp;
         reset_faint(); /* if fainted - wake up */
     } else {
         stop_occupation();
-        if (multi > 0) {
+        if (current_nle_ctx->multi > 0) {
             nomul(0);
             unmul((char *) 0);
         }
@@ -275,7 +276,7 @@ register struct monst *mtmp;
     demand = (cash * (rnd(80) + 20 * Athome))
            / (100 * (1 + (sgn(u.ualign.type) == sgn(mtmp->data->maligntyp))));
 
-    if (!demand || multi < 0) { /* you have no gold or can't move */
+    if (!demand || current_nle_ctx->multi < 0) { /* you have no gold or can't move */
         mtmp->mpeaceful = 0;
         set_malign(mtmp);
         return 0;

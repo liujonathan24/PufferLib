@@ -1784,7 +1784,7 @@ boolean already_partly_eaten;
 /*
  * Called on "first bite" of (non-corpse) food, after touchfood() has
  * marked it 'partly eaten'.  Used for non-rotten non-tin non-corpse food.
- * Messages should use present tense since multi-turn food won't be
+ * Messages should use present tense since current_nle_ctx->multi-turn food won't be
  * finishing at the time they're issued.
  */
 STATIC_OVL void
@@ -2882,7 +2882,7 @@ int num;
             pline("You're having a hard time getting all of it down.");
             nomovemsg = "You're finally finished.";
             if (!context.victual.eating) {
-                multi = -2;
+                current_nle_ctx->multi = -2;
             } else {
                 context.victual.fullwarn = TRUE;
                 if (context.victual.canchoke && context.victual.reqtime > 1) {
@@ -2982,7 +2982,7 @@ boolean incr;
         if (is_fainted())
             newhs = FAINTED;
         if (u.uhs <= WEAK || rn2(20 - uhunger_div_by_10) >= 19) {
-            if (!is_fainted() && multi >= 0 /* %% */) {
+            if (!is_fainted() && current_nle_ctx->multi >= 0 /* %% */) {
                 int duration = 10 - uhunger_div_by_10;
 
                 /* stop what you're doing, then faint */
@@ -3210,7 +3210,7 @@ vomit() /* A good idea from David Neves */
     /* nomul()/You_can_move_again used to be unconditional, which was
        viable while eating but not for Vomiting countdown where hero might
        be immobilized for some other reason at the time vomit() is called */
-    if (multi >= -2) {
+    if (current_nle_ctx->multi >= -2) {
         nomul(-2);
         current_nle_ctx->multi_reason = "vomiting";
         nomovemsg = You_can_move_again;

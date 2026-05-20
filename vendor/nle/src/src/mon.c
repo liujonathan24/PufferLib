@@ -1585,7 +1585,7 @@ struct monst *magr, /* monster that is currently deciding where to move */
         /* no displacing grid bugs diagonally */
         && !(magr->mx != mdef->mx && magr->my != mdef->my
              && NODIAG(monsndx(pd)))
-        /* no displacing trapped monsters or multi-location longworms */
+        /* no displacing trapped monsters or current_nle_ctx->multi-location longworms */
         && !mdef->mtrapped && (!mdef->wormno || !count_wsegs(mdef))
         /* riders can move anything; others, same size or smaller only */
         && (is_rider(pa) || pa->msize >= pd->msize))

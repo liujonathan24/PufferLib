@@ -4418,7 +4418,7 @@ unsigned oid; /* book identifier */
         default:
             if (foundpassage) {
                 if (!nowin_buf) {
-                    /* outputting multi-line passage to text window */
+                    /* outputting current_nle_ctx->multi-line passage to text window */
                     putstr(tribwin, 0, line);
                     if (*line)
                         Strcpy(lastline, line);
@@ -4438,7 +4438,7 @@ unsigned oid; /* book identifier */
         grasped = *nowin_buf ? TRUE : FALSE;
     } else {
         if (tribwin != WIN_ERR) { /* implies 'foundpassage' */
-            /* multi-line window, normal case;
+            /* current_nle_ctx->multi-line window, normal case;
                if lastline is empty, there were no non-empty lines between
                "%passage n" and "%e passage" so we leave 'grasped' False */
             if (*lastline) {
@@ -4455,7 +4455,7 @@ unsigned oid; /* book identifier */
             destroy_nhwindow(tribwin);
         }
         if (!grasped)
-            /* multi-line window, problem */
+            /* current_nle_ctx->multi-line window, problem */
             pline("It seems to be %s of \"%s\"!", badtranslation, tribtitle);
     }
     return grasped;

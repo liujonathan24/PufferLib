@@ -36,7 +36,6 @@ E char chosen_windowtype[WINTYPELEN];
 
 E NEARDATA int bases[MAXOCLASSES];
 
-E NEARDATA int multi;
 E NEARDATA int nroom;
 E NEARDATA int nsubroom;
 

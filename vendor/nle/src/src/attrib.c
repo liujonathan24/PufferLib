@@ -533,10 +533,10 @@ exerchk()
     exerper();
 
     if (moves >= context.next_attrib_check) {
-        debugpline1("exerchk: ready to test. multi = %d.", multi);
+        debugpline1("exerchk: ready to test. current_nle_ctx->multi = %d.", current_nle_ctx->multi);
     }
     /*  Are we ready for a test? */
-    if (moves >= context.next_attrib_check && !multi) {
+    if (moves >= context.next_attrib_check && !current_nle_ctx->multi) {
         debugpline0("exerchk: testing.");
         /*
          *      Law of diminishing returns (Part II):

@@ -18,6 +18,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for Unaware macro */
 
 STATIC_DCL void FDECL(get_wall_for_db, (int *, int *));
 STATIC_DCL struct entity *FDECL(e_at, (int, int));

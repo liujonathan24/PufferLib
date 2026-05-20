@@ -9,6 +9,7 @@
 /*             - generalized for 3.1 (mike@bullns.on01.bull.ca) */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 #include "qtext.h"
 
 STATIC_DCL short FDECL(which_arti, (int));

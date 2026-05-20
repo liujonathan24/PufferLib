@@ -2259,7 +2259,7 @@ struct obj **optr;
             return;
     }
     if (!getdir((char *) 0)) {
-        context.move = multi = 0;
+        context.move = current_nle_ctx->multi = 0;
         return;
     }
     x = u.ux + u.dx;

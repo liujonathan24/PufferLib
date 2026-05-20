@@ -707,7 +707,7 @@ register struct obj *otmp;
         exercise(A_WIS, FALSE);
         if (otmp->cursed) {
             You("pass out.");
-            multi = -rnd(15);
+            current_nle_ctx->multi = -rnd(15);
             nomovemsg = "You awake with a headache.";
         }
         break;

@@ -558,7 +558,7 @@ register struct monst *mtmp;
             pline("Wait, %s!  That %s is really %s named %s!", m_monnam(mtmp),
                   mimic_obj_name(&youmonst), an(mons[u.umonnum].mname),
                   plname);
-        if (multi < 0) { /* this should always be the case */
+        if (current_nle_ctx->multi < 0) { /* this should always be the case */
             char buf[BUFSZ];
 
             Sprintf(buf, "You appear to be %s again.",
@@ -572,7 +572,7 @@ register struct monst *mtmp;
     /*  Work out the armor class differential   */
     tmp = AC_VALUE(u.uac) + 10; /* tmp ~= 0 - 20 */
     tmp += mtmp->m_lev;
-    if (multi < 0)
+    if (current_nle_ctx->multi < 0)
         tmp += 4;
     if ((Invis && !perceives(mdat)) || !mtmp->mcansee)
         tmp -= 2;
@@ -801,7 +801,7 @@ register struct monst *mtmp;
         /* give player a chance of waking up before dying -kaa */
         if (sum[i] == 1) { /* successful attack */
             if (u.usleep && u.usleep < monstermoves && !rn2(10)) {
-                multi = -1;
+                current_nle_ctx->multi = -1;
                 nomovemsg = "The combat suddenly awakens you.";
             }
         }
@@ -1104,7 +1104,7 @@ register struct attack *mattk;
         break;
     case AD_SLEE:
         hitmsg(mtmp, mattk);
-        if (uncancelled && multi >= 0 && !rn2(5)) {
+        if (uncancelled && current_nle_ctx->multi >= 0 && !rn2(5)) {
             if (Sleep_resistance)
                 break;
             fall_asleep(-rnd(10), TRUE);
@@ -1178,7 +1178,7 @@ register struct attack *mattk;
         break;
     case AD_PLYS:
         hitmsg(mtmp, mattk);
-        if (uncancelled && multi >= 0 && !rn2(3)) {
+        if (uncancelled && current_nle_ctx->multi >= 0 && !rn2(3)) {
             if (Free_action) {
                 You("momentarily stiffen.");
             } else {
@@ -2313,7 +2313,7 @@ struct attack *mattk;
 #ifdef PM_BEHOLDER /* work in progress */
     case AD_SLEE:
         if (canseemon(mtmp) && couldsee(mtmp->mx, mtmp->my) && mtmp->mcansee
-            && multi >= 0 && !rn2(5) && !Sleep_resistance) {
+            && current_nle_ctx->multi >= 0 && !rn2(5) && !Sleep_resistance) {
             if (cancelled) {
                 react = 6;                      /* "tired" */
                 already = (mtmp->mfrozen != 0); /* can't happen... */

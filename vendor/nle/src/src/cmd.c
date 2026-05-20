@@ -218,14 +218,14 @@ doprev_message(VOID_ARGS)
     return nh_doprev_message();
 }
 
-/* Count down by decrementing multi */
+/* Count down by decrementing current_nle_ctx->multi */
 STATIC_PTR int
 timed_occupation(VOID_ARGS)
 {
     (*timed_occ_fn)();
-    if (multi > 0)
-        multi--;
-    return multi > 0;
+    if (current_nle_ctx->multi > 0)
+        current_nle_ctx->multi--;
+    return current_nle_ctx->multi > 0;
 }
 
 /* If you have moved since initially setting some occupations, they
@@ -4826,7 +4826,7 @@ register char *cmd;
             break;
         (void) ddoinv(); /* a convenience borrowed from the PC */
         context.move = FALSE;
-        multi = 0;
+        current_nle_ctx->multi = 0;
         return;
     case NHKF_CLICKLOOK:
         if (iflags.clicklook) {
@@ -4882,20 +4882,20 @@ register char *cmd;
         context.run = 0;
         context.nopick = context.forcefight = FALSE;
         context.move = context.mv = FALSE;
-        multi = 0;
+        current_nle_ctx->multi = 0;
         return;
     }
 
     if ((domove_attempting & DOMOVE_WALK) != 0L) {
-        if (multi)
+        if (current_nle_ctx->multi)
             context.mv = TRUE;
         domove();
         context.forcefight = 0;
         return;
     } else if ((domove_attempting & DOMOVE_RUSH) != 0L) {
         if (firsttime) {
-            if (!multi)
-                multi = max(COLNO, ROWNO);
+            if (!current_nle_ctx->multi)
+                current_nle_ctx->multi = max(COLNO, ROWNO);
             u.last_str_turn = 0;
         }
         context.mv = TRUE;
@@ -4925,13 +4925,13 @@ register char *cmd;
                 /* we discard 'const' because some compilers seem to have
                    trouble with the pointer passed to set_occupation() */
                 func = ((struct ext_func_tab *) tlist)->ef_funct;
-                if (tlist->f_text && !occupation && multi)
-                    set_occupation(func, tlist->f_text, multi);
+                if (tlist->f_text && !occupation && current_nle_ctx->multi)
+                    set_occupation(func, tlist->f_text, current_nle_ctx->multi);
                 res = (*func)(); /* perform the command */
             }
             if (!res) {
                 context.move = FALSE;
-                multi = 0;
+                current_nle_ctx->multi = 0;
             }
             return;
         }
@@ -4952,7 +4952,7 @@ register char *cmd;
     }
     /* didn't move */
     context.move = FALSE;
-    multi = 0;
+    current_nle_ctx->multi = 0;
     return;
 }
 
@@ -5792,7 +5792,7 @@ parse()
     register int foo;
 
     iflags.in_parse = TRUE;
-    multi = 0;
+    current_nle_ctx->multi = 0;
     context.move = 1;
     flush_screen(1); /* Flush screen buffer. Put the cursor on the hero. */
 
@@ -5800,10 +5800,10 @@ parse()
     alt_esc = iflags.altmeta; /* readchar() hack */
 #endif
     if (!Cmd.num_pad || (foo = readchar()) == Cmd.spkeys[NHKF_COUNT]) {
-        long tmpmulti = multi;
+        long tmpmulti = current_nle_ctx->multi;
 
         foo = get_count((char *) 0, '\0', LARGEST_INT, &tmpmulti, FALSE);
-        last_multi = multi = tmpmulti;
+        last_multi = current_nle_ctx->multi = tmpmulti;
     }
 #ifdef ALTMETA
     alt_esc = FALSE; /* readchar() reset */
@@ -5817,17 +5817,17 @@ parse()
 
     if (foo == Cmd.spkeys[NHKF_ESC]) { /* esc cancels count (TH) */
         clear_nhwindow(WIN_MESSAGE);
-        multi = last_multi = 0;
+        current_nle_ctx->multi = last_multi = 0;
     } else if (foo == Cmd.spkeys[NHKF_DOAGAIN] || current_nle_ctx->in_doagain) {
-        multi = last_multi;
+        current_nle_ctx->multi = last_multi;
     } else {
-        last_multi = multi;
+        last_multi = current_nle_ctx->multi;
         savech(0); /* reset input queue */
         savech((char) foo);
     }
 
-    if (multi) {
-        multi--;
+    if (current_nle_ctx->multi) {
+        current_nle_ctx->multi--;
         save_cm = in_line;
     } else {
         save_cm = (char *) 0;

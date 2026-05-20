@@ -333,7 +333,7 @@ book_cursed(book)
 struct obj *book;
 {
     if (occupation == learn && context.spbook.book == book
-        && book->cursed && book->bknown && multi >= 0)
+        && book->cursed && book->bknown && current_nle_ctx->multi >= 0)
         stop_occupation();
 }
 

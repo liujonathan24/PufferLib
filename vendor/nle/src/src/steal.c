@@ -409,7 +409,7 @@ char *objnambuf;
                 /* can't charm you without first waking you */
                 if (Unaware)
                     unmul((char *) 0);
-                slowly = (armordelay >= 1 || multi < 0);
+                slowly = (armordelay >= 1 || current_nle_ctx->multi < 0);
                 if (flags.female)
                     pline("%s charms you.  You gladly %s your %s.",
                           !seen ? "She" : Monnam(mtmp),
@@ -428,15 +428,15 @@ char *objnambuf;
                                                       : "you start taking",
                           equipname(otmp));
                 named++;
-                /* the following is to set multi for later on */
+                /* the following is to set current_nle_ctx->multi for later on */
                 nomul(-armordelay);
                 current_nle_ctx->multi_reason = "taking off clothes";
                 nomovemsg = 0;
                 remove_worn_item(otmp, TRUE);
                 otmp->cursed = curssv;
-                if (multi < 0) {
+                if (current_nle_ctx->multi < 0) {
                     /*
-                    multi = 0;
+                    current_nle_ctx->multi = 0;
                     afternmv = 0;
                     */
                     stealoid = otmp->o_id;
@@ -475,7 +475,7 @@ char *objnambuf;
         minstapetrify(mtmp, TRUE);
         return -1;
     }
-    return (multi < 0) ? 0 : 1;
+    return (current_nle_ctx->multi < 0) ? 0 : 1;
 }
 
 /* Returns 1 if otmp is free'd, 0 otherwise. */

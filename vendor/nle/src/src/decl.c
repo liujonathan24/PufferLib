@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 
 int NDECL((*afternmv));
 int NDECL((*occupation));
@@ -20,7 +21,6 @@ char chosen_windowtype[WINTYPELEN];
 
 NEARDATA int bases[MAXOCLASSES] = DUMMY;
 
-NEARDATA int multi = 0;
 NEARDATA int nroom = 0;
 NEARDATA int nsubroom = 0;
 

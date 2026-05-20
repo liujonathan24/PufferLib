@@ -83,7 +83,7 @@ dosave()
     clear_nhwindow(WIN_MESSAGE);
     if (yn("Really save?") == 'n') {
         clear_nhwindow(WIN_MESSAGE);
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
     } else {
         clear_nhwindow(WIN_MESSAGE);

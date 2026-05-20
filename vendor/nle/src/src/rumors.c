@@ -491,7 +491,7 @@ struct monst *oracl;
     int add_xpts;
     char qbuf[QBUFSZ];
 
-    multi = 0;
+    current_nle_ctx->multi = 0;
     umoney = money_cnt(invent);
 
     if (!oracl) {

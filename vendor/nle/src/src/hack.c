@@ -595,10 +595,10 @@ dosinkfall()
     }
 
     /*
-     * Interrupt multi-turn putting on/taking off of armor (in which
+     * Interrupt current_nle_ctx->multi-turn putting on/taking off of armor (in which
      * case we reached the sink due to being teleported while busy;
      * in 3.4.3, Boots_on()/Boots_off() [called via (*afternmv)() when
-     * 'multi' reaches 0] triggered a crash if we were donning/doffing
+     * 'current_nle_ctx->multi' reaches 0] triggered a crash if we were donning/doffing
      * levitation boots [because the Boots_off() below causes 'uarmf'
      * to be null by the time 'afternmv' gets called]).
      *
@@ -1993,7 +1993,7 @@ overexertion()
             fall_asleep(-10, FALSE);
         }
     }
-    return (boolean) (multi < 0); /* might have fainted (forced to sleep) */
+    return (boolean) (current_nle_ctx->multi < 0); /* might have fainted (forced to sleep) */
 }
 
 void
@@ -2662,9 +2662,9 @@ dopickup(VOID_ARGS)
     int count, tmpcount, ret;
 
     /* awful kludge to work around parse()'s pre-decrement */
-    count = (multi || (save_cm && *save_cm == cmd_from_func(dopickup)))
-              ? multi + 1 : 0;
-    multi = 0; /* always reset */
+    count = (current_nle_ctx->multi || (save_cm && *save_cm == cmd_from_func(dopickup)))
+              ? current_nle_ctx->multi + 1 : 0;
+    current_nle_ctx->multi = 0; /* always reset */
 
     if ((ret = pickup_checks()) >= 0) {
         return ret;
@@ -2906,22 +2906,22 @@ void
 nomul(nval)
 register int nval;
 {
-    if (multi < nval)
+    if (current_nle_ctx->multi < nval)
         return;              /* This is a bug fix by ab@unido */
     u.uinvulnerable = FALSE; /* Kludge to avoid ctrl-C bug -dlc */
     u.usleep = 0;
-    multi = nval;
+    current_nle_ctx->multi = nval;
     if (nval == 0)
         current_nle_ctx->multi_reason = NULL;
     context.travel = context.travel1 = context.mv = context.run = 0;
 }
 
-/* called when a non-movement, multi-turn action has completed */
+/* called when a non-movement, current_nle_ctx->multi-turn action has completed */
 void
 unmul(msg_override)
 const char *msg_override;
 {
-    multi = 0; /* caller will usually have done this already */
+    current_nle_ctx->multi = 0; /* caller will usually have done this already */
     if (msg_override)
         nomovemsg = msg_override;
     else if (!nomovemsg)

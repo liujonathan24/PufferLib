@@ -744,7 +744,7 @@ initoptions_init()
     flags.pile_limit = PILE_LIMIT_DFLT;  /* 5 */
     flags.runmode = RUN_LEAP;
     iflags.msg_history = 20;
-    /* msg_window has conflicting defaults for multi-interface binary */
+    /* msg_window has conflicting defaults for current_nle_ctx->multi-interface binary */
 #ifdef TTY_GRAPHICS
     iflags.prevmsg_window = 's';
 #else
@@ -898,7 +898,7 @@ initoptions_finish()
 
 #ifdef STATUS_HILITES
     /*
-     * A multi-interface binary might only support status highlighting
+     * A current_nle_ctx->multi-interface binary might only support status highlighting
      * for some of the interfaces; check whether we asked for it but are
      * using one which doesn't.
      *

@@ -2,6 +2,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 
 STATIC_DCL int FDECL(cost, (struct obj *));
 STATIC_DCL boolean FDECL(label_known, (int, struct obj *));

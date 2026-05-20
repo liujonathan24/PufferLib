@@ -150,11 +150,11 @@ boolean incl_helpless;
     }
     *buf = '\0';
 
-    if (incl_helpless && multi) {
+    if (incl_helpless && current_nle_ctx->multi) {
         /* X <= siz: 'sizeof "string"' includes 1 for '\0' terminator */
-        if (multi_reason && strlen(multi_reason) + sizeof ", while " <= siz)
-            Sprintf(buf, ", while %s", multi_reason);
-        /* either multi_reason wasn't specified or wouldn't fit */
+        if (current_nle_ctx->multi_reason && strlen(current_nle_ctx->multi_reason) + sizeof ", while " <= siz)
+            Sprintf(buf, ", while %s", current_nle_ctx->multi_reason);
+        /* either current_nle_ctx->multi_reason wasn't specified or wouldn't fit */
         else if (sizeof ", while helpless" <= siz)
             Strcpy(buf, ", while helpless");
         /* else extra death info won't fit, so leave it out */
@@ -368,9 +368,9 @@ int how;
     Fprintf(rfile, "%s%cname=%s%cdeath=%s",
             buf, /* (already includes separator) */
             XLOG_SEP, plname, XLOG_SEP, tmpbuf);
-    if (multi)
+    if (current_nle_ctx->multi)
         Fprintf(rfile, "%cwhile=%s", XLOG_SEP,
-                multi_reason ? multi_reason : "helpless");
+                current_nle_ctx->multi_reason ? current_nle_ctx->multi_reason : "helpless");
     Fprintf(rfile, "%cconduct=0x%lx%cturns=%ld%cachieve=0x%lx", XLOG_SEP,
             encodeconduct(), XLOG_SEP, moves, XLOG_SEP, encodeachieve());
     Fprintf(rfile, "%crealtime=%ld%cstarttime=%ld%cendtime=%ld", XLOG_SEP,

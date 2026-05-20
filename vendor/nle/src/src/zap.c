@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 /* Disintegration rays have special treatment; corpses are never left.
  * But the routine which calculates the damage is separate from the routine
@@ -3513,7 +3514,7 @@ struct obj **pobj; /* object tossed/used, set to NULL
 }
 
 /* process thrown boomerang, which travels a curving path...
- * A multi-shot volley ought to have all missiles in flight at once,
+ * A current_nle_ctx->multi-shot volley ought to have all missiles in flight at once,
  * but we're called separately for each one.  We terminate the volley
  * early on a failed catch since continuing to throw after being hit
  * is too obviously silly.

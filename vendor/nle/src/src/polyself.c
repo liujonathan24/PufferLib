@@ -185,7 +185,7 @@ const char *fmt, *arg;
         uunstick();
     find_ac();
     if (was_mimicking) {
-        if (multi < 0)
+        if (current_nle_ctx->multi < 0)
             unmul("");
         youmonst.m_ap_type = M_AP_NOTHING;
         youmonst.mappearance = 0;
@@ -629,7 +629,7 @@ int mntmp;
     }
 
     /* if stuck mimicking gold, stop immediately */
-    if (multi < 0 && U_AP_TYPE == M_AP_OBJECT
+    if (current_nle_ctx->multi < 0 && U_AP_TYPE == M_AP_OBJECT
         && youmonst.data->mlet != S_MIMIC)
         unmul("");
     /* if becoming a non-mimic, stop mimicking anything */

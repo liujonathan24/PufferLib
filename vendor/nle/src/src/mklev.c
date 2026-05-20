@@ -797,7 +797,7 @@ makelevel()
     }
 
  skip0:
-    /* Place multi-dungeon branch. */
+    /* Place current_nle_ctx->multi-dungeon branch. */
     place_branch(branchp, 0, 0);
 
     /* for each room: put things inside */

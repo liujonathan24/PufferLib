@@ -328,7 +328,7 @@ int sig_unused UNUSED;
         clear_nhwindow(WIN_MESSAGE);
         curs_on_u();
         wait_synch();
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
     } else {
         (void) done2();
@@ -348,9 +348,9 @@ done2()
         clear_nhwindow(WIN_MESSAGE);
         curs_on_u();
         wait_synch();
-        if (multi > 0)
+        if (current_nle_ctx->multi > 0)
             nomul(0);
-        if (multi == 0) {
+        if (current_nle_ctx->multi == 0) {
             u.uinvulnerable = FALSE; /* avoid ctrl-C bug -dlc */
             u.usleep = 0;
         }
@@ -563,7 +563,7 @@ int how;
                 else /* remove the helplessness reason */
                     current_nle_ctx->multi_reason = (char *) 0;
                 if (death_fixups[i].unmulti) /* possibly hide helplessness */
-                    multi = 0L;
+                    current_nle_ctx->multi = 0L;
                 break;
             }
     }
@@ -886,10 +886,10 @@ int how;
     }
     nomovemsg = "You survived that attempt on your life.";
     context.move = 0;
-    if (multi > 0)
-        multi = 0;
+    if (current_nle_ctx->multi > 0)
+        current_nle_ctx->multi = 0;
     else
-        multi = -1;
+        current_nle_ctx->multi = -1;
     if (u.utrap && u.utraptype == TT_LAVA)
         reset_utrap(FALSE);
     context.botl = 1;

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #ifndef LONG_MAX
 #include <limits.h>
 #endif
@@ -1485,9 +1486,9 @@ long augmented_time; /* no longer augmented; it once encoded fractional
                       * amounts for multiple moves within same turn     */
 {
     /*
-     * This 'multi' handling may need some tuning...
+     * This 'current_nle_ctx->multi' handling may need some tuning...
      */
-    if (multi)
+    if (current_nle_ctx->multi)
         return FALSE;
 
     if (!Is_Temp_Hilite(bl_p->hilite_rule))

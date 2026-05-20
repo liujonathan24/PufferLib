@@ -98,6 +98,8 @@ typedef struct nle_globals {
     long                done_money;         /* was decl.c (cash at death) */
     int                 warn_obj_cnt;       /* was decl.c (warn-mon counter) */
     /* bhitpos (coord) defer to later — needs coord.h include in nle.h */
+    /* stage 3j — turn loop state (big migration, ~40 callsites) */
+    int                 multi;              /* was decl.c (multi-step action counter) */
 } nle_ctx_t;
 
 /*

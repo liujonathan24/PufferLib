@@ -263,7 +263,7 @@ dowield()
     int result;
 
     /* May we attempt this? */
-    multi = 0;
+    current_nle_ctx->multi = 0;
     if (cantwield(youmonst.data)) {
         pline("Don't be ridiculous!");
         return 0;
@@ -314,7 +314,7 @@ doswapweapon()
     int result = 0;
 
     /* May we attempt this? */
-    multi = 0;
+    current_nle_ctx->multi = 0;
     if (cantwield(youmonst.data)) {
         pline("Don't be ridiculous!");
         return 0;
@@ -362,7 +362,7 @@ dowieldquiver()
 
     /* Since the quiver isn't in your hands, don't check cantwield(), */
     /* will_weld(), touch_petrifies(), etc. */
-    multi = 0;
+    current_nle_ctx->multi = 0;
     /* forget last splitobj() before calling getobj() with ALLOW_COUNT */
     context.objsplit.child_oid = context.objsplit.parent_oid = 0;
 

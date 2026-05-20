@@ -5,6 +5,7 @@
 /* track.c - version 1.0.2 */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 
 #define UTSZ 50
 

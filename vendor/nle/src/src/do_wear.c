@@ -1342,7 +1342,7 @@ cancel_don()
          || afternmv == Gloves_on || afternmv == Armor_on);
     afternmv = (int NDECL((*))) 0;
     nomovemsg = (char *) 0;
-    multi = 0;
+    current_nle_ctx->multi = 0;
     context.takeoff.delay = 0;
     context.takeoff.what = 0L;
 }
@@ -1377,7 +1377,7 @@ struct obj *stolenobj; /* no message if stolenobj is already being doffing */
                 thesimpleoname(otmp));
     } else {
         buf[0] = '\0';   /* silently stop doffing stolenobj */
-        result = -multi; /* remember this before calling unmul() */
+        result = -current_nle_ctx->multi; /* remember this before calling unmul() */
     }
     unmul(buf);
     /* while putting on, item becomes worn immediately but side-effects are

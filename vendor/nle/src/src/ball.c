@@ -7,6 +7,7 @@
  * =============================================================*/
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 
 STATIC_DCL int NDECL(bc_order);
 STATIC_DCL void NDECL(litter);

@@ -671,12 +671,12 @@ int spellnum;
     case CLC_PARALYZE:
         if (Antimagic || Free_action) {
             shieldeff(u.ux, u.uy);
-            if (multi >= 0)
+            if (current_nle_ctx->multi >= 0)
                 You("stiffen briefly.");
             nomul(-1);
             current_nle_ctx->multi_reason = "paralyzed by a monster";
         } else {
-            if (multi >= 0)
+            if (current_nle_ctx->multi >= 0)
                 You("are frozen in place!");
             dmg = 4 + (int) mtmp->m_lev;
             if (Half_spell_damage)

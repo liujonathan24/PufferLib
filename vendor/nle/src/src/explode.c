@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 /* Note: Arrays are column first, while the screen is row first */
 static int explosion[3][3] = { { S_explode1, S_explode4, S_explode7 },
@@ -730,7 +731,7 @@ struct obj *obj; /* only scatter this obj        */
                     if (scflags & MAY_HITYOU) {
                         int hitvalu, hitu;
 
-                        if (multi)
+                        if (current_nle_ctx->multi)
                             nomul(0);
                         hitvalu = 8 + stmp->obj->spe;
                         if (bigmonst(youmonst.data))

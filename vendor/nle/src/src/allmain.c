@@ -268,7 +268,7 @@ boolean resuming;
                                  && !rn2(80 - (20 * night())))
                             change = 2;
                         if (change && !Unchanging) {
-                            if (multi >= 0) {
+                            if (current_nle_ctx->multi >= 0) {
                                 stop_occupation();
                                 if (change == 1)
                                     polyself(0);
@@ -279,7 +279,7 @@ boolean resuming;
                         }
                     }
 
-                    if (Searching && multi >= 0)
+                    if (Searching && current_nle_ctx->multi >= 0)
                         (void) dosearch0(1);
                     if (Warning)
                         warnreveal();
@@ -315,8 +315,8 @@ boolean resuming;
                         under_ground(0);
 
                     /* when immobile, count is in turns */
-                    if (multi < 0) {
-                        if (++multi == 0) { /* finished yet? */
+                    if (current_nle_ctx->multi < 0) {
+                        if (++current_nle_ctx->multi == 0) { /* finished yet? */
                             unmul((char *) 0);
                             /* if unmul caused a level change, take it now */
                             if (u.utotype)
@@ -379,7 +379,7 @@ boolean resuming;
 
         context.move = 1;
 
-        if (multi >= 0 && occupation) {
+        if (current_nle_ctx->multi >= 0 && occupation) {
 #if defined(MICRO) || defined(WIN32)
             abort_lev = 0;
             if (kbhit()) {
@@ -418,25 +418,25 @@ boolean resuming;
 
         u.umoved = FALSE;
 
-        if (multi > 0) {
+        if (current_nle_ctx->multi > 0) {
             lookaround();
-            if (!multi) {
-                /* lookaround may clear multi */
+            if (!current_nle_ctx->multi) {
+                /* lookaround may clear current_nle_ctx->multi */
                 context.move = 0;
                 if (flags.time)
                     context.botl = TRUE;
                 continue;
             }
             if (context.mv) {
-                if (multi < COLNO && !--multi)
+                if (current_nle_ctx->multi < COLNO && !--current_nle_ctx->multi)
                     context.travel = context.travel1 = context.mv =
                         context.run = 0;
                 domove();
             } else {
-                --multi;
+                --current_nle_ctx->multi;
                 rhack(save_cm);
             }
-        } else if (multi == 0) {
+        } else if (current_nle_ctx->multi == 0) {
 #ifdef MAIL
             ckmailstatus();
 #endif
@@ -452,7 +452,7 @@ boolean resuming;
             vision_recalc(0); /* vision! */
         /* when running in non-tport mode, this gets done through domove() */
         if ((!context.run || flags.runmode == RUN_TPORT)
-            && (multi && (!context.travel ? !(multi % 7) : !(moves % 7L)))) {
+            && (current_nle_ctx->multi && (!context.travel ? !(current_nle_ctx->multi % 7) : !(moves % 7L)))) {
             if (flags.time && context.run)
                 context.botl = TRUE;
             /* [should this be flush_screen() instead?] */
@@ -521,7 +521,7 @@ int wtcap;
                 u.uhp += heal;
                 if (u.uhp > u.uhpmax)
                     u.uhp = u.uhpmax;
-                /* stop voluntary multi-turn activity if now fully healed */
+                /* stop voluntary current_nle_ctx->multi-turn activity if now fully healed */
                 reached_full = (u.uhp == u.uhpmax);
             }
         }
@@ -541,7 +541,7 @@ stop_occupation()
         context.botl = TRUE; /* in case u.uhs changed */
         nomul(0);
         pushch(0);
-    } else if (multi >= 0) {
+    } else if (current_nle_ctx->multi >= 0) {
         nomul(0);
     }
 }
@@ -752,7 +752,7 @@ STATIC_DCL void
 interrupt_multi(msg)
 const char *msg;
 {
-    if (multi > 0 && !context.travel && !context.run) {
+    if (current_nle_ctx->multi > 0 && !context.travel && !context.run) {
         nomul(0);
         if (flags.verbose && msg)
             Norep("%s", msg);

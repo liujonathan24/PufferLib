@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "dgn_file.h"
 #include "dlb.h"
 #include "lev.h"
@@ -1116,7 +1117,7 @@ d_level *lev;
 }
 
 /*
- * Is this a multi-dungeon branch level?  If so, return a pointer to the
+ * Is this a current_nle_ctx->multi-dungeon branch level?  If so, return a pointer to the
  * branch.  Otherwise, return null.
  */
 branch *

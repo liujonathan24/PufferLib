@@ -7,6 +7,7 @@
 /* a few other help related facilities */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx, refactor */
 #include "dlb.h"
 
 STATIC_DCL boolean FDECL(is_swallow_sym, (int));

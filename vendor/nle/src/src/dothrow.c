@@ -239,9 +239,9 @@ STATIC_OVL boolean
 ok_to_throw(shotlimit_p)
 int *shotlimit_p; /* (see dothrow()) */
 {
-    /* kludge to work around parse()'s pre-decrement of `multi' */
-    *shotlimit_p = (multi || save_cm) ? multi + 1 : 0;
-    multi = 0; /* reset; it's been used up */
+    /* kludge to work around parse()'s pre-decrement of `current_nle_ctx->multi' */
+    *shotlimit_p = (current_nle_ctx->multi || save_cm) ? current_nle_ctx->multi + 1 : 0;
+    current_nle_ctx->multi = 0; /* reset; it's been used up */
 
     if (notake(youmonst.data)) {
         You("are physically incapable of throwing or shooting anything.");
@@ -721,7 +721,7 @@ int x, y;
     if (is_pool(x, y) && !u.uinwater) {
         if ((Is_waterlevel(&u.uz) && levl[x][y].typ == WATER)
             || !(Levitation || Flying || Wwalking)) {
-            multi = 0; /* can move, so drown() allows crawling out of water */
+            current_nle_ctx->multi = 0; /* can move, so drown() allows crawling out of water */
             (void) drown();
             return FALSE;
         } else if (!Is_waterlevel(&u.uz) && !stopping_short) {
