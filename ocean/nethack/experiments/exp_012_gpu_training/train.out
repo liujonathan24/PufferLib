@@ -1,0 +1,64 @@
+Loading intel/2024.2
+  Loading requirement: intel-tbb/2021.13 intel-rt/2024.2
+host: della-l02g1
+cpus: 16
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-6aa62ddf-51f0-5577-0d7e-4aa880674647)
+/usr/bin/which: no nvcc in (/home/jl0796/.local/bin:/home/jl0796/.vscode-server/cli/servers/Stable-10c8e557c8b9f9ed0a87f61f1c9a44bde731c409/server/bin/remote-cli:/home/jl0796/.local/bin:/scratch/gpfs/ZHUANGL/jl0796/LLaMA-Factory-AutoReviewer/google-cloud-sdk/bin:/scratch/gpfs/ZHUANGL/jl0796/.xdg_config_home/nvm/versions/node/v24.13.1/bin:/scratch/gpfs/ZHUANGL/jl0796/.xdg_data_home/../bin:/home/jl0796/.local/bin:/home/jl0796/.local/bin:/home/jl0796/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin:/opt/dell/srvadmin/bin:/home/jl0796/.claude/plugins/cache/claude-plugins-official/claude-md-management/1.0.0/bin:/home/jl0796/.claude/plugins/cache/claude-plugins-official/context7/unknown/bin:/home/jl0796/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/bin)
+/var/spool/slurmd/job8505254/slurm_script: line 30: nvcc: command not found
+Wed May 20 11:10:43 AM EDT 2026
+venv python: Python 3.11.14
+torch= 2.10.0+cu128 cuda= True devs= 1
+and make sure that they are the versions you expect.
+
+Please carefully study the information and documentation linked above.
+This is unlikely to be a NumPy issue but will be caused by a bad install
+or environment on your machine.
+
+Original error was: No module named 'numpy._core._multiarray_umath'
+
+-rwxr-xr-x 1 jl0796 zhuangl 322416 May 20 03:53 pufferlib/_C.cpython-311-x86_64-linux-gnu.so
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ in _run_module_as_main:198                                                   │
+│ in _run_code:88                                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:687 in <module>  │
+│                                                                              │
+│   684 │   │   raise ValueError(err)                                          │
+│   685                                                                        │
+│   686 if __name__ == '__main__':                                             │
+│ ❱ 687 │   main()                                                             │
+│   688                                                                        │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:671 in main      │
+│                                                                              │
+│   668 │   args = load_config(env_name)                                       │
+│   669 │                                                                      │
+│   670 │   if 'train' in mode:                                                │
+│ ❱ 671 │   │   train(env_name=env_name, args=args)                            │
+│   672 │   elif 'eval' in mode:                                               │
+│   673 │   │   eval(env_name=env_name, args=args)                             │
+│   674 │   elif 'sweep' in mode:                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:398 in train     │
+│                                                                              │
+│   395 │   │   worker_args['rank'] = rank                                     │
+│   396 │   │   worker_args['gpu_id'] = gpu_id                                 │
+│   397 │   │   if rank == 0 and not subprocess:                               │
+│ ❱ 398 │   │   │   _train(env_name, worker_args, verbose=True)                │
+│   399 │   │   else:                                                          │
+│   400 │   │   │   # Protein's GP models live on cuda:0 on non-WSL setups; sp │
+│   401 │   │   │   # them works fine via CUDA IPC. On WSL, sweep.py forces de │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:220 in _train    │
+│                                                                              │
+│   217 │   os.makedirs(log_dir, exist_ok=True)                                │
+│   218 │                                                                      │
+│   219 │   try:                                                               │
+│ ❱ 220 │   │   pufferl = backend.create_pufferl(args)                         │
+│   221 │   except RuntimeError as e:                                          │
+│   222 │   │   print(f'WARNING: {e}, skipping')                               │
+│   223 │   │   if result_queue is not None:                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+AttributeError: module 'pufferlib._C' has no attribute 'create_pufferl'
+Wed May 20 11:10:53 AM EDT 2026
+DONE

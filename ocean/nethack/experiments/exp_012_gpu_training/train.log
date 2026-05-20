@@ -1,0 +1,43 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ in _run_module_as_main:198                                                   │
+│ in _run_code:88                                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:687 in <module>  │
+│                                                                              │
+│   684 │   │   raise ValueError(err)                                          │
+│   685                                                                        │
+│   686 if __name__ == '__main__':                                             │
+│ ❱ 687 │   main()                                                             │
+│   688                                                                        │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:671 in main      │
+│                                                                              │
+│   668 │   args = load_config(env_name)                                       │
+│   669 │                                                                      │
+│   670 │   if 'train' in mode:                                                │
+│ ❱ 671 │   │   train(env_name=env_name, args=args)                            │
+│   672 │   elif 'eval' in mode:                                               │
+│   673 │   │   eval(env_name=env_name, args=args)                             │
+│   674 │   elif 'sweep' in mode:                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:398 in train     │
+│                                                                              │
+│   395 │   │   worker_args['rank'] = rank                                     │
+│   396 │   │   worker_args['gpu_id'] = gpu_id                                 │
+│   397 │   │   if rank == 0 and not subprocess:                               │
+│ ❱ 398 │   │   │   _train(env_name, worker_args, verbose=True)                │
+│   399 │   │   else:                                                          │
+│   400 │   │   │   # Protein's GP models live on cuda:0 on non-WSL setups; sp │
+│   401 │   │   │   # them works fine via CUDA IPC. On WSL, sweep.py forces de │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:220 in _train    │
+│                                                                              │
+│   217 │   os.makedirs(log_dir, exist_ok=True)                                │
+│   218 │                                                                      │
+│   219 │   try:                                                               │
+│ ❱ 220 │   │   pufferl = backend.create_pufferl(args)                         │
+│   221 │   except RuntimeError as e:                                          │
+│   222 │   │   print(f'WARNING: {e}, skipping')                               │
+│   223 │   │   if result_queue is not None:                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+AttributeError: module 'pufferlib._C' has no attribute 'create_pufferl'
