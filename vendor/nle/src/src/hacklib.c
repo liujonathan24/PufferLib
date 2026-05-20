@@ -851,8 +851,10 @@ extern struct tm *FDECL(localtime, (time_t *));
 #endif
 STATIC_DCL struct tm *NDECL(getlt);
 
-/* NLE hack for seeds. Should stay in sync with rnglist in src/rnd.c. */
-unsigned long nle_seeds[] = {0L, 0L};
+/* NLE hack for seeds. Storage was 'unsigned long nle_seeds[2]' here; it
+ * moved into nle_ctx_t (refactor stage 2) and is now accessed via the
+ * current ctx. Kept in sync with rnglist_fn[] in src/rnd.c. */
+#include "nle.h"
 extern int FDECL(whichrng, (int FDECL((*fn), (int))));
 
 /* Sets the seed for the random number generator */
@@ -863,7 +865,7 @@ set_random(seed, fn)
 unsigned long seed;
 int FDECL((*fn), (int));
 {
-    nle_seeds[whichrng(fn)] = seed;
+    current_nle_ctx->seeds[whichrng(fn)] = seed;
     init_isaac64(seed, fn);
 }
 
@@ -875,7 +877,7 @@ set_random(seed, fn)
 unsigned long seed;
 int FDECL((*fn), (int)) UNUSED;
 {
-    nle_seeds[whichrng(fn)] = seed;
+    current_nle_ctx->seeds[whichrng(fn)] = seed;
     /* the types are different enough here that sweeping the different
      * routine names into one via #defines is even more confusing
      */

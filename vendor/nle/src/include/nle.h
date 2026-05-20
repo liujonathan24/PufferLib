@@ -40,9 +40,12 @@ typedef struct nle_globals {
     int rng_init[2]; /* boolean flag per rng; 0 = uninitialized */
 
     /* nle_state refactor — NLE wrapper layer (stage 2). Moved out of
-     * file-scope statics in nle.c (`settings`, `nle_seeds_init`). */
+     * file-scope statics in nle.c (`settings`, `nle_seeds_init`) and
+     * hacklib.c (`nle_seeds`). seeds[] tracks the last seed set via
+     * set_random() for inspection via nle_get_seed(). */
     nle_settings        settings;
     nle_seeds_init_t   *seeds_init;
+    unsigned long       seeds[2];
 } nle_ctx_t;
 
 /*

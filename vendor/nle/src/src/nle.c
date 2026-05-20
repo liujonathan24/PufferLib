@@ -558,14 +558,15 @@ nle_set_seed(nle_ctx_t *nle, unsigned long core, unsigned long disp,
     has_strong_rngseed = reseed;
 };
 
-extern unsigned long nle_seeds[];
+/* nle_seeds[] moved into nle_ctx_t (refactor stage 2). Below uses
+ * current_nle_ctx->seeds. */
 
 void
 nle_get_seed(nle_ctx_t *nle, unsigned long *core, unsigned long *disp,
              boolean *reseed)
 {
-    *core = nle_seeds[0];
-    *disp = nle_seeds[1];
+    *core = current_nle_ctx->seeds[0];
+    *disp = current_nle_ctx->seeds[1];
     *reseed = has_strong_rngseed;
 }
 #endif
