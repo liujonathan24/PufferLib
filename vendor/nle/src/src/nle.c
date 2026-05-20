@@ -528,6 +528,12 @@ struct nle_dungeon_save {
     struct mkroom      *dnstairs_room;
     struct mkroom      *sstairs_room;
     struct trap        *ftrap;
+    /* stage 8 — display / message state */
+    boolean             vision_full_recalc;
+    char              **viz_array;
+    winid               WIN_MESSAGE, WIN_STATUS, WIN_MAP, WIN_INVEN;
+    char                toplines[TBUFSZ];
+    struct tc_gbl_data  tc_gbl_data;
 };
 
 static void
@@ -552,6 +558,15 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->dnstairs_room = dnstairs_room;
     s->sstairs_room = sstairs_room;
     s->ftrap = ftrap;
+    /* stage 8 */
+    s->vision_full_recalc = vision_full_recalc;
+    s->viz_array = viz_array;
+    s->WIN_MESSAGE = WIN_MESSAGE;
+    s->WIN_STATUS = WIN_STATUS;
+    s->WIN_MAP = WIN_MAP;
+    s->WIN_INVEN = WIN_INVEN;
+    memcpy(s->toplines, toplines, sizeof(s->toplines));
+    s->tc_gbl_data = tc_gbl_data;
 }
 
 static void
@@ -576,6 +591,15 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     dnstairs_room = s->dnstairs_room;
     sstairs_room = s->sstairs_room;
     ftrap = s->ftrap;
+    /* stage 8 */
+    vision_full_recalc = s->vision_full_recalc;
+    viz_array = s->viz_array;
+    WIN_MESSAGE = s->WIN_MESSAGE;
+    WIN_STATUS = s->WIN_STATUS;
+    WIN_MAP = s->WIN_MAP;
+    WIN_INVEN = s->WIN_INVEN;
+    memcpy(toplines, s->toplines, sizeof(s->toplines));
+    tc_gbl_data = s->tc_gbl_data;
 }
 
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
