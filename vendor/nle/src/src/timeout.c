@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 #include "lev.h" /* for checking save modes */
 
 STATIC_DCL void NDECL(stoned_dialogue);
@@ -2360,7 +2361,7 @@ int fd, mode, range;
 void
 restore_timers(fd, range, ghostly, adjust)
 int fd, range;
-boolean ghostly; /* restoring from a ghost level */
+boolean ghostly; /* current_nle_ctx->restoring from a ghost level */
 long adjust;     /* how much to adjust timeout */
 {
     int count;

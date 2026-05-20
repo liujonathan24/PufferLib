@@ -59,7 +59,7 @@ static struct restore_procs {
 
 /*
  * Save a mapping of IDs from ghost levels to the current level.  This
- * map is used by the timer routines when restoring ghost levels.
+ * map is used by the timer routines when current_nle_ctx->restoring ghost levels.
  */
 #define N_PER_BUCKET 64
 struct bucket {
@@ -83,7 +83,7 @@ extern int amii_numcolors;
 
 #include "display.h"
 
-boolean restoring = FALSE;
+/* current_nle_ctx->restoring migrated to nle_ctx_t (refactor stage 3d). */
 static NEARDATA struct fruit *oldfruit;
 static NEARDATA long omoves;
 
@@ -184,7 +184,7 @@ boolean ghostly;
         Strcpy(damaged_shops,
                in_rooms(tmp_dam->place.x, tmp_dam->place.y, SHOPBASE));
         if (u.uz.dlevel) {
-            /* when restoring, there are two passes over the current
+            /* when current_nle_ctx->restoring, there are two passes over the current
              * level.  the first time, u.uz isn't set, so neither is
              * shop_keeper().  just wait and process the damage on
              * the second pass.
@@ -217,7 +217,7 @@ struct obj *otmp;
     mread(fd, (genericptr_t) otmp, sizeof(struct obj));
 
     /* next object pointers are invalid; otmp->cobj needs to be left
-       as is--being non-null is key to restoring container contents */
+       as is--being non-null is key to current_nle_ctx->restoring container contents */
     otmp->nobj = otmp->nexthere = (struct obj *) 0;
     /* non-null oextra needs to be reconstructed */
     if (otmp->oextra) {
@@ -807,7 +807,7 @@ register int fd;
     int rtmp;
     struct obj *otmp;
 
-    restoring = TRUE;
+    current_nle_ctx->restoring = TRUE;
     get_plname_from_file(fd, plname);
     getlev(fd, 0, (xchar) 0, FALSE);
     if (!restgamestate(fd, &stuckid, &steedid)) {
@@ -815,7 +815,7 @@ register int fd;
         savelev(-1, 0, FREE_SAVE); /* discard current level */
         (void) nhclose(fd);
         (void) delete_savefile();
-        restoring = FALSE;
+        current_nle_ctx->restoring = FALSE;
         return 0;
     }
     restlevelstate(stuckid, steedid);
@@ -938,7 +938,7 @@ register int fd;
 
     run_timers(); /* expire all timers that have gone off while away */
     docrt();
-    restoring = FALSE;
+    current_nle_ctx->restoring = FALSE;
     clear_nhwindow(WIN_MESSAGE);
 
     /* Success! */
@@ -1042,7 +1042,7 @@ boolean ghostly;
     setmode(fd, O_BINARY);
 #endif
     /* Load the old fruit info.  We have to do it first, so the
-     * information is available when restoring the objects.
+     * information is available when current_nle_ctx->restoring the objects.
      */
     if (ghostly)
         oldfruit = loadfruitchn(fd);
@@ -1640,10 +1640,10 @@ register unsigned int len;
             return;
         } else {
             pline("Read %d instead of %u bytes.", rlen, len);
-            if (restoring) {
+            if (current_nle_ctx->restoring) {
                 (void) nhclose(fd);
                 (void) delete_savefile();
-                error("Error restoring old game.");
+                error("Error current_nle_ctx->restoring old game.");
             }
             panic("Error reading level file.");
         }

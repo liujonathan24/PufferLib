@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 /* Monsters that might be ridden */
 static NEARDATA const char steeds[] = { S_QUADRUPED, S_UNICORN, S_ANGEL,
@@ -642,9 +643,9 @@ int reason; /* Player was thrown off etc. */
                 /* Keep steed here, move the player to cc;
                  * teleds() clears u.utrap
                  */
-                in_steed_dismounting = TRUE;
+                current_nle_ctx->in_steed_dismounting = TRUE;
                 teleds(cc.x, cc.y, TRUE);
-                in_steed_dismounting = FALSE;
+                current_nle_ctx->in_steed_dismounting = FALSE;
 
                 /* Put your steed in your trap */
                 if (save_utrap)
@@ -673,9 +674,9 @@ int reason; /* Player was thrown off etc. */
 
     /* usually return the hero to the surface */
     if (reason != DISMOUNT_ENGULFED && reason != DISMOUNT_BONES) {
-        in_steed_dismounting = TRUE;
+        current_nle_ctx->in_steed_dismounting = TRUE;
         (void) float_down(0L, W_SADDLE);
-        in_steed_dismounting = FALSE;
+        current_nle_ctx->in_steed_dismounting = FALSE;
         context.botl = TRUE;
         (void) encumber_msg();
         vision_full_recalc = 1;

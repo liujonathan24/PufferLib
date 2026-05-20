@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 #define PAY_SOME 2
 #define PAY_BUY 1
@@ -1513,7 +1514,7 @@ dopay()
                 /* find the object on one of the lists */
                 if ((otmp = bp_to_obj(bp)) != 0) {
                     /* if completely used up, object quantity is stale;
-                       restoring it to its original value here avoids
+                       current_nle_ctx->restoring it to its original value here avoids
                        making the partly-used-up code more complicated */
                     if (bp->useup)
                         otmp->quan = bp->bquan;
@@ -3653,7 +3654,7 @@ repair_damage(shkp, tmp_dam, once, catchup)
 struct monst *shkp;
 struct damage *tmp_dam;
 int *once;
-boolean catchup; /* restoring a level */
+boolean catchup; /* current_nle_ctx->restoring a level */
 {
     xchar x, y;
     xchar litter[9];

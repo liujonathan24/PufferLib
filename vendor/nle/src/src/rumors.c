@@ -562,7 +562,7 @@ const char *filename;
     int save_something = current_nle_ctx->program_state.something_worth_saving;
 
     /* most likely the file is missing, so suppress impossible()'s
-       "saving and restoring might fix this" (unless the fuzzer,
+       "saving and current_nle_ctx->restoring might fix this" (unless the fuzzer,
        which escalates impossible to panic, is running) */
     if (!iflags.debug_fuzzer)
         current_nle_ctx->program_state.something_worth_saving = 0;

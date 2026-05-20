@@ -71,7 +71,7 @@ boolean resuming;
     }
     context.botlx = TRUE; /* for STATUS_HILITES */
     update_inventory(); /* for perm_invent */
-    if (resuming) { /* restoring old game */
+    if (resuming) { /* current_nle_ctx->restoring old game */
         read_engr_at(u.ux, u.uy); /* subset of pickup() */
     }
 
@@ -657,12 +657,12 @@ newgame()
 /* show "welcome [back] to nethack" message at program startup */
 void
 welcome(new_game)
-boolean new_game; /* false => restoring an old game */
+boolean new_game; /* false => current_nle_ctx->restoring an old game */
 {
     char buf[BUFSZ];
     boolean currentgend = Upolyd ? u.mfemale : flags.female;
 
-    /* skip "welcome back" if restoring a doomed character */
+    /* skip "welcome back" if current_nle_ctx->restoring a doomed character */
     if (!new_game && Upolyd && ugenocided()) {
         /* death via self-genocide is pending */
         pline("You're back, but you still feel %s inside.", udeadinside());

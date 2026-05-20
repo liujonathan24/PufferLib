@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 STATIC_DCL void FDECL(m_lose_armor, (struct monst *, struct obj *));
 STATIC_DCL void FDECL(m_dowear_type,
@@ -53,7 +54,7 @@ long mask;
     register int p;
 
     if ((mask & (W_ARM | I_SPECIAL)) == (W_ARM | I_SPECIAL)) {
-        /* restoring saved game; no properties are conferred via skin */
+        /* current_nle_ctx->restoring saved game; no properties are conferred via skin */
         uskin = obj;
         /* assert( !uarm ); */
     } else {

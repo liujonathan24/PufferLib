@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 #include "artifact.h"
 #include "artilist.h"
 
@@ -536,11 +537,11 @@ long wp_mask;
     if (spfx & SPFX_HALRES) {
         /* make_hallucinated must (re)set the mask itself to get
          * the display right */
-        /* restoring needed because this is the only artifact intrinsic
+        /* current_nle_ctx->restoring needed because this is the only artifact intrinsic
          * that can print a message--need to guard against being printed
-         * when restoring a game
+         * when current_nle_ctx->restoring a game
          */
-        (void) make_hallucinated((long) !on, restoring ? FALSE : TRUE,
+        (void) make_hallucinated((long) !on, current_nle_ctx->restoring ? FALSE : TRUE,
                                  wp_mask);
     }
     if (spfx & SPFX_ESP) {

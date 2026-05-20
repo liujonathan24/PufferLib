@@ -9,6 +9,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 #include "artifact.h"
 
 extern boolean known; /* from read.c */
@@ -2020,7 +2021,7 @@ int which_subset; /* when not full, whether to suppress objs and/or traps */
         browse_map(which_subset, "anything of interest");
 
         reconstrain_map();
-        docrt(); /* redraw the screen, restoring regular map */
+        docrt(); /* redraw the screen, current_nle_ctx->restoring regular map */
         if (Underwater)
             under_water(2);
         if (u.uburied)

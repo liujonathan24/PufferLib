@@ -382,7 +382,7 @@ savestateinlock()
      * needs to be in the level.0 file, so it does not need to be
      * constantly rewritten.  When checkpointing is turned off during
      * a game, however, the file has to be rewritten once to truncate
-     * it and avoid restoring from outdated information.
+     * it and avoid current_nle_ctx->restoring from outdated information.
      *
      * Restricting havestate to this routine means that an additional
      * noop pid rewriting will take place on the first "checkpoint" after

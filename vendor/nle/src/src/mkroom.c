@@ -16,6 +16,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 STATIC_DCL boolean FDECL(isbig, (struct mkroom *));
 STATIC_DCL struct mkroom *FDECL(pick_room, (BOOLEAN_P));
@@ -846,7 +847,7 @@ struct mkroom *r;
 }
 
 /*
- * rest_rooms : That's for restoring rooms. Read the rooms structure from
+ * rest_rooms : That's for current_nle_ctx->restoring rooms. Read the rooms structure from
  * the disk.
  */
 void

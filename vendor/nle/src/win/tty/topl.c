@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 #ifdef TTY_GRAPHICS
 
@@ -675,7 +676,7 @@ boolean restoring_msghist;
 #endif
 
     if (restoring_msghist && !initd) {
-        /* we're restoring history from the previous session, but new
+        /* we're current_nle_ctx->restoring history from the previous session, but new
            messages have already been issued this session ("Restoring...",
            for instance); collect current history (ie, those new messages),
            and also clear it out so that nothing will be present when the

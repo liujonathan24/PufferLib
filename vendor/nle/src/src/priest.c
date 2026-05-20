@@ -831,7 +831,7 @@ angry_priest()
 
 /*
  * When saving bones, find priests that aren't on their shrine level,
- * and remove them.  This avoids big problems when restoring bones.
+ * and remove them.  This avoids big problems when current_nle_ctx->restoring bones.
  * [Perhaps we should convert them into roamers instead?]
  */
 void
@@ -847,7 +847,7 @@ clearpriests()
     }
 }
 
-/* munge priest-specific structure when restoring -dlc */
+/* munge priest-specific structure when current_nle_ctx->restoring -dlc */
 void
 restpriest(mtmp, ghostly)
 register struct monst *mtmp;

@@ -2408,7 +2408,7 @@ learn_unseen_invent()
 void
 update_inventory()
 {
-    if (restoring)
+    if (current_nle_ctx->restoring)
         return;
 
     /*

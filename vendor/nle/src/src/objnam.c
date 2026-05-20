@@ -1241,11 +1241,11 @@ unsigned doname_flags;
             Strcat(bp, " (at the ready)");
         }
     }
-    /* treat 'restoring' like suppress_price because shopkeeper and
+    /* treat 'current_nle_ctx->restoring' like suppress_price because shopkeeper and
        bill might not be available yet while restore is in progress
        (objects won't normally be formatted during that time, but if
        'perm_invent' is enabled then they might be) */
-    if (iflags.suppress_price || restoring) {
+    if (iflags.suppress_price || current_nle_ctx->restoring) {
         ; /* don't attempt to obtain any stop pricing, even if 'with_price' */
     } else if (is_unpaid(obj)) { /* in inventory or in container in invent */
         long quotedprice = unpaid_cost(obj, TRUE);

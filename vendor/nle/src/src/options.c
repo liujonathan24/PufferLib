@@ -15,6 +15,7 @@ NEARDATA struct instance_flags iflags; /* provide linkage */
 #define static
 #else
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 #include "tcap.h"
 #include <ctype.h>
 #endif
@@ -6920,7 +6921,7 @@ char *op;
 /* set up for wizard mode if player or save file has requested to it;
    called from port-specific startup code to handle `nethack -D' or
    OPTIONS=playmode:debug, or from dorecover()'s restgamestate() if
-   restoring a game which was saved in wizard mode */
+   current_nle_ctx->restoring a game which was saved in wizard mode */
 void
 set_playmode()
 {

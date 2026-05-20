@@ -58,7 +58,6 @@ NEARDATA char pl_fruit[PL_FSIZ] = DUMMY;
 NEARDATA struct fruit *ffruit = (struct fruit *) 0;
 
 NEARDATA char tune[6] = DUMMY;
-NEARDATA boolean ransacked = 0;
 
 const char *occtxt = DUMMY;
 const char quitchars[] = " \r\n\033";
@@ -119,7 +118,6 @@ NEARDATA boolean unweapon = FALSE;
 NEARDATA boolean mrg_to_wielded = FALSE;
 /* weapon picked is merged with wielded one */
 
-NEARDATA boolean in_steed_dismounting = FALSE;
 /* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */
 
 NEARDATA coord bhitpos = DUMMY;

@@ -154,8 +154,6 @@ E struct linfo level_info[MAXLINFO];
  * Definition of struct sinfo is now in nle.h. Callers use
  * current_nle_ctx->program_state.X for per-instance access. */
 
-E boolean restoring;
-E boolean ransacked;
 
 E const char quitchars[];
 E const char vowels[];
@@ -209,8 +207,8 @@ E NEARDATA boolean stoned;
 E NEARDATA boolean unweapon;
 E NEARDATA boolean mrg_to_wielded;
 E NEARDATA boolean defer_see_monsters;
+/* `in_steed_dismounting` migrated to nle_ctx_t (stage 3d) */
 
-E NEARDATA boolean in_steed_dismounting;
 /* `has_strong_rngseed` migrated into nle_ctx_t (refactor stage 3a, NLE
  * subsystem). Callers now use current_nle_ctx->has_strong_rngseed. */
 

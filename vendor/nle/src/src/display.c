@@ -1442,10 +1442,10 @@ redraw_map()
      * used to get much too involved with each dungeon level as it was
      * read and written.
      *
-     * !u.ux: display isn't ready yet; (restoring || !on_level()): was part
+     * !u.ux: display isn't ready yet; (current_nle_ctx->restoring || !on_level()): was part
      * of cliparound() but interface shouldn't access this much internals
      */
-    if (!u.ux || restoring || !on_level(&u.uz0, &u.uz))
+    if (!u.ux || current_nle_ctx->restoring || !on_level(&u.uz0, &u.uz))
         return;
 
     /*

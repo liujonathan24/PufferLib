@@ -3146,7 +3146,7 @@ restartcham()
     }
 }
 
-/* called when restoring a monster from a saved level; protection
+/* called when current_nle_ctx->restoring a monster from a saved level; protection
    against shape-changing might be different now than it was at the
    time the level was saved. */
 void

@@ -72,6 +72,9 @@ typedef struct nle_globals {
     boolean             has_strong_rngseed; /* was NEARDATA in decl.c */
     struct sinfo        program_state;      /* was NEARDATA in decl.c */
     int                 hackpid;            /* was 'int hackpid' in decl.c */
+    boolean             restoring;          /* was decl.c flag (savefile) */
+    boolean             ransacked;          /* was decl.c flag (mkmaze) */
+    boolean             in_steed_dismounting; /* was decl.c flag (steed) */
 } nle_ctx_t;
 
 /*

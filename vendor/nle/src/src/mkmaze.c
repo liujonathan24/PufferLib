@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 #include "sp_lev.h"
 #include "lev.h" /* save & restore info */
 
@@ -610,7 +611,7 @@ fixup_special()
     } else if (on_level(&u.uz, &baalzebub_level)) {
         /* custom wallify the "beetle" potion of the level */
         baalz_fixup();
-    } else if (u.uz.dnum == mines_dnum && ransacked) {
+    } else if (u.uz.dnum == mines_dnum && current_nle_ctx->ransacked) {
        stolen_booty();
     }
 
@@ -624,7 +625,7 @@ check_ransacked(s)
 char *s;
 {
     /* this kludge only works as long as orctown is minetn-1 */
-    ransacked = (u.uz.dnum == mines_dnum && !strcmp(s, "minetn-1"));
+    current_nle_ctx->ransacked = (u.uz.dnum == mines_dnum && !strcmp(s, "minetn-1"));
 }
 
 #define ORC_LEADER 1
@@ -801,7 +802,7 @@ stolen_booty(VOID_ARGS)
             migrate_orc(mtmp, 0UL);
         }
     }
-    ransacked = 0;
+    current_nle_ctx->ransacked = 0;
 }
 
 #undef ORC_LEADER

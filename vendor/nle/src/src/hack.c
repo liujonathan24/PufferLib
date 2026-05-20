@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated flags */
 
 /* #define DEBUG */ /* uncomment for debugging */
 
@@ -2180,7 +2181,7 @@ boolean pick;
     check_special_room(FALSE);
     if (IS_SINK(levl[u.ux][u.uy].typ) && Levitation)
         dosinkfall();
-    if (!in_steed_dismounting) { /* if dismounting, we'll check again later */
+    if (!current_nle_ctx->in_steed_dismounting) { /* if dismounting, we'll check again later */
         boolean pit;
 
         /* if levitation is due to time out at the end of this
