@@ -22,6 +22,9 @@ typedef struct TMT TMT;
  * Use heap pointers in nle_ctx_t and let nle.c (which includes hack.h)
  * allocate them. */
 struct you;
+struct flag;             /* include/flag.h */
+struct instance_flags;   /* include/flag.h */
+struct sysflag;          /* include/flag.h, only #ifdef SYSFLAGS */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -109,6 +112,11 @@ typedef struct nle_globals {
     int                 multi;              /* was decl.c (multi-step action counter) */
     /* stage 4 — player state (the big one — ~94 files, hundreds of refs) */
     struct you         *u_ptr;              /* was 'struct you u' in decl.c */
+    /* stage 5 — game options & flags (another macro-storm: wizard,
+     * discover, use_color etc. expand to flags.X / iflags.X) */
+    struct flag                  *flags_ptr;  /* was 'struct flag flags' */
+    struct instance_flags        *iflags_ptr; /* was 'struct instance_flags iflags' */
+    struct sysflag               *sysflags_ptr; /* was 'struct sysflag sysflags' */
 } nle_ctx_t;
 
 /*

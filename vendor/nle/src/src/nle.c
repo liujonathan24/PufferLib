@@ -170,6 +170,17 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         abort();
     }
 
+    /* Stage 5 flags / iflags / sysflags */
+    nle->flags_ptr = (struct flag *) calloc(1, sizeof(struct flag));
+    nle->iflags_ptr = (struct instance_flags *) calloc(1, sizeof(struct instance_flags));
+#ifdef SYSFLAGS
+    nle->sysflags_ptr = (struct sysflag *) calloc(1, sizeof(struct sysflag));
+#endif
+    if (!nle->flags_ptr || !nle->iflags_ptr) {
+        fprintf(stderr, "init_nle: failed to allocate flags/iflags\n");
+        abort();
+    }
+
     return nle;
 }
 
@@ -451,6 +462,9 @@ init_random(int FDECL((*fn), (int) ))
     set_random(sys_random_seed(), fn);
 }
 
+static void nle_swap_in(nle_ctx_t *nle);
+static void nle_swap_out(nle_ctx_t *nle);
+
 nle_ctx_t *
 nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
           nle_settings *settings_p)
@@ -468,12 +482,14 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
         make_fcontext(nle->stack.sptr, nle->stack.ssize, mainloop);
 
     current_nle_ctx = nle;
+    nle_swap_in(nle);
     fcontext_transfer_t t = jump_fcontext(nle->generatorcontext, NULL);
     nle->generatorcontext = t.ctx;
     nle->done = (t.data == NULL);
     obs->done = nle->done;
     nle->seeds_init =
         NULL; /* Don't set to *these* seeds on subsequent reseeds, if any. */
+    nle_swap_out(nle);
 
     if (nle->ttyrec) {
         if (obs->blstats) {
@@ -488,10 +504,51 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
     return nle;
 }
 
+/* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
+ * from nle_ctx_t before resuming NetHack, then back out after.
+ *
+ * Why memcpy and not macros: `flags` (and `iflags`) are also used as
+ * STRUCT FIELD NAMES in dungeon.h/lev.h/rm.h/sp_lev.h/func_tab.h.
+ * A `#define flags (*ptr)` clobbers `someobj.flags` everywhere. Keeping
+ * them as process-globals and swapping the contents around each step is
+ * less elegant but keeps NetHack's source unchanged. Cost: 2 memcpys of
+ * sizeof(struct flag)+sizeof(struct instance_flags) per c_step ≈
+ * sub-microsecond on modern CPUs.
+ *
+ * Caveat: this serializes within-process multi-env stepping — all envs
+ * share one global. For parallel scaling we still need either multi-
+ * process OR thread-local storage on `flags` (a future refinement). */
+static void
+nle_swap_in(nle_ctx_t *nle)
+{
+    if (nle->flags_ptr)
+        memcpy(&flags, nle->flags_ptr, sizeof(flags));
+    if (nle->iflags_ptr)
+        memcpy(&iflags, nle->iflags_ptr, sizeof(iflags));
+#ifdef SYSFLAGS
+    if (nle->sysflags_ptr)
+        memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
+#endif
+}
+
+static void
+nle_swap_out(nle_ctx_t *nle)
+{
+    if (nle->flags_ptr)
+        memcpy(nle->flags_ptr, &flags, sizeof(flags));
+    if (nle->iflags_ptr)
+        memcpy(nle->iflags_ptr, &iflags, sizeof(iflags));
+#ifdef SYSFLAGS
+    if (nle->sysflags_ptr)
+        memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
+#endif
+}
+
 nle_ctx_t *
 nle_step(nle_ctx_t *nle, nle_obs *obs)
 {
     current_nle_ctx = nle;
+    nle_swap_in(nle);
     nle->observation = obs;
     if (nle->ttyrec) {
         write_ttyrec_header(1, 1);
@@ -501,6 +558,7 @@ nle_step(nle_ctx_t *nle, nle_obs *obs)
     nle->generatorcontext = t.ctx;
     nle->done = (t.data == NULL);
     obs->done = nle->done;
+    nle_swap_out(nle);
 
     if (nle->ttyrec) {
         /* NLE ttyrec version 3 stores the action and in-game score in
