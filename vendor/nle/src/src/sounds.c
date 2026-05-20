@@ -1111,7 +1111,7 @@ typedef struct audio_mapping_rec {
     struct audio_mapping_rec *next;
 } audio_mapping;
 
-static audio_mapping *soundmap = 0;
+static __thread audio_mapping *soundmap = 0;
 
 char *sounddir = ".";
 

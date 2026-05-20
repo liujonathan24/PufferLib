@@ -11,8 +11,9 @@
                               * config file parsing) with modest decoration;
                               * result will then be truncated to BUFSZ-1 */
 
-static unsigned pline_flags = 0;
-static char prevmsg[BUFSZ];
+/* TLS — per-thread message state. */
+static __thread unsigned pline_flags = 0;
+static __thread char prevmsg[BUFSZ];
 
 static void FDECL(putmesg, (const char *));
 static char *FDECL(You_buf, (int));
@@ -262,8 +263,8 @@ VA_DECL(const char *, line)
 }
 
 /* work buffer for You(), &c and verbalize() */
-static char *you_buf = 0;
-static int you_buf_siz = 0;
+static __thread char *you_buf = 0;
+static __thread int you_buf_siz = 0;
 
 static char *
 You_buf(siz)

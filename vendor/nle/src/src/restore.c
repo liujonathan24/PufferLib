@@ -74,7 +74,7 @@ STATIC_DCL void NDECL(clear_id_mapping);
 STATIC_DCL void FDECL(add_id_mapping, (unsigned, unsigned));
 
 static int n_ids_mapped = 0;
-static struct bucket *id_map = 0;
+static __thread struct bucket *id_map = 0;
 
 #ifdef AMII_GRAPHICS
 void FDECL(amii_setpens, (int)); /* use colors from save file */

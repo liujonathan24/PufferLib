@@ -149,7 +149,7 @@ static const struct {
                 { "", 0, 0, 0 } };
 #define TTSZ SIZE(tintxts)
 
-static char *eatmbuf = 0; /* set by cpostfx() */
+static __thread char *eatmbuf = 0; /* set by cpostfx() */
 
 /* called after mimicing is over */
 STATIC_PTR int

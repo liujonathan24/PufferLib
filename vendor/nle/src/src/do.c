@@ -1711,7 +1711,7 @@ final_level()
     gain_guardian_angel();
 }
 
-static char *dfr_pre_msg = 0,  /* pline() before level change */
+static __thread char *dfr_pre_msg = 0,  /* pline() before level change */
             *dfr_post_msg = 0; /* pline() after level change */
 
 /* change levels at the end of this turn, after monsters finish moving */

@@ -2644,7 +2644,7 @@ struct _status_hilite_line_str {
     struct _status_hilite_line_str *next;
 };
 
-static struct _status_hilite_line_str *status_hilite_str = 0;
+static __thread struct _status_hilite_line_str *status_hilite_str = 0;
 static int status_hilite_str_id = 0;
 
 STATIC_OVL void

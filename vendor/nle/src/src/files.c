@@ -2814,7 +2814,7 @@ struct _config_error_frame {
     struct _config_error_frame *next;
 };
 
-static struct _config_error_frame *config_error_data = 0;
+static __thread struct _config_error_frame *config_error_data = 0;
 
 void
 config_error_init(from_file, sourcename, secure)

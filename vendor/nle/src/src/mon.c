@@ -3253,7 +3253,7 @@ struct monst *mon;
     }
 }
 
-static short *animal_list = 0; /* list of PM values for animal monsters */
+static __thread short *animal_list = 0; /* list of PM values for animal monsters */
 static int animal_list_count;
 
 void

@@ -155,7 +155,7 @@ struct winlink {
 };
 /* NB: this chain does not contain the terminal real window system pointer */
 
-static struct winlink *chain = 0;
+static __thread struct winlink *chain = 0;
 
 static struct winlink *
 wl_new()
@@ -193,7 +193,7 @@ wl_addtail(struct winlink *wl)
 }
 #endif /* WINCHAIN */
 
-static struct win_choices *last_winchoice = 0;
+static __thread struct win_choices *last_winchoice = 0;
 
 boolean
 genl_can_suspend_no(VOID_ARGS)
