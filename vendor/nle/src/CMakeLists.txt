@@ -103,7 +103,7 @@ file(
   "win/tty/*.c"
   "win/rl/winrl.cc")
 # NLE fast-reset: C++ operator new/delete overrides routed to the arena.
-# list(APPEND NETHACK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/nle_arena_cpp.cc")
+list(APPEND NETHACK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/nle_arena_cpp.cc")
 
 # terminal emulator library
 add_library(tmt STATIC "third_party/libtmt/tmt.c")
@@ -133,7 +133,7 @@ target_compile_definitions(nethack PRIVATE NLE_USE_ARENA_FREE=1)
 # -z muldefs: tolerate the tentative-vs-strong duplicate of current_nle_ctx
 # that gcc 10+ otherwise rejects under -fno-common (this is preexisting in
 # the codebase; previous builds dodged it differently).
-target_link_options(nethack PRIVATE "-Wl,-Bsymbolic-functions" "LINKER:-z,muldefs")
+target_link_options(nethack PRIVATE "LINKER:-z,muldefs")
 
 target_link_libraries(nethack PUBLIC m fcontext bz2 tmt)
 

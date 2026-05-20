@@ -250,6 +250,33 @@ int main(int argc, char** argv) {
                n, dt, 1000.0 * dt / n, n / dt);
         c_close(&env);
         free(env.observations); free(env.actions); free(env.rewards); free(env.terminals);
+    } else if (argc >= 2 && strcmp(argv[1], "stepreset") == 0) {
+        // step+reset cycle test. Args: STEPS_PER_EPISODE NUM_RESETS
+        long steps_per = (argc >= 3) ? atol(argv[2]) : 100;
+        long n_resets  = (argc >= 4) ? atol(argv[3]) : 20;
+        Nethack env; memset(&env, 0, sizeof(env));
+        env.num_agents = 1;
+        env.observations = (unsigned char*)calloc(NETHACK_OBS_SIZE, 1);
+        env.actions      = (float*)calloc(1, sizeof(float));
+        env.rewards      = (float*)calloc(1, sizeof(float));
+        env.terminals    = (float*)calloc(1, sizeof(float));
+        init(&env);
+        c_reset(&env);
+        srand(0xC0FFEE);
+        double t0 = now_sec();
+        for (long r = 0; r < n_resets; r++) {
+            for (long t = 0; t < steps_per; t++) {
+                env.actions[0] = (float)(rand() % NETHACK_NUM_ACTIONS);
+                c_step(&env);
+            }
+            c_reset(&env);
+        }
+        double dt = now_sec() - t0;
+        long total = steps_per * n_resets;
+        printf("stepreset: %ld cycles x %ld steps = %ld steps  time=%.3fs  sps=%.0f\n",
+               n_resets, steps_per, total, dt, total / dt);
+        c_close(&env);
+        free(env.observations); free(env.actions); free(env.rewards); free(env.terminals);
     } else {
         int max_steps = (argc >= 2) ? atoi(argv[1]) : 50;
         run_interactive(max_steps);

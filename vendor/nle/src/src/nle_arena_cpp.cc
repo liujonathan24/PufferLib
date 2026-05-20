@@ -35,7 +35,8 @@ static inline void *arena_alloc_cpp(std::size_t sz)
     /* Use the C alloc() — it bumps the same arena and panics on OOM. The
      * unsigned-int parameter is wide enough for any reasonable C++ alloc. */
     if (sz == 0) sz = 1;
-    return (void *) alloc((unsigned int) sz);
+    void *p = (void *) alloc((unsigned int) sz);
+    return p;
 }
 
 /* Throwing forms */
@@ -48,10 +49,13 @@ void *operator new(std::size_t sz, const std::nothrow_t &) noexcept
 void *operator new[](std::size_t sz, const std::nothrow_t &) noexcept
 { return arena_alloc_cpp(sz); }
 
-/* Delete: route through the arena-aware free wrapper. */
-void operator delete(void *p) noexcept                 { nle_arena_free(p); }
-void operator delete[](void *p) noexcept               { nle_arena_free(p); }
-void operator delete(void *p, std::size_t) noexcept    { nle_arena_free(p); }
-void operator delete[](void *p, std::size_t) noexcept  { nle_arena_free(p); }
-void operator delete(void *p, const std::nothrow_t &) noexcept    { nle_arena_free(p); }
-void operator delete[](void *p, const std::nothrow_t &) noexcept  { nle_arena_free(p); }
+static inline void dbg_del(void *p, const char *tag) {
+    (void) tag;
+    nle_arena_free(p);
+}
+void operator delete(void *p) noexcept                 { dbg_del(p,"d"); }
+void operator delete[](void *p) noexcept               { dbg_del(p,"da"); }
+void operator delete(void *p, std::size_t) noexcept    { dbg_del(p,"ds"); }
+void operator delete[](void *p, std::size_t) noexcept  { dbg_del(p,"das"); }
+void operator delete(void *p, const std::nothrow_t &) noexcept    { dbg_del(p,"dnt"); }
+void operator delete[](void *p, const std::nothrow_t &) noexcept  { dbg_del(p,"dant"); }

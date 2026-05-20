@@ -96,7 +96,6 @@ nle_arena_free(void *ptr)
     /* Non-arena pointer: forward to libc free. Use __libc_free to bypass
      * the `free` macro from global.h. */
     extern void __libc_free(void *);
-    fprintf(stderr, "[nle_arena_free] non-arena ptr=%p\n", ptr);
     __libc_free(ptr);
 }
 
