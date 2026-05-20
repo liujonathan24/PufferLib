@@ -75,13 +75,19 @@ typedef struct nle_globals {
     boolean             restoring;          /* was decl.c flag (savefile) */
     boolean             ransacked;          /* was decl.c flag (mkmaze) */
     boolean             in_steed_dismounting; /* was decl.c flag (steed) */
+    const char         *multi_reason;       /* was decl.c ('Speed', 'Slowness', ...) */
+    int                 occtime;            /* was decl.c (occupation duration) */
 } nle_ctx_t;
 
 /*
  * Would like to annotate this with __thread, but that causes
  * the MacOS dynamic linker to not unload the library on dlclose().
+ *
+ * Refactor stage 3: declared extern here, defined once in nle.c. Was a
+ * tentative-definition (common symbol) — that broke under ASan ODR after
+ * many TUs started including nle.h.
  */
-nle_ctx_t *current_nle_ctx;
+extern nle_ctx_t *current_nle_ctx;
 
 nle_ctx_t *nle_start(nle_obs *, FILE *, nle_seeds_init_t *, nle_settings *);
 nle_ctx_t *nle_step(nle_ctx_t *, nle_obs *);

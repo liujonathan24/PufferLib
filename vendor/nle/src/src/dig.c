@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 static NEARDATA boolean did_dig_msg;
 
@@ -1078,7 +1079,7 @@ struct obj *obj;
                 /* you ought to be able to let go; tough luck */
                 /* (maybe `move_into_trap()' would be better) */
                 nomul(-d(2, 2));
-                multi_reason = "stuck in a spider web";
+                current_nle_ctx->multi_reason = "stuck in a spider web";
                 nomovemsg = "You pull free.";
             } else if (lev->typ == IRONBARS) {
                 pline("Clang!");

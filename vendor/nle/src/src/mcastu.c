@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 /* monster mage spells */
 enum mcast_mage_spells {
@@ -673,7 +674,7 @@ int spellnum;
             if (multi >= 0)
                 You("stiffen briefly.");
             nomul(-1);
-            multi_reason = "paralyzed by a monster";
+            current_nle_ctx->multi_reason = "paralyzed by a monster";
         } else {
             if (multi >= 0)
                 You("are frozen in place!");
@@ -681,7 +682,7 @@ int spellnum;
             if (Half_spell_damage)
                 dmg = (dmg + 1) / 2;
             nomul(-dmg);
-            multi_reason = "paralyzed by a monster";
+            current_nle_ctx->multi_reason = "paralyzed by a monster";
         }
         nomovemsg = 0;
         dmg = 0;

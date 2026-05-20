@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_PTR int NDECL(stealarm);
 
@@ -429,7 +430,7 @@ char *objnambuf;
                 named++;
                 /* the following is to set multi for later on */
                 nomul(-armordelay);
-                multi_reason = "taking off clothes";
+                current_nle_ctx->multi_reason = "taking off clothes";
                 nomovemsg = 0;
                 remove_worn_item(otmp, TRUE);
                 otmp->cursed = curssv;

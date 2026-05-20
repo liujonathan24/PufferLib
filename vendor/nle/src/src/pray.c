@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_PTR int NDECL(prayer_done);
 STATIC_DCL struct obj *NDECL(worst_cursed_item);
@@ -1427,7 +1428,7 @@ dosacrifice()
                         dmon->mpeaceful = TRUE;
                     You("are terrified, and unable to move.");
                     nomul(-3);
-                    multi_reason = "being terrified of a demon";
+                    current_nle_ctx->multi_reason = "being terrified of a demon";
                     nomovemsg = 0;
                 } else
                     pline_The("%s.", demonless_msg);
@@ -1866,7 +1867,7 @@ dopray()
         }
     }
     nomul(-3);
-    multi_reason = "praying";
+    current_nle_ctx->multi_reason = "praying";
     nomovemsg = "You finish your prayer.";
     afternmv = prayer_done;
 
@@ -2075,7 +2076,7 @@ doturn()
      *  the brief paralysis?]
      */
     nomul(-(5 - ((u.ulevel - 1) / 6))); /* -5 .. -1 */
-    multi_reason = "trying to turn the monsters";
+    current_nle_ctx->multi_reason = "trying to turn the monsters";
     nomovemsg = You_can_move_again;
     return 1;
 }

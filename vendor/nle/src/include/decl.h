@@ -38,10 +38,8 @@ E char chosen_windowtype[WINTYPELEN];
 E NEARDATA int bases[MAXOCLASSES];
 
 E NEARDATA int multi;
-E const char *multi_reason;
 E NEARDATA int nroom;
 E NEARDATA int nsubroom;
-E NEARDATA int occtime;
 
 #define WARNCOUNT 6 /* number of different warning levels */
 E nhsym warnsyms[WARNCOUNT];

@@ -554,14 +554,14 @@ int how;
 {
     int i;
 
-    if (multi_reason) {
+    if (current_nle_ctx->multi_reason) {
         for (i = 0; i < SIZE(death_fixups); ++i)
             if (death_fixups[i].why == how
-                && !strcmp(death_fixups[i].exclude, multi_reason)) {
+                && !strcmp(death_fixups[i].exclude, current_nle_ctx->multi_reason)) {
                 if (death_fixups[i].include) /* substitute alternate reason */
-                    multi_reason = death_fixups[i].include;
+                    current_nle_ctx->multi_reason = death_fixups[i].include;
                 else /* remove the helplessness reason */
-                    multi_reason = (char *) 0;
+                    current_nle_ctx->multi_reason = (char *) 0;
                 if (death_fixups[i].unmulti) /* possibly hide helplessness */
                     multi = 0L;
                 break;
@@ -1297,7 +1297,7 @@ int how;
     if (how == ESCAPED || how == PANICKED)
         killer.format = NO_KILLER_PREFIX;
 
-    fixup_death(how); /* actually, fixup multi_reason */
+    fixup_death(how); /* actually, fixup current_nle_ctx->multi_reason */
 
     if (how != PANICKED) {
         boolean silently = done_stopprint ? TRUE : FALSE;

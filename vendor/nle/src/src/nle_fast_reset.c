@@ -29,13 +29,9 @@
 #include <unistd.h>
 
 #include "hack.h"
-/* Pull in nle_ctx_t but avoid re-defining `current_nle_ctx` (declared as a
- * tentative definition in nle.h, which would create a duplicate symbol when
- * included in two translation units). Declare it extern instead. */
-#define current_nle_ctx current_nle_ctx_FWD_HIDE
+/* nle.h now declares current_nle_ctx as proper `extern` (single
+ * definition lives in nle.c, refactor stage 3+ cleanup). */
 #include "nle.h"
-#undef current_nle_ctx
-extern nle_ctx_t *current_nle_ctx;
 
 #define NLE_FR_MAX_SEGS 8
 
@@ -216,7 +212,12 @@ nle_fr_restore(nle_ctx_t *nle, void *snap)
 void
 nle_fr_destroy(void *snap)
 {
-    /* TEMP DEBUG: skip frees to test theory */
-    (void) snap;
-    return;
+    if (!snap)
+        return;
+    nle_fr_snapshot_t *s = (nle_fr_snapshot_t *) snap;
+    for (int i = 0; i < s->n_segs; i++)
+        free(s->segs[i].saved);
+    free(s->saved_stack);
+    free(s->saved_arena);
+    free(s);
 }

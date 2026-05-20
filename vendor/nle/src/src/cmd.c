@@ -265,7 +265,7 @@ int xtime;
     } else
         occupation = fn;
     occtxt = txt;
-    occtime = 0;
+    current_nle_ctx->occtime = 0;
     return;
 }
 

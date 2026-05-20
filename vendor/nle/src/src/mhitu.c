@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 #include "artifact.h"
 
 STATIC_VAR NEARDATA struct obj *mon_currwep = (struct obj *) 0;
@@ -1187,7 +1188,7 @@ register struct attack *mattk;
                     You("are frozen by %s!", mon_nam(mtmp));
                 nomovemsg = You_can_move_again;
                 nomul(-rnd(10));
-                multi_reason = "paralyzed by a monster";
+                current_nle_ctx->multi_reason = "paralyzed by a monster";
                 exercise(A_DEX, FALSE);
             }
         }

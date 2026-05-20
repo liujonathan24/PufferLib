@@ -20,6 +20,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL void FDECL(check_strangling, (BOOLEAN_P));
 STATIC_DCL void FDECL(polyman, (const char *, const char *));
@@ -1422,7 +1423,7 @@ dogaze()
                                   ? -d((int) mtmp->m_lev + 1,
                                        (int) mtmp->data->mattk[0].damd)
                                   : -200);
-                        multi_reason = "frozen by a monster's gaze";
+                        current_nle_ctx->multi_reason = "frozen by a monster's gaze";
                         nomovemsg = 0;
                         return 1;
                     } else

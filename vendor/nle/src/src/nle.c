@@ -15,6 +15,9 @@
 
 #include "nle.h"
 
+/* Single definition of current_nle_ctx; declared extern in nle.h. */
+nle_ctx_t *current_nle_ctx;
+
 #ifdef NLE_BZ2_TTYRECS
 #include <bzlib.h>
 #endif

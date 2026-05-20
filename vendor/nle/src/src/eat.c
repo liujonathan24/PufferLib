@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_PTR int NDECL(eatmdone);
 STATIC_PTR int NDECL(eatfood);
@@ -1031,7 +1032,7 @@ int pm;
             if (u.usteed)
                 dismount_steed(DISMOUNT_FELL);
             nomul(-tmp);
-            multi_reason = "pretending to be a pile of gold";
+            current_nle_ctx->multi_reason = "pretending to be a pile of gold";
             Sprintf(buf,
                     Hallucination
                        ? "You suddenly dread being peeled and mimic %s again!"
@@ -1576,7 +1577,7 @@ struct obj *obj;
         incr_itimeout(&HDeaf, duration);
         context.botl = TRUE;
         nomul(-duration);
-        multi_reason = "unconscious from rotten food";
+        current_nle_ctx->multi_reason = "unconscious from rotten food";
         nomovemsg = "You are conscious again.";
         afternmv = Hear_again;
         return 1;
@@ -2990,7 +2991,7 @@ boolean incr;
                 incr_itimeout(&HDeaf, duration);
                 context.botl = TRUE;
                 nomul(-duration);
-                multi_reason = "fainted from lack of food";
+                current_nle_ctx->multi_reason = "fainted from lack of food";
                 nomovemsg = "You regain consciousness.";
                 afternmv = unfaint;
                 newhs = FAINTED;
@@ -3211,7 +3212,7 @@ vomit() /* A good idea from David Neves */
        be immobilized for some other reason at the time vomit() is called */
     if (multi >= -2) {
         nomul(-2);
-        multi_reason = "vomiting";
+        current_nle_ctx->multi_reason = "vomiting";
         nomovemsg = You_can_move_again;
     }
 }

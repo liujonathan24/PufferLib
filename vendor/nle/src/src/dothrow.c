@@ -6,6 +6,7 @@
 /* Contains code for 't' (throw) */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL int FDECL(throw_obj, (struct obj *, int));
 STATIC_DCL boolean FDECL(ok_to_throw, (int *));
@@ -839,7 +840,7 @@ boolean verbose;
         return; /* paranoia */
 
     nomul(-range);
-    multi_reason = "moving through the air";
+    current_nle_ctx->multi_reason = "moving through the air";
     nomovemsg = ""; /* it just happens */
     if (verbose)
         You("%s in the opposite direction.", range > 1 ? "hurtle" : "float");

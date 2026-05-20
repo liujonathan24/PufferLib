@@ -8,6 +8,7 @@
  */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 #define CONTAINED_SYM '>' /* from invent.c */
 
@@ -2543,7 +2544,7 @@ boolean more_containers; /* True iff #loot multiple and this isn't last one */
         /* even if the trap fails, you've used up this turn */
         if (multi >= 0) { /* in case we didn't become paralyzed */
             nomul(-1);
-            multi_reason = "opening a container";
+            current_nle_ctx->multi_reason = "opening a container";
             nomovemsg = "";
         }
         abort_looting = TRUE;
@@ -3153,7 +3154,7 @@ struct obj *box; /* or bag */
         /* even if the trap fails, you've used up this turn */
         if (multi >= 0) { /* in case we didn't become paralyzed */
             nomul(-1);
-            multi_reason = "tipping a container";
+            current_nle_ctx->multi_reason = "tipping a container";
             nomovemsg = "";
         }
     } else if (box->otyp == BAG_OF_TRICKS || box->otyp == HORN_OF_PLENTY) {

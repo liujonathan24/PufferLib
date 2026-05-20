@@ -1938,7 +1938,7 @@ domove_core()
     /* must come after we finished picking up, in spoteffects() */
     if (cause_delay) {
         nomul(-2);
-        multi_reason = "dragging an iron ball";
+        current_nle_ctx->multi_reason = "dragging an iron ball";
         nomovemsg = "";
     }
 
@@ -2912,7 +2912,7 @@ register int nval;
     u.usleep = 0;
     multi = nval;
     if (nval == 0)
-        multi_reason = NULL;
+        current_nle_ctx->multi_reason = NULL;
     context.travel = context.travel1 = context.mv = context.run = 0;
 }
 
@@ -2938,7 +2938,7 @@ const char *msg_override;
     }
     nomovemsg = 0;
     u.usleep = 0;
-    multi_reason = NULL;
+    current_nle_ctx->multi_reason = NULL;
     if (afternmv) {
         int NDECL((*f)) = afternmv;
 

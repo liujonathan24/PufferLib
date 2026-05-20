@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 STATIC_DCL boolean FDECL(mon_is_gecko, (struct monst *));
 STATIC_DCL int FDECL(domonnoise, (struct monst *));
@@ -721,7 +722,7 @@ register struct monst *mtmp;
         pline("%s rattles noisily.", Monnam(mtmp));
         You("freeze for a moment.");
         nomul(-2);
-        multi_reason = "scared by rattling";
+        current_nle_ctx->multi_reason = "scared by rattling";
         nomovemsg = 0;
         break;
     case MS_LAUGH: {

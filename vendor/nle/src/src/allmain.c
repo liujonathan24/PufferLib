@@ -402,7 +402,7 @@ boolean resuming;
                 reset_eat();
             }
 #if defined(MICRO) || defined(WIN32)
-            if (!(++occtime % 7))
+            if (!(++current_nle_ctx->occtime % 7))
                 display_nhwindow(WIN_MAP, FALSE);
 #endif
             continue;

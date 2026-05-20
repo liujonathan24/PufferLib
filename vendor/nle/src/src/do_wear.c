@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 static NEARDATA const char see_yourself[] = "see yourself";
 static NEARDATA const char unknown_type[] = "Unknown type of %s (%d)";
@@ -1587,7 +1588,7 @@ struct obj *otmp;
        delays and which didn't; now both are handled for all types */
     if (delay) {
         nomul(delay);
-        multi_reason = "disrobing";
+        current_nle_ctx->multi_reason = "disrobing";
         if (is_helmet(otmp)) {
             what = helm_simple_name(otmp);
             afternmv = Helmet_off;
@@ -2031,10 +2032,10 @@ struct obj *obj;
         delay = -objects[obj->otyp].oc_delay;
         if (delay) {
             nomul(delay);
-            multi_reason = "dressing up";
+            current_nle_ctx->multi_reason = "dressing up";
             nomovemsg = "You finish your dressing maneuver.";
         } else {
-            unmul(""); /* call (*aftermv)(), clear it+nomovemsg+multi_reason */
+            unmul(""); /* call (*aftermv)(), clear it+nomovemsg+current_nle_ctx->multi_reason */
             on_msg(obj);
         }
         context.takeoff.mask = context.takeoff.what = 0L;

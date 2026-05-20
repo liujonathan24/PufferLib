@@ -22,10 +22,8 @@ char chosen_windowtype[WINTYPELEN];
 NEARDATA int bases[MAXOCLASSES] = DUMMY;
 
 NEARDATA int multi = 0;
-const char *multi_reason = NULL;
 NEARDATA int nroom = 0;
 NEARDATA int nsubroom = 0;
-NEARDATA int occtime = 0;
 
 /* maze limits must be even; masking off lowest bit guarantees that */
 int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;

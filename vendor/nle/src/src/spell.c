@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 /* spellmenu arguments; 0 thru n-1 used as spl_book[] index when swapping */
 #define SPELLMENU_CAST (-2)
@@ -353,7 +354,7 @@ learn(VOID_ARGS)
         context.spbook.book = 0; /* no longer studying */
         context.spbook.o_id = 0;
         nomul(context.spbook.delay); /* remaining delay is uninterrupted */
-        multi_reason = "reading a book";
+        current_nle_ctx->multi_reason = "reading a book";
         nomovemsg = 0;
         context.spbook.delay = 0;
         return 0;
@@ -556,7 +557,7 @@ register struct obj *spellbook;
             boolean gone = cursed_book(spellbook);
 
             nomul(context.spbook.delay); /* study time */
-            multi_reason = "reading a book";
+            current_nle_ctx->multi_reason = "reading a book";
             nomovemsg = 0;
             context.spbook.delay = 0;
             if (gone || !rn2(3)) {
@@ -574,7 +575,7 @@ register struct obj *spellbook;
                 spellbook->in_use = FALSE;
             }
             nomul(context.spbook.delay);
-            multi_reason = "reading a book";
+            current_nle_ctx->multi_reason = "reading a book";
             nomovemsg = 0;
             context.spbook.delay = 0;
             return 1;
