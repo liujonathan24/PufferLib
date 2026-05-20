@@ -14,6 +14,16 @@
 #include "dlb.h"
 
 #include "nle.h"
+/* Don't pull in wintty.h (it has a stale `int nle_xputs` decl that
+ * conflicts with the actual void definition in nle.c). Extern-declare
+ * the tty globals we need for context-switch (stage 10) directly. */
+#define MAXWIN 20  /* from wintty.h */
+struct WinDesc;
+struct DisplayDesc;
+extern winid BASE_WINDOW;
+extern struct WinDesc *wins[MAXWIN];
+extern struct DisplayDesc *ttyDisplay;
+extern char morc;
 
 /* Single definition of current_nle_ctx; declared extern in nle.h. */
 nle_ctx_t *current_nle_ctx;
@@ -465,6 +475,11 @@ init_random(int FDECL((*fn), (int) ))
 static void nle_swap_in(nle_ctx_t *nle);
 static void nle_swap_out(nle_ctx_t *nle);
 
+/* Forward declarations for the baseline-capture path in nle_start. */
+struct nle_dungeon_save;
+extern struct nle_dungeon_save *nle_baseline;
+static void nle_dungeon_save_to(struct nle_dungeon_save *s);
+
 nle_ctx_t *
 nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
           nle_settings *settings_p)
@@ -558,6 +573,14 @@ struct nle_dungeon_save {
     /* time counters */
     long                moves, monstermoves, wailmsg;
     long                domove_attempting, domove_succeeded;
+    /* stage 10 — TTY window port state (win/tty/wintty.c, getline.c).
+     * NetHackRL singleton (winrl.cc) asserts BASE_WINDOW==0 in its
+     * ctor; if env B's tty_init bumps it past 0, the assert is no-op
+     * in release builds and windows_[BASE_WINDOW] becomes OOB. */
+    winid               BASE_WINDOW;
+    struct WinDesc     *wins[MAXWIN];
+    struct DisplayDesc *ttyDisplay;
+    char                morc;
 };
 
 static void
@@ -618,6 +641,11 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->wailmsg = wailmsg;
     s->domove_attempting = domove_attempting;
     s->domove_succeeded = domove_succeeded;
+    /* stage 10 — tty window state */
+    s->BASE_WINDOW = BASE_WINDOW;
+    memcpy(s->wins, wins, sizeof(s->wins));
+    s->ttyDisplay = ttyDisplay;
+    s->morc = morc;
 }
 
 static void
@@ -678,6 +706,11 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     wailmsg = s->wailmsg;
     domove_attempting = s->domove_attempting;
     domove_succeeded = s->domove_succeeded;
+    /* stage 10 — tty window state */
+    BASE_WINDOW = s->BASE_WINDOW;
+    memcpy(wins, s->wins, sizeof(s->wins));
+    ttyDisplay = s->ttyDisplay;
+    morc = s->morc;
 }
 
 /* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
@@ -705,9 +738,28 @@ nle_swap_in(nle_ctx_t *nle)
     if (nle->sysflags_ptr)
         memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
 #endif
+    /* First-ever swap_in across the whole process: snapshot the pristine
+     * post-static-init state of all globals we context-switch. Used as
+     * the baseline for any env's first swap_in. */
+    if (!nle_baseline) {
+        nle_baseline = (struct nle_dungeon_save *)
+                       calloc(1, sizeof(struct nle_dungeon_save));
+        if (nle_baseline)
+            nle_dungeon_save_to(nle_baseline);
+    }
+    /* First swap_in for this env: copy from process-wide baseline.
+     * Without this, env B inherits env A's wins[], BASE_WINDOW, etc.,
+     * breaking NetHackRL ctor's BASE_WINDOW==0 invariant. */
+    if (!nle->dungeon_save) {
+        nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
+        if (nle_baseline && nle->dungeon_save)
+            *(struct nle_dungeon_save *) nle->dungeon_save = *nle_baseline;
+    }
     if (nle->dungeon_save)
         nle_dungeon_load_from((struct nle_dungeon_save *) nle->dungeon_save);
 }
+
+struct nle_dungeon_save *nle_baseline = NULL;
 
 static void
 nle_swap_out(nle_ctx_t *nle)
