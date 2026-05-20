@@ -47,9 +47,12 @@ typedef void  (*nle_fr_restore_fn) (nle_ctx_t*, void*);
 typedef void  (*nle_fr_destroy_fn) (void*);
 
 // Build flag: -DNETHACK_FAST_RESET=1 enables the snapshot/restore path.
-// Default is OFF so we can A/B against the existing dlopen-per-reset behavior.
+// Default is ON since exp_019 — the heap-aware fast-reset works correctly
+// for in-episode resets, and the slow dlopen+nle_start path now fails on
+// the second start (libstdc++ operator delete deep crash). Slow path needs
+// a separate fix; in the meantime fast-reset is the production path.
 #ifndef NETHACK_FAST_RESET
-#define NETHACK_FAST_RESET 0
+#define NETHACK_FAST_RESET 1
 #endif
 
 // ---------------------------------------------------------------------------
