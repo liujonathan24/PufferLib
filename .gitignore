@@ -186,3 +186,7 @@ profile
 # NLE vendored binaries — see ocean/nethack/SETUP.md to recreate
 vendor/nle/lib/
 vendor/nle/nethackdir
+
+# NLE from-source build artifacts (we vendor the source, not the build dir)
+vendor/nle/src/build/
+vendor/nle/src/nle.egg-info/
