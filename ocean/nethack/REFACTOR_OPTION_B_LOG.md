@@ -163,3 +163,92 @@ Swap entries removed from `nle_dungeon_save` struct, `_save_to`,
 `_load_from`.
 
 Verified: 1000-step golden replay passes.
+
+---
+
+## Option A vs Option B: end-of-session comparison
+
+### State at this commit
+
+- 4 swap stages migrated (6', 8', 9'AB, 10') — direct macro-redirection
+  to per-env `nle_ctx_t` fields, swap entries removed.
+- `current_nle_ctx` is `__thread` (matching `extern __thread` in nle.h).
+- `NEARDATA` reverted to empty after a failed Option-A flip (see below).
+- Single-thread 1000-step golden replay: PASSES.
+- OMP `multi_threaded N=2` segfaults — residual swap on stages 5, 7,
+  8 tc_gbl_data, 9 batch C still touches process globals.
+
+### Option A (TLS the residual globals) — what blocks completion
+
+Tried `#define NEARDATA __thread`. Static-init failures observed:
+- `src/options.c:62` boolopt[] — ~130 entries with `&flags.X`,
+  `&iflags.X`, `&sysflags.X` initializers. Not compile-time constants
+  under TLS.
+- `src/options.c:277` compopt[] — no addresses (uses `sizeof`). Safe.
+- `src/cmd.c:34` Cmd — patched (added NEARDATA).
+- `src/worn.c:17` worn[] — 17 entries with `&uwep`, `&uarm*` etc.
+  Same compile-constant problem.
+- Header externs that lacked NEARDATA — patched in 7 places
+  (rm.h:level/lastseentyp, mkroom.h:[u/d/s]stairs_room, trap.h:ftrap,
+  tcap.h:tc_gbl_data, decl.h:quest_status/tc_gbl_data; hack.h had
+  `NEARDATA extern` instead of `extern NEARDATA`).
+
+The boolopt[] rewrite is the load-bearing remaining work. Pattern:
+
+  enum opt_struct { OS_FLAGS, OS_IFLAGS, OS_SYSFLAGS, OS_UROLEPLAY };
+  /* table stores (base, offset) instead of address */
+  static boolean *boolopt_addr(int i) {
+      void *base; switch (boolopt[i].base) { case OS_FLAGS: base = &flags; ... }
+      return (boolean *)((char *)base + boolopt[i].offset);
+  }
+
+Substitution (sed-doable): `&flags.X` → `OS_FLAGS, offsetof(struct flag, X)`,
+and the same for iflags/sysflags/u.uroleplay. Then ~5 callsite updates
+(`boolopt[i].addr` → `boolopt_addr(i)`). worn[] gets a similar rewrite.
+
+Total estimated effort: ~1 day for the table rewrites + verification.
+
+### Option B (full migration to nle_ctx_t) — what remains
+
+Stages still touching process globals via the swap:
+- Stage 5: `struct flag flags`, `struct instance_flags iflags`,
+  `struct sysflag sysflags`. Headline blocker: 7 NetHack structs have
+  a field named `flags` (func_tab.h, dungeon.h ×2, sp_lev.h, dgn_file.h,
+  lev.h, wintty.h). A `#define flags (current_nle_ctx->...)` macro
+  expands inside those struct definitions and inside all `obj.flags`
+  accesses — would require renaming each field (probably to `f_flags`,
+  `room_flags`, etc.) and updating every access.
+- Stage 7: `dlevel_t level` collides with `struct dig_info::level`
+  (~12 callsites in dig.c/hack.c/cmd.c — easy). The rest of stage 7
+  (level_info[], lastseentyp[][], rooms[], doors[], subrooms,
+  upstairs_room/dnstairs_room/sstairs_room, ftrap) is non-colliding
+  and can follow the stage 6' heap-pointer pattern.
+- Stage 8: `tc_gbl_data` — struct tag and variable share the name; a
+  macro expansion clobbers `struct tc_gbl_data { ... }` declarations.
+  Fix: rename the tag (`struct tc_gbl_data_s`).
+- Stage 9 batch C: 23 struct-value globals (killer, youmonst,
+  urealtime, body-slot pointers, spl_book[], m_shot, mvitals[],
+  quest_status). Body-slot pointers are pinned by worn[]'s `&uarm`
+  — same constant-init problem as Option A's boolopt[].
+
+Total estimated effort: 2-4 days. Stage 5's struct-field rename across
+~7 headers and hundreds of `.flags` accesses is the biggest single item.
+
+### Recommendation
+
+Pragmatic hybrid: finish stage 7 (light, mostly mechanical), stage 8
+tc_gbl_data (tag rename only), stage 9 batch C non-body-slot items via
+Option B. Then for stage 5 + body slots, take Option A (offset-based
+boolopt[] / worn[] tables, `__thread` on those specific symbols).
+Total: 1.5-2 days of mechanical work. The narrow-TLS surface (flags,
+iflags, sysflags, uwep, uarm, etc.) is small enough that audit of
+extern matches is tractable.
+
+### Build/verify checkpoint
+
+Last good state: `git rev-parse HEAD` → aec522d6 / d371f66b.
+  - libnethack.so builds cleanly.
+  - `./verify_determinism replay --in ocean/nethack/golden/golden_seed42_1k.bin`
+    matches.
+  - `./multi_threaded 1 2000 1` succeeds at ~45-95K SPS.
+  - `./multi_threaded 2 100 2` segfaults (race in the swap, as expected).
