@@ -106,8 +106,19 @@ typedef void       (*nle_end_fn)(nle_ctx_t*);
 // (illegal/ambiguous action — e.g. "Apply what?" / "What direction?") that
 // we then have to ESC out of. Default -0.01 — small enough that legitimate
 // y/n confirmations during real play don't tank rewards.
+// Per-step reward shaping (compile-time tunable).
+//   reward = (score - prev_score)
+//          + NETHACK_DEPTH_BONUS  if went deeper this step
+//          + NETHACK_SCOUT_BONUS  if entered a previously-unvisited tile
+//          + NETHACK_ILLEGAL_PENALTY  if action triggered a sub-prompt
 #ifndef NETHACK_ILLEGAL_PENALTY
-#define NETHACK_ILLEGAL_PENALTY -0.01f
+#define NETHACK_ILLEGAL_PENALTY -0.5f      // -invalid_moves/2 per user spec
+#endif
+#ifndef NETHACK_SCOUT_BONUS
+#define NETHACK_SCOUT_BONUS      0.1f       // for each new tile visited
+#endif
+#ifndef NETHACK_DEPTH_BONUS
+#define NETHACK_DEPTH_BONUS      1.0f       // for each new dungeon level
 #endif
 
 #define NETHACK_SZ_CHARS    (NETHACK_USE_CHARS    * NH_GRID)
@@ -157,6 +168,7 @@ typedef struct Log {
     float depth;
     float valid_moves;        // c_steps where the agent's action advanced NetHack's turn counter
     float illegal_actions;    // c_steps where the agent's action hit a sub-prompt we had to ESC out of
+    float new_tiles;          // unique tiles entered this episode (sums over episodes via Log.n)
     float n;
 } Log;
 
@@ -219,6 +231,13 @@ typedef struct Nethack {
     long episode_start_time;
     long episode_valid_moves;
     long episode_illegal_actions;
+    long episode_new_tiles;       // unique tiles entered this episode
+
+    // Exploration bitmap for the current dungeon level. Cleared on
+    // dungeon-level change. One bit per (row, col); 21*79 = 1659 bits,
+    // round up to 208 bytes.
+    unsigned char visited[(NH_GRID + 7) / 8];
+    int  visited_level;            // dungeon level the bitmap corresponds to
 
     int tick;
     long prev_score;
@@ -463,9 +482,8 @@ void init(Nethack* env) {
     env->episode_length = 0;
     env->vardir[0] = '\0';
     env->dl_handle = NULL; env->dl_fd = 0;
-    if (nethack_load_lib(env) != 0) {
-        fprintf(stderr, "nethack: init failed loading libnethack\n");
-    }
+    // Don't load_lib here — c_reset will do it on first call. Avoids a
+    // redundant ~180 ms dlopen+nle_start before the user even resets.
     nethack_init_settings(env);
     nethack_bind_obs(env);
 }
@@ -525,6 +543,7 @@ static void nethack_add_log(Nethack* env) {
     env->log.depth           += (float)depth;
     env->log.valid_moves     += (float)env->episode_valid_moves;
     env->log.illegal_actions += (float)env->episode_illegal_actions;
+    env->log.new_tiles       += (float)env->episode_new_tiles;
     env->log.episode_return  += env->episode_return;
     env->log.episode_length  += env->episode_length;
     env->log.n               += 1.0f;
@@ -582,6 +601,9 @@ void c_reset(Nethack* env) {
     env->episode_start_time = nethack_current_time(env);
     env->episode_valid_moves = 0;
     env->episode_illegal_actions = 0;
+    env->episode_new_tiles = 0;
+    memset(env->visited, 0, sizeof(env->visited));
+    env->visited_level = 0;
     env->rewards[0] = 0.0f;
     env->terminals[0] = 0.0f;
     PROF_START(reset_obs_pack);
@@ -673,15 +695,40 @@ void c_step(Nethack* env) {
     env->episode_length++;
 
     long score = 0; int depth = env->prev_depth;
+    long px = 0, py = 0;
 #if NETHACK_USE_BLSTATS
     score = env->blstats[NLE_BL_SCORE];
     depth = (int)env->blstats[NLE_BL_DEPTH];
+    px = env->blstats[NLE_BL_X];
+    py = env->blstats[NLE_BL_Y];
 #else
     score = env->hook_blstats[NLE_BL_SCORE];
     depth = (int)env->hook_blstats[NLE_BL_DEPTH];
+    px = env->hook_blstats[NLE_BL_X];
+    py = env->hook_blstats[NLE_BL_Y];
 #endif
     float reward = (float)(score - env->prev_score);
-    if (depth > env->prev_depth) reward += 1.0f;
+
+    // Depth-changed bonus + reset exploration bitmap.
+    if (depth != env->visited_level) {
+        memset(env->visited, 0, sizeof(env->visited));
+        env->visited_level = depth;
+    }
+    if (depth > env->prev_depth) reward += NETHACK_DEPTH_BONUS;
+
+    // Scout bonus: reward each new (row,col) entered this level.
+    // px is column (0..79), py is row (0..21). Clamp defensively.
+    if (px >= 0 && px < NH_COLS && py >= 0 && py < NH_ROWS) {
+        int bit_idx = (int)py * NH_COLS + (int)px;
+        unsigned char* b = &env->visited[bit_idx >> 3];
+        unsigned char mask = (unsigned char)(1 << (bit_idx & 7));
+        if (!(*b & mask)) {
+            *b |= mask;
+            reward += NETHACK_SCOUT_BONUS;
+            env->episode_new_tiles++;
+        }
+    }
+
     if (illegal) reward += NETHACK_ILLEGAL_PENALTY;
     env->prev_score = score;
     env->prev_depth = depth;

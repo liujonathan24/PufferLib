@@ -1,0 +1,2 @@
+profile complete: steps=200000 episodes=1 wall=1.182s sum_reward=0.0
+wrote ocean/nethack/experiments/exp_008_north_scaling/north_200k_v2/N32/p5.json

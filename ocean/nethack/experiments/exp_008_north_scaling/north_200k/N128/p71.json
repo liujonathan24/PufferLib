@@ -1,0 +1,44 @@
+{
+  "wall_seconds": 2.749082,
+  "counters": {
+    "fn_steps_total": 200000,
+    "fn_steps_agent": 200000,
+    "fn_steps_post_drain": 0,
+    "fn_steps_reset_drain": 0,
+    "c_steps": 200000,
+    "c_resets": 1,
+    "valid_moves": 2,
+    "illegal_actions": 0,
+    "msg_prompt_esc": 0,
+    "misc_yn_esc": 0,
+    "misc_getlin_esc": 0,
+    "xwait_drain": 0,
+    "agent_fn_steps_sum": 0,
+    "noadv_prompt_detected": 0,
+    "noadv_has_msg": 199998,
+    "noadv_silent": 0
+  },
+  "derived": {
+    "c_steps_per_sec": 72751.6,
+    "valid_moves_per_sec": 0.7,
+    "valid_moves_per_c_step": 0.0000,
+    "illegal_per_c_step": 0.0000,
+    "fn_steps_per_c_step": 1.000,
+    "reset_p50_ms": null,
+    "ns_per_valid_move": 1374541091.0
+  },
+  "metrics": {
+    "c_step_total": {"count": 200000, "sum_ns": 1222348909, "mean_ns": 6111.7, "min_ns": 3296, "max_ns": 51058156, "hist": [0,0,0,0,0,0,0,0,0,0,0,198489,838,545,109,5,1,1,0,0,0,0,0,12]},
+    "agent_fn_step": {"count": 200000, "sum_ns": 1133748051, "mean_ns": 5668.7, "min_ns": 3055, "max_ns": 51057736, "hist": [0,0,0,0,0,0,0,0,0,0,0,199198,182,510,94,3,1,1,0,0,0,0,0,11]},
+    "post_drain": {"count": 200000, "sum_ns": 5612074, "mean_ns": 28.1, "min_ns": 20, "max_ns": 11482, "hist": [0,0,0,0,199399,599,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0]},
+    "obs_pack": {"count": 200001, "sum_ns": 16989639, "mean_ns": 84.9, "min_ns": 70, "max_ns": 31198, "hist": [0,0,0,0,0,0,199835,144,2,2,2,1,6,4,5,0,0,0,0,0,0,0,0,0]},
+    "c_reset_total": {"count": 1, "sum_ns": 818504348, "mean_ns": 818504348.0, "min_ns": 818504348, "max_ns": 818504348, "hist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]},
+    "reset_nle_end": {"count": 1, "sum_ns": 413126, "mean_ns": 413126.0, "min_ns": 413126, "max_ns": 413126, "hist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]},
+    "reset_reload": {"count": 2, "sum_ns": 1363843703, "mean_ns": 681921851.5, "min_ns": 664515760, "max_ns": 699327943, "hist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]},
+    "reset_vardir": {"count": 1, "sum_ns": 240491, "mean_ns": 240491.0, "min_ns": 240491, "max_ns": 240491, "hist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0]},
+    "reset_nle_start": {"count": 1, "sum_ns": 118750885, "mean_ns": 118750885.0, "min_ns": 118750885, "max_ns": 118750885, "hist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]},
+    "reset_drain": {"count": 1, "sum_ns": 30, "mean_ns": 30.0, "min_ns": 30, "max_ns": 30, "hist": [0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
+  },
+  "fn_steps_per_c_step_hist": [200000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  "hist_buckets_ns": [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608]
+}

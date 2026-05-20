@@ -147,6 +147,23 @@ static void run_record(const char* path, long steps, int policy) {
     free(env.observations); free(env.actions); free(env.rewards); free(env.terminals);
 }
 
+// policy: 0=random, 1=wait, 2=move-north (always 'k'), 3=safe cycle
+static int policy_action(int policy, long t) {
+    switch (policy) {
+        case 0:  return rand() % NETHACK_NUM_ACTIONS;
+        case 1:  return 18;                                 // WAIT '.'
+        case 2:  return 0;                                  // MOVE N 'k'
+        case 3: {
+            // Cycle through 4 cardinal moves only — never picks risky actions
+            // like '>' or ',' that trigger sub-prompts. Should keep character
+            // alive longer than random and never trigger illegal-action handling.
+            static const int safe[] = {0, 1, 2, 3};  // N S W E
+            return safe[t & 3];
+        }
+        default: return 18;
+    }
+}
+
 static void run_profile(const char* out_json, long steps, int policy, int seed) {
     Nethack env; memset(&env, 0, sizeof(env));
     env.num_agents = 1;
@@ -163,7 +180,7 @@ static void run_profile(const char* out_json, long steps, int policy, int seed) 
     long episodes = 1;
     double sum_reward = 0.0;
     for (long t = 0; t < steps; t++) {
-        env.actions[0] = (policy == 1) ? 18.0f : (float)(rand() % NETHACK_NUM_ACTIONS);
+        env.actions[0] = (float)policy_action(policy, t);
         c_step(&env);
         sum_reward += env.rewards[0];
         if (env.terminals[0] > 0.5f) episodes++;
@@ -192,7 +209,13 @@ int main(int argc, char** argv) {
         // Usage: ./nethack profile OUT_JSON [N_STEPS] [random|wait] [SEED]
         const char* out = (argc >= 3) ? argv[2] : "profile.json";
         long steps     = (argc >= 4) ? atol(argv[3]) : 100000;
-        int policy     = (argc >= 5 && strcmp(argv[4], "wait") == 0) ? 1 : 0;
+        int policy     = 0;
+        if (argc >= 5) {
+            if      (strcmp(argv[4], "wait")   == 0) policy = 1;
+            else if (strcmp(argv[4], "north")  == 0) policy = 2;
+            else if (strcmp(argv[4], "safe")   == 0) policy = 3;
+            else                                     policy = 0;
+        }
         int seed       = (argc >= 6) ? atoi(argv[5]) : 0xC0FFEE;
         run_profile(out, steps, policy, seed);
         return 0;
