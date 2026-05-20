@@ -13,6 +13,7 @@
 
 extern "C" {
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 }
 
 extern "C" {
@@ -260,12 +261,12 @@ void
 NetHackRL::fill_obs(nle_obs *obs)
 {
     if (obs->program_state) {
-        obs->program_state[0] = program_state.gameover;
-        obs->program_state[1] = program_state.panicking;
-        obs->program_state[2] = program_state.exiting;
-        obs->program_state[3] = program_state.in_moveloop;
-        obs->program_state[4] = program_state.in_impossible;
-        obs->program_state[5] = program_state.something_worth_saving;
+        obs->program_state[0] = current_nle_ctx->program_state.gameover;
+        obs->program_state[1] = current_nle_ctx->program_state.panicking;
+        obs->program_state[2] = current_nle_ctx->program_state.exiting;
+        obs->program_state[3] = current_nle_ctx->program_state.in_moveloop;
+        obs->program_state[4] = current_nle_ctx->program_state.in_impossible;
+        obs->program_state[5] = current_nle_ctx->program_state.something_worth_saving;
         // TODO: Consider adding something_worth_saving.
         // Also consider adding ttyDisplay->inmore ...
     }
@@ -292,7 +293,7 @@ NetHackRL::fill_obs(nle_obs *obs)
         obs->misc[2] = xwaitingforspace;
     }
 
-    if ((!program_state.something_worth_saving && !program_state.in_moveloop)
+    if ((!current_nle_ctx->program_state.something_worth_saving && !current_nle_ctx->program_state.in_moveloop)
         || !iflags.window_inited) {
         // Game not yet started (!something_worth_saving && !in_moveloop -- we
         // need both as something_worth_saving also becomes false in

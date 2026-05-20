@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 #include "dlb.h"
 
@@ -558,16 +559,16 @@ STATIC_OVL void
 couldnt_open_file(filename)
 const char *filename;
 {
-    int save_something = program_state.something_worth_saving;
+    int save_something = current_nle_ctx->program_state.something_worth_saving;
 
     /* most likely the file is missing, so suppress impossible()'s
        "saving and restoring might fix this" (unless the fuzzer,
        which escalates impossible to panic, is running) */
     if (!iflags.debug_fuzzer)
-        program_state.something_worth_saving = 0;
+        current_nle_ctx->program_state.something_worth_saving = 0;
 
     impossible("Can't open '%s' file.", filename);
-    program_state.something_worth_saving = save_something;
+    current_nle_ctx->program_state.something_worth_saving = save_something;
 }
 
 /*rumors.c*/

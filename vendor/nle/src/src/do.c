@@ -6,6 +6,7 @@
 /* Contains code for 'd', 'D' (drop), '>', '<' (up, down) */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 
 STATIC_DCL void FDECL(trycall, (struct obj *));
@@ -784,7 +785,7 @@ struct obj *obj;
          */
         if (!obj->oerodeproof || !rn2(10)) {
             /* if monsters aren't moving, assume player is responsible */
-            if (!context.mon_moving && !program_state.gameover)
+            if (!context.mon_moving && !current_nle_ctx->program_state.gameover)
                 costly_alteration(obj, COST_DEGRD);
             obj->otyp = WORM_TOOTH;
             obj->oerodeproof = 0;

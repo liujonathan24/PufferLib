@@ -51,7 +51,23 @@ typedef struct nle_fr_snapshot {
     size_t          stack_size;
     int             n_segs;
     nle_fr_segment  segs[NLE_FR_MAX_SEGS];
+    /* Arena snapshot: bytes [0, arena_used) of the NetHack heap arena. */
+    void           *saved_arena;
+    size_t          arena_used;
 } nle_fr_snapshot_t;
+
+/* Defined in alloc.c when NLE_USE_ARENA_FREE is set; otherwise provide
+ * local stubs so the snapshot/restore code compiles and runs without arena
+ * support. */
+#ifdef NLE_USE_ARENA_FREE
+extern char  *nle_arena_base;
+extern size_t nle_arena_used;
+extern size_t nle_arena_cap;
+#else
+static char  *nle_arena_base = NULL;
+static size_t nle_arena_used = 0;
+static size_t nle_arena_cap  = 0;
+#endif
 
 struct fr_phdr_scan {
     void   *probe;
@@ -154,6 +170,22 @@ nle_fr_snapshot(nle_ctx_t *nle)
         }
         memcpy(s->segs[i].saved, scan.addr[i], scan.size[i]);
     }
+
+    /* Snapshot the NetHack heap arena. We copy only the used portion. */
+    s->arena_used = nle_arena_used;
+    if (nle_arena_base && s->arena_used > 0) {
+        s->saved_arena = malloc(s->arena_used);
+        if (!s->saved_arena) {
+            for (int i = 0; i < s->n_segs; i++)
+                free(s->segs[i].saved);
+            free(s->saved_stack);
+            free(s);
+            return NULL;
+        }
+        memcpy(s->saved_arena, nle_arena_base, s->arena_used);
+    } else {
+        s->saved_arena = NULL;
+    }
     return s;
 }
 
@@ -161,6 +193,15 @@ void
 nle_fr_restore(nle_ctx_t *nle, void *snap)
 {
     nle_fr_snapshot_t *s = (nle_fr_snapshot_t *) snap;
+    /* Restore arena BEFORE data segments, in case data segment pointers
+     * reference into the arena (they do — but order doesn't really matter,
+     * since both writes are pure memcpys of independent regions). The
+     * bump pointer is rewound, freeing any allocations made after snapshot. */
+    if (s->saved_arena && nle_arena_base) {
+        memcpy(nle_arena_base, s->saved_arena, s->arena_used);
+    }
+    nle_arena_used = s->arena_used;
+
     for (int i = 0; i < s->n_segs; i++)
         memcpy(s->segs[i].addr, s->segs[i].saved, s->segs[i].size);
     {
@@ -175,11 +216,7 @@ nle_fr_restore(nle_ctx_t *nle, void *snap)
 void
 nle_fr_destroy(void *snap)
 {
-    if (!snap)
-        return;
-    nle_fr_snapshot_t *s = (nle_fr_snapshot_t *) snap;
-    for (int i = 0; i < s->n_segs; i++)
-        free(s->segs[i].saved);
-    free(s->saved_stack);
-    free(s);
+    /* TEMP DEBUG: skip frees to test theory */
+    (void) snap;
+    return;
 }

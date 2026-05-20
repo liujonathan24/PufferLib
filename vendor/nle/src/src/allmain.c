@@ -6,6 +6,7 @@
 /* various code that was replicated in *main.c */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include <ctype.h>
 
 #ifndef NO_SIGNAL
@@ -85,10 +86,10 @@ boolean resuming;
     youmonst.movement = NORMAL_SPEED; /* give the hero some movement points */
     context.move = 0;
 
-    program_state.in_moveloop = 1;
+    current_nle_ctx->program_state.in_moveloop = 1;
     for (;;) {
 #ifdef SAFERHANGUP
-        if (program_state.done_hup)
+        if (current_nle_ctx->program_state.done_hup)
             end_of_input();
 #endif
         get_nh_event();
@@ -646,7 +647,7 @@ newgame()
 #ifdef INSURANCE
     save_currentstate();
 #endif
-    program_state.something_worth_saving++; /* useful data now exists */
+    current_nle_ctx->program_state.something_worth_saving++; /* useful data now exists */
 
     /* Success! */
     welcome(TRUE);

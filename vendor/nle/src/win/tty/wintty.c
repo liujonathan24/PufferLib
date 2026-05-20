@@ -13,6 +13,7 @@
 #define H2344_BROKEN
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 #ifdef TTY_GRAPHICS
 #include "dlb.h"
@@ -56,7 +57,7 @@ extern short glyph2tile[];
  */
 #define HUPSKIP() \
     do {                                        \
-        if (program_state.done_hup) {           \
+        if (current_nle_ctx->program_state.done_hup) {           \
             morc = '\033';                      \
             return;                             \
         }                                       \
@@ -64,7 +65,7 @@ extern short glyph2tile[];
     /* morc=ESC - in case we bypass xwaitforspace() which sets that */
 #define HUPSKIP_RESULT(RES) \
     do {                                        \
-        if (program_state.done_hup)             \
+        if (current_nle_ctx->program_state.done_hup)             \
             return (RES);                       \
     } while (0)
 #else /* !HANGUP_HANDLING */
@@ -3193,7 +3194,7 @@ tty_wait_synch()
         if (ttyDisplay->inmore) {
             addtopl("--More--");
             (void) fflush(stdout);
-        } else if (ttyDisplay->inread > program_state.gameover) {
+        } else if (ttyDisplay->inread > current_nle_ctx->program_state.gameover) {
             /* this can only happen if we were reading and got interrupted */
             ttyDisplay->toplin = 3;
             /* do this twice; 1st time gets the Quit? message again */

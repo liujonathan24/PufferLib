@@ -201,7 +201,7 @@ char *argv[];
      * It seems you really want to play.
      */
     u.uhp = 1; /* prevent RIP on early quits */
-    program_state.preserve_locks = 1;
+    current_nle_ctx->program_state.preserve_locks = 1;
 #ifndef NO_SIGNAL
     sethanguphandler((SIG_RET_TYPE) hangup);
 #endif
@@ -290,7 +290,7 @@ char *argv[];
      */
     if (*plname) {
         getlock();
-        program_state.preserve_locks = 0; /* after getlock() */
+        current_nle_ctx->program_state.preserve_locks = 0; /* after getlock() */
     }
 
     if (*plname && (fd = restore_saved_game()) >= 0) {

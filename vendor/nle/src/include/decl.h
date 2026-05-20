@@ -8,6 +8,11 @@
 
 #define E extern
 
+/* `struct sinfo program_state` was here in vanilla; migrated to
+ * nle_ctx_t. Files that access current_nle_ctx->program_state.X need
+ * to #include "nle.h" themselves (decl.h does NOT pull it in to avoid
+ * forcing fcontext into util-binary include paths). */
+
 E int NDECL((*occupation));
 E int NDECL((*afternmv));
 
@@ -144,24 +149,9 @@ E NEARDATA char tune[6];
 #define MAXLINFO (MAXDUNGEON * MAXLEVEL)
 E struct linfo level_info[MAXLINFO];
 
-E NEARDATA struct sinfo {
-    int gameover;  /* self explanatory? */
-    int stopprint; /* inhibit further end of game disclosure */
-#ifdef HANGUPHANDLING
-    volatile int done_hup; /* SIGHUP or moral equivalent received
-                            * -- no more screen output */
-    int preserve_locks;    /* don't remove level files prior to exit */
-#endif
-    int something_worth_saving; /* in case of panic */
-    int panicking;              /* `panic' is in progress */
-    int exiting;                /* an exit handler is executing */
-    int in_moveloop;
-    int in_impossible;
-#ifdef PANICLOG
-    int in_paniclog;
-#endif
-    int wizkit_wishing;
-} program_state;
+/* `struct sinfo program_state` moved to nle_ctx_t (refactor stage 3b).
+ * Definition of struct sinfo is now in nle.h. Callers use
+ * current_nle_ctx->program_state.X for per-instance access. */
 
 E boolean restoring;
 E boolean ransacked;

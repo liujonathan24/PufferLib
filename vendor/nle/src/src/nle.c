@@ -524,7 +524,7 @@ nle_end(nle_ctx_t *nle)
     if (!nle->done) {
         /* Reset without closing nethack. Need free memory, etc.
          * this is what nh_terminate in end.c does. I hope it's enough. */
-        if (!program_state.panicking) {
+        if (!current_nle_ctx->program_state.panicking) {
             freedynamicdata();
             dlb_cleanup();
         }

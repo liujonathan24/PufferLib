@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h" /* save & restore info */
 
 STATIC_DCL void FDECL(setgemprobs, (d_level *));
@@ -362,7 +363,7 @@ boolean credit_hero;
                 exercise(A_WIS, TRUE);
         }
         /* moves==1L => initial inventory, gameover => final disclosure */
-        if (moves > 1L && !program_state.gameover) {
+        if (moves > 1L && !current_nle_ctx->program_state.gameover) {
             if (objects[oindx].oc_class == GEM_CLASS)
                 gem_learned(oindx); /* could affect price of unpaid gems */
             update_inventory();

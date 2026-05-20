@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 
 #ifndef NO_SIGNAL
@@ -66,7 +67,7 @@ static struct save_procs {
 };
 
 #if defined(UNIX) || defined(VMS) || defined(__EMX__) || defined(WIN32)
-#define HUP if (!program_state.done_hup)
+#define HUP if (!current_nle_ctx->program_state.done_hup)
 #else
 #define HUP
 #endif
@@ -88,7 +89,7 @@ dosave()
         clear_nhwindow(WIN_MESSAGE);
         pline("Saving...");
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
-        program_state.done_hup = 0;
+        current_nle_ctx->program_state.done_hup = 0;
 #endif
         if (dosave0()) {
             u.uhp = -1; /* universal game's over indicator */
@@ -123,7 +124,7 @@ dosave0()
     if (iflags.save_uburied)
         u.uburied = 1, iflags.save_uburied = 0;
 
-    if (!program_state.something_worth_saving || !SAVEF[0])
+    if (!current_nle_ctx->program_state.something_worth_saving || !SAVEF[0])
         return 0;
     fq_save = fqname(SAVEF, SAVEPREFIX, 1); /* level files take 0 */
 
@@ -271,7 +272,7 @@ dosave0()
     delete_levelfile(0);
     nh_compress(fq_save);
     /* this should probably come sooner... */
-    program_state.something_worth_saving = 0;
+    current_nle_ctx->program_state.something_worth_saving = 0;
     return 1;
 }
 
@@ -751,7 +752,7 @@ register unsigned num;
 
     if (failed) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
-        if (program_state.done_hup)
+        if (current_nle_ctx->program_state.done_hup)
             nh_terminate(EXIT_FAILURE);
         else
 #endif
@@ -857,7 +858,7 @@ register int fd;
     if (outbufp) {
         if (write(fd, outbuf, outbufp) != outbufp) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
-            if (program_state.done_hup)
+            if (current_nle_ctx->program_state.done_hup)
                 nh_terminate(EXIT_FAILURE);
             else
 #endif
@@ -883,7 +884,7 @@ register unsigned num;
 #endif
         if ((unsigned) write(fd, loc, num) != num) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
-            if (program_state.done_hup)
+            if (current_nle_ctx->program_state.done_hup)
                 nh_terminate(EXIT_FAILURE);
             else
 #endif

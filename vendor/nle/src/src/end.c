@@ -6,6 +6,7 @@
 #define NEED_VARARGS /* comment line for pre-compiled headers */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 #ifndef NO_SIGNAL
 #include <signal.h>
@@ -73,7 +74,7 @@ extern void FDECL(nethack_exit, (int)) NORETURN;
 #define nethack_exit exit
 #endif
 
-#define done_stopprint program_state.stopprint
+#define done_stopprint current_nle_ctx->program_state.stopprint
 
 #ifndef PANICTRACE
 #define NH_abort NH_abort_
@@ -405,7 +406,7 @@ static void
 done_hangup(sig)
 int sig;
 {
-    program_state.done_hup++;
+    current_nle_ctx->program_state.done_hup++;
     sethanguphandler((void FDECL((*), (int) )) SIG_IGN);
     done_intr(sig);
     return;
@@ -579,7 +580,7 @@ VA_DECL(const char *, str)
     VA_START(str);
     VA_INIT(str, char *);
 
-    if (program_state.panicking++)
+    if (current_nle_ctx->program_state.panicking++)
         NH_abort(); /* avoid loops - this should never happen*/
 
     if (iflags.window_inited) {
@@ -589,9 +590,9 @@ VA_DECL(const char *, str)
         iflags.window_inited = 0; /* they're gone; force raw_print()ing */
     }
 
-    raw_print(program_state.gameover
+    raw_print(current_nle_ctx->program_state.gameover
                   ? "Postgame wrapup disrupted."
-                  : !program_state.something_worth_saving
+                  : !current_nle_ctx->program_state.something_worth_saving
                         ? "Program initialization has failed."
                         : "Suddenly, the dungeon collapses.");
 #ifndef MICRO
@@ -599,11 +600,11 @@ VA_DECL(const char *, str)
     if (!wizard)
         raw_printf("Report the following error to \"%s\" or at \"%s\".",
                    DEVTEAM_EMAIL, DEVTEAM_URL);
-    else if (program_state.something_worth_saving)
+    else if (current_nle_ctx->program_state.something_worth_saving)
         raw_print("\nError save file being written.\n");
 #else /* !NOTIFY_NETHACK_BUGS */
     if (!wizard) {
-        const char *maybe_rebuild = !program_state.something_worth_saving
+        const char *maybe_rebuild = !current_nle_ctx->program_state.something_worth_saving
                                      ? "."
                                      : "\nand it may be possible to rebuild.";
 
@@ -621,7 +622,7 @@ VA_DECL(const char *, str)
     /* XXX can we move this above the prints?  Then we'd be able to
      * suppress "it may be possible to rebuild" based on dosave0()
      * or say it's NOT possible to rebuild. */
-    if (program_state.something_worth_saving && !iflags.debug_fuzzer) {
+    if (current_nle_ctx->program_state.something_worth_saving && !iflags.debug_fuzzer) {
         set_error_savefile();
         if (dosave0()) {
             /* os/win port specific recover instructions */
@@ -1114,9 +1115,9 @@ int how;
             return;
         }
     }
-    if (program_state.panicking
+    if (current_nle_ctx->program_state.panicking
 #ifdef HANGUPHANDLING
-        || program_state.done_hup
+        || current_nle_ctx->program_state.done_hup
 #endif
         ) {
         /* skip status update if panicking or disconnected */
@@ -1128,7 +1129,7 @@ int how;
     }
 
     if (iflags.debug_fuzzer) {
-        if (!(program_state.panicking || how == PANICKED)) {
+        if (!(current_nle_ctx->program_state.panicking || how == PANICKED)) {
             savelife(how);
             /* periodically restore characteristics and lost exp levels
                or cure lycanthropy */
@@ -1221,11 +1222,11 @@ int how;
     /*
      *  The game is now over...
      */
-    program_state.gameover = 1;
+    current_nle_ctx->program_state.gameover = 1;
     /* in case of a subsequent panic(), there's no point trying to save */
-    program_state.something_worth_saving = 0;
+    current_nle_ctx->program_state.something_worth_saving = 0;
 #ifdef HANGUPHANDLING
-    if (program_state.done_hup)
+    if (current_nle_ctx->program_state.done_hup)
         done_stopprint++;
 #endif
     /* render vision subsystem inoperative */
@@ -1233,7 +1234,7 @@ int how;
 
     /* maybe use up active invent item(s), place thrown/kicked missile,
        deal with ball and chain possibly being temporarily off the map */
-    if (!program_state.panicking)
+    if (!current_nle_ctx->program_state.panicking)
         done_object_cleanup();
     /* in case we're panicking; normally cleared by done_object_cleanup() */
     iflags.perm_invent = FALSE;
@@ -1712,13 +1713,13 @@ void
 nh_terminate(status)
 int status;
 {
-    program_state.in_moveloop = 0; /* won't be returning to normal play */
+    current_nle_ctx->program_state.in_moveloop = 0; /* won't be returning to normal play */
 #ifdef MAC
     getreturn("to exit");
 #endif
     /* don't bother to try to release memory if we're in panic mode, to
        avoid trouble in case that happens to be due to memory problems */
-    if (!program_state.panicking) {
+    if (!current_nle_ctx->program_state.panicking) {
         freedynamicdata();
         dlb_cleanup();
     }
@@ -1731,10 +1732,10 @@ int status;
      */
     /* don't call exit() if already executing within an exit handler;
        that would cancel any other pending user-mode handlers */
-    if (program_state.exiting)
+    if (current_nle_ctx->program_state.exiting)
         return;
 #endif
-    program_state.exiting = 1;
+    current_nle_ctx->program_state.exiting = 1;
     nethack_exit(status);
 }
 

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 #ifndef C /* same as cmd.c */
 #define C(c) (0x1f & (c))
@@ -255,7 +256,7 @@ struct obj *obj;
     if (wizard) { /* flags.debug */
         /* paranoia:  before toggling off wizard mode, guard against a
            panic in xname() producing a normal mode panic save file */
-        program_state.something_worth_saving = 0;
+        current_nle_ctx->program_state.something_worth_saving = 0;
         flags.debug = FALSE;
     }
 
@@ -263,7 +264,7 @@ struct obj *obj;
 
     if (save_debug) {
         flags.debug = TRUE;
-        program_state.something_worth_saving = 1;
+        current_nle_ctx->program_state.something_worth_saving = 1;
     }
     /* restore the object */
     if (obj->oclass == POTION_CLASS) {

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 #ifdef SHORT_FILENAMES
 #include "patchlev.h"
@@ -27,7 +28,7 @@
 static long final_fpos;
 #endif
 
-#define done_stopprint program_state.stopprint
+#define done_stopprint current_nle_ctx->program_state.stopprint
 
 #define newttentry() (struct toptenentry *) alloc(sizeof (struct toptenentry))
 #define dealloc_ttentry(ttent) free((genericptr_t) (ttent))
@@ -520,7 +521,7 @@ time_t when;
      * topten uses alloc() several times, which will lead to
      * problems if the panic was the result of an alloc() failure.
      */
-    if (program_state.panicking)
+    if (current_nle_ctx->program_state.panicking)
         return;
 
     if (iflags.toptenwin) {
@@ -528,7 +529,7 @@ time_t when;
     }
 
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
-#define HUP if (!program_state.done_hup)
+#define HUP if (!current_nle_ctx->program_state.done_hup)
 #else
 #define HUP
 #endif

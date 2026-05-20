@@ -102,6 +102,8 @@ file(
   "sys/unix/unixres.c"
   "win/tty/*.c"
   "win/rl/winrl.cc")
+# NLE fast-reset: C++ operator new/delete overrides routed to the arena.
+# list(APPEND NETHACK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/nle_arena_cpp.cc")
 
 # terminal emulator library
 add_library(tmt STATIC "third_party/libtmt/tmt.c")
@@ -119,6 +121,19 @@ target_link_directories(nethack PUBLIC /usr/local/lib)
 
 # Careful with -DMONITOR_HEAP: Ironically, it fails to fclose FILE* heaplog.
 # target_compile_definitions(nethack PUBLIC "$<$<CONFIG:DEBUG>:MONITOR_HEAP>")
+
+# NLE fast-reset: arena-based allocator. Replace NetHack's free() with a
+# wrapper that no-ops arena pointers, so snapshot/restore of the arena
+# captures all NetHack heap state. Also link with -Bsymbolic-functions so
+# libnethack's intra-DSO calls bind to our wrapper, not libc free.
+target_compile_definitions(nethack PRIVATE NLE_USE_ARENA_FREE=1)
+# -Bsymbolic-functions: bind libnethack's intra-DSO function calls (notably
+# free) to our own definitions, so NetHack's free() calls resolve to
+# nle_arena_free instead of libc free even when the loader is also linked.
+# -z muldefs: tolerate the tentative-vs-strong duplicate of current_nle_ctx
+# that gcc 10+ otherwise rejects under -fno-common (this is preexisting in
+# the codebase; previous builds dodged it differently).
+target_link_options(nethack PRIVATE "-Wl,-Bsymbolic-functions" "LINKER:-z,muldefs")
 
 target_link_libraries(nethack PUBLIC m fcontext bz2 tmt)
 

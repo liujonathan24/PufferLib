@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 STATIC_DCL boolean FDECL(clear_fcorr, (struct monst *, BOOLEAN_P));
 STATIC_DCL void FDECL(blackout, (int, int));
@@ -50,7 +51,7 @@ boolean forceshow;
     register int fcx, fcy, fcbeg;
     struct monst *mtmp;
     boolean sawcorridor = FALSE,
-            silently = program_state.stopprint ? TRUE : FALSE;
+            silently = current_nle_ctx->program_state.stopprint ? TRUE : FALSE;
     struct egd *egrd = EGD(grd);
     struct trap *trap;
     struct rm *lev;

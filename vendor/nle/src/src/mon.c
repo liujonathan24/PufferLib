@@ -9,6 +9,7 @@
 #endif
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "mfndpos.h"
 #include <ctype.h>
 
@@ -746,7 +747,7 @@ movemon()
         if (u.utotype
 #ifdef SAFERHANGUP
             /* or if the program has lost contact with the user */
-            || program_state.done_hup
+            || current_nle_ctx->program_state.done_hup
 #endif
             ) {
             somebody_can_move = FALSE;

@@ -5,6 +5,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx */
 
 #ifdef TTY_GRAPHICS
 
@@ -225,7 +226,7 @@ register const char *s; /* chars allowed besides return */
     morc = 0;
     while (
 #ifdef HANGUPHANDLING
-        !program_state.done_hup &&
+        !current_nle_ctx->program_state.done_hup &&
 #endif
         (c = nhgetch()) != EOF) {
         if (c == '\n' || c == '\r')

@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 STATIC_DCL char *NDECL(nextmbuf);
 STATIC_DCL void FDECL(getpos_help, (BOOLEAN_P, const char *));
@@ -1658,7 +1659,7 @@ boolean called;
     boolean name_at_start, has_adjectives;
     char *bp;
 
-    if (program_state.gameover)
+    if (current_nle_ctx->program_state.gameover)
         suppress |= SUPPRESS_HALLUCINATION;
     if (article == ARTICLE_YOUR && !mtmp->mtame)
         article = ARTICLE_THE;
@@ -1666,7 +1667,7 @@ boolean called;
     do_hallu = Hallucination && !(suppress & SUPPRESS_HALLUCINATION);
     do_invis = mtmp->minvis && !(suppress & SUPPRESS_INVISIBLE);
     do_it = !canspotmon(mtmp) && article != ARTICLE_YOUR
-            && !program_state.gameover && mtmp != u.usteed
+            && !current_nle_ctx->program_state.gameover && mtmp != u.usteed
             && !(u.uswallow && mtmp == u.ustuck) && !(suppress & SUPPRESS_IT);
     do_saddle = !(suppress & SUPPRESS_SADDLE);
     do_name = !(suppress & SUPPRESS_NAME) || type_is_pname(mdat);

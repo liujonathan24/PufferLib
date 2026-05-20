@@ -5,6 +5,7 @@
 /*  attribute modification routines. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include <ctype.h>
 
 /* part of the output on gain or loss of attribute */
@@ -186,7 +187,7 @@ int msgflg; /* positive => no message, zero => message, and */
     if (msgflg <= 0)
         You_feel("%s%s!", (incr > 1 || incr < -1) ? "very " : "", attrstr);
     context.botl = TRUE;
-    if (program_state.in_moveloop && (ndx == A_STR || ndx == A_CON))
+    if (current_nle_ctx->program_state.in_moveloop && (ndx == A_STR || ndx == A_CON))
         (void) encumber_msg();
     return TRUE;
 }

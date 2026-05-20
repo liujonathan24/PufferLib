@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 /* "an uncursed greased partly eaten guardian naga hatchling [corpse]" */
 #define PREFIX 80 /* (56) */
@@ -227,7 +228,7 @@ struct obj *obj;
 {
     if (!obj->oartifact || !has_oname(obj))
         return FALSE;
-    if (!program_state.gameover && !iflags.override_ID) {
+    if (!current_nle_ctx->program_state.gameover && !iflags.override_ID) {
         if (not_fully_identified(obj))
             return FALSE;
     }
@@ -723,7 +724,7 @@ unsigned cxn_flags; /* bitmask of CXN_xxx values */
     if (pluralize)
         Strcpy(buf, makeplural(buf));
 
-    if (obj->otyp == T_SHIRT && program_state.gameover) {
+    if (obj->otyp == T_SHIRT && current_nle_ctx->program_state.gameover) {
         char tmpbuf[BUFSZ];
 
         Sprintf(eos(buf), " with text \"%s\"", tshirt_text(obj, tmpbuf));
@@ -3671,7 +3672,7 @@ struct obj *no_wish;
      * Disallow such topology tweaks for WIZKIT startup wishes.
      */
  wiztrap:
-    if (wizard && !program_state.wizkit_wishing) {
+    if (wizard && !current_nle_ctx->program_state.wizkit_wishing) {
         struct rm *lev;
         boolean madeterrain = FALSE;
         int trap, x = u.ux, y = u.uy;

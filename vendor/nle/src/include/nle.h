@@ -16,6 +16,29 @@
 
 typedef struct TMT TMT;
 
+/* `struct sinfo` was defined inline at the variable declaration in
+ * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
+ * a per-instance copy. The original macro storm in decl.h is replaced
+ * by direct current_nle_ctx->program_state.X access at each callsite. */
+struct sinfo {
+    int gameover;  /* self explanatory? */
+    int stopprint; /* inhibit further end of game disclosure */
+#ifdef HANGUPHANDLING
+    volatile int done_hup; /* SIGHUP or moral equivalent received
+                            * -- no more screen output */
+    int preserve_locks;    /* don't remove level files prior to exit */
+#endif
+    int something_worth_saving; /* in case of panic */
+    int panicking;              /* `panic' is in progress */
+    int exiting;                /* an exit handler is executing */
+    int in_moveloop;
+    int in_impossible;
+#ifdef PANICLOG
+    int in_paniclog;
+#endif
+    int wizkit_wishing;
+};
+
 typedef struct nle_globals {
     fcontext_stack_t stack;
     fcontext_t returncontext;
@@ -47,6 +70,7 @@ typedef struct nle_globals {
     nle_seeds_init_t   *seeds_init;
     unsigned long       seeds[2];
     boolean             has_strong_rngseed; /* was NEARDATA in decl.c */
+    struct sinfo        program_state;      /* was NEARDATA in decl.c */
 } nle_ctx_t;
 
 /*

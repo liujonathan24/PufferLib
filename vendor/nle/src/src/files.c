@@ -6,6 +6,7 @@
 #define NEED_VARARGS
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 
 #ifdef TTY_GRAPHICS
@@ -601,7 +602,7 @@ void
 clearlocks()
 {
 #ifdef HANGUPHANDLING
-    if (program_state.preserve_locks)
+    if (current_nle_ctx->program_state.preserve_locks)
         return;
 #endif
 #if !defined(PC_LOCKING) && defined(MFLOPPY) && !defined(AMIGA)
@@ -1665,7 +1666,7 @@ static int lockfd = -1; /* for lock_file() to pass to unlock_file() */
 struct flock sflock; /* for unlocking, same as above */
 #endif
 
-#define HUP if (!program_state.done_hup)
+#define HUP if (!current_nle_ctx->program_state.done_hup)
 
 #ifndef USE_FCNTL
 STATIC_OVL char *
@@ -3071,14 +3072,14 @@ read_wizkit()
     if (!wizard || !(fp = nle_fopen_wizkit_file()))
         return;
 
-    program_state.wizkit_wishing = 1;
+    current_nle_ctx->program_state.wizkit_wishing = 1;
     config_error_init(TRUE, "WIZKIT", FALSE);
 
     parse_conf_file(fp, proc_wizkit_line);
     (void) fclose(fp);
 
     config_error_done();
-    program_state.wizkit_wishing = 0;
+    current_nle_ctx->program_state.wizkit_wishing = 0;
 
     return;
 }
@@ -3649,8 +3650,8 @@ const char *reason; /* explanation */
     FILE *lfile;
     char buf[BUFSZ];
 
-    if (!program_state.in_paniclog) {
-        program_state.in_paniclog = 1;
+    if (!current_nle_ctx->program_state.in_paniclog) {
+        current_nle_ctx->program_state.in_paniclog = 1;
         lfile = fopen_datafile(PANICLOG, "a", TROUBLEPREFIX);
         if (lfile) {
 #ifdef PANICLOG_FMT2
@@ -3668,7 +3669,7 @@ const char *reason; /* explanation */
 #endif /* !PANICLOG_FMT2 */
             (void) fclose(lfile);
         }
-        program_state.in_paniclog = 0;
+        current_nle_ctx->program_state.in_paniclog = 0;
     }
 #endif /* PANICLOG */
     return;

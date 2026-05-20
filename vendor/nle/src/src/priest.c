@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "mfndpos.h"
 
 /* these match the categorizations shown by enlightenment */
@@ -337,7 +338,7 @@ char *pname; /* caller-supplied output buffer */
     Strcat(pname, what);
     /* same as distant_monnam(), more or less... */
     if (do_hallu || !high_priest || !Is_astralevel(&u.uz)
-        || distu(mon->mx, mon->my) <= 2 || program_state.gameover) {
+        || distu(mon->mx, mon->my) <= 2 || current_nle_ctx->program_state.gameover) {
         Strcat(pname, " of ");
         Strcat(pname, halu_gname(mon_aligntyp(mon)));
     }

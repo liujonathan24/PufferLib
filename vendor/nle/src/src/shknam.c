@@ -6,6 +6,7 @@
 /* shknam.c -- initialize a shop */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 STATIC_DCL boolean FDECL(stock_room_goodpos, (struct mkroom *, int, int, int, int));
 STATIC_DCL boolean FDECL(veggy_item, (struct obj * obj, int));
@@ -851,7 +852,7 @@ struct monst *mtmp;
     } else {
         const char *shknm = ESHK(mtmp)->shknam;
 
-        if (Hallucination && !program_state.gameover) {
+        if (Hallucination && !current_nle_ctx->program_state.gameover) {
             const char *const *nlp;
             int num;
 

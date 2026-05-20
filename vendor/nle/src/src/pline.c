@@ -5,6 +5,7 @@
 
 #define NEED_VARARGS /* Uses ... */ /* comment line for pre-compiled headers */
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 
 #define BIGBUFSZ (5 * BUFSZ) /* big enough to format a 4*BUFSZ string (from
                               * config file parsing) with modest decoration;
@@ -134,10 +135,10 @@ VA_DECL(const char *, line)
     if (!line || !*line)
         return;
 #ifdef HANGUPHANDLING
-    if (program_state.done_hup)
+    if (current_nle_ctx->program_state.done_hup)
         return;
 #endif
-    if (program_state.wizkit_wishing)
+    if (current_nle_ctx->program_state.wizkit_wishing)
         return;
 
     if (index(line, '%')) {
@@ -493,10 +494,10 @@ VA_DECL(const char *, s)
 
     VA_START(s);
     VA_INIT(s, const char *);
-    if (program_state.in_impossible)
+    if (current_nle_ctx->program_state.in_impossible)
         panic("impossible called impossible");
 
-    program_state.in_impossible = 1;
+    current_nle_ctx->program_state.in_impossible = 1;
 #if !defined(NO_VSNPRINTF)
     (void) vsnprintf(pbuf, sizeof pbuf, s, VA_ARGS);
 #else
@@ -509,11 +510,11 @@ VA_DECL(const char *, s)
     pline("%s", VA_PASS1(pbuf));
     /* reuse pbuf[] */
     Strcpy(pbuf, "Program in disorder!");
-    if (program_state.something_worth_saving)
+    if (current_nle_ctx->program_state.something_worth_saving)
         Strcat(pbuf, "  (Saving and reloading may fix this problem.)");
     pline("%s", VA_PASS1(pbuf));
 
-    program_state.in_impossible = 0;
+    current_nle_ctx->program_state.in_impossible = 0;
     VA_END();
 }
 

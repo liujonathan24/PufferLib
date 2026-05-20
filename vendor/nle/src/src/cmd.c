@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 #include "func_tab.h"
 
@@ -4736,7 +4737,7 @@ register char *cmd;
 
     iflags.menu_requested = FALSE;
 #ifdef SAFERHANGUP
-    if (program_state.done_hup)
+    if (current_nle_ctx->program_state.done_hup)
         end_of_input();
 #endif
     if (firsttime) {
@@ -5875,8 +5876,8 @@ void
 hangup(sig_unused) /* called as signal() handler, so sent at least one arg */
 int sig_unused UNUSED;
 {
-    if (program_state.exiting)
-        program_state.in_moveloop = 0;
+    if (current_nle_ctx->program_state.exiting)
+        current_nle_ctx->program_state.in_moveloop = 0;
     nhwindows_hangup();
 #ifdef SAFERHANGUP
     /* When using SAFERHANGUP, the done_hup flag it tested in rhack
@@ -5885,9 +5886,9 @@ int sig_unused UNUSED;
        protects against losing objects in the process of being thrown,
        but also potentially riskier because the disconnected program
        must continue running longer before attempting a hangup save. */
-    program_state.done_hup++;
+    current_nle_ctx->program_state.done_hup++;
     /* defer hangup iff game appears to be in progress */
-    if (program_state.in_moveloop && program_state.something_worth_saving)
+    if (current_nle_ctx->program_state.in_moveloop && current_nle_ctx->program_state.something_worth_saving)
         return;
 #endif /* SAFERHANGUP */
     end_of_input();
@@ -5898,16 +5899,16 @@ end_of_input()
 {
 #ifdef NOSAVEONHANGUP
 #ifdef INSURANCE
-    if (flags.ins_chkpt && program_state.something_worth_saving)
-        program_state.preserve_locks = 1; /* keep files for recovery */
+    if (flags.ins_chkpt && current_nle_ctx->program_state.something_worth_saving)
+        current_nle_ctx->program_state.preserve_locks = 1; /* keep files for recovery */
 #endif
-    program_state.something_worth_saving = 0; /* don't save */
+    current_nle_ctx->program_state.something_worth_saving = 0; /* don't save */
 #endif
 
 #ifndef SAFERHANGUP
-    if (!program_state.done_hup++)
+    if (!current_nle_ctx->program_state.done_hup++)
 #endif
-        if (program_state.something_worth_saving)
+        if (current_nle_ctx->program_state.something_worth_saving)
             (void) dosave0();
     if (iflags.window_inited)
         exit_nhwindows((char *) 0);
@@ -5948,7 +5949,7 @@ readchar()
 
     if (sym == EOF) {
 #ifdef HANGUPHANDLING
-        hangup(0); /* call end_of_input() or set program_state.done_hup */
+        hangup(0); /* call end_of_input() or set current_nle_ctx->program_state.done_hup */
 #endif
         sym = '\033';
 #ifdef ALTMETA

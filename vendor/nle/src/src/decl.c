@@ -88,7 +88,7 @@ const char *allbones = "bones*.*";
 
 struct linfo level_info[MAXLINFO];
 
-NEARDATA struct sinfo program_state;
+/* struct sinfo program_state migrated to nle_ctx_t (refactor stage 3b). */
 
 /* x/y/z deltas for the 10 movement directions (8 compass pts, 2 up/down) */
 const schar xdir[10] = { -1, -1, 0, 1, 1, 1, 0, -1, 0, 0 };

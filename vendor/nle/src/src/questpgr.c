@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 
 /*  quest-specific pager routines. */
@@ -583,7 +584,7 @@ skip_pager(common)
 boolean common;
 {
     /* WIZKIT: suppress plot feedback if starting with quest artifact */
-    if (program_state.wizkit_wishing)
+    if (current_nle_ctx->program_state.wizkit_wishing)
         return TRUE;
     if (!(common ? qt_list.common : qt_list.chrole)) {
         panic("%s: no %s quest text data available",
