@@ -2,53 +2,57 @@
 #SBATCH --job-name=nh_train
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=16
 #SBATCH --mem-per-cpu=2G
-#SBATCH --time=00:45:00
+#SBATCH --time=00:25:00
 #SBATCH --partition=cpu
 #SBATCH --output=ocean/nethack/experiments/exp_009_real_training/train.out
 
-set -eu
+set -u
 cd "$SLURM_SUBMIT_DIR"
 
 OUT=ocean/nethack/experiments/exp_009_real_training
 mkdir -p "$OUT"
 
-source /usr/share/Modules/init/bash
-module load intel/2024.2
-source /opt/intel/oneapi/compiler/2024.2/env/vars.sh > /dev/null 2>&1
-export LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/2024.2/lib:${LD_LIBRARY_PATH:-}
+source /usr/share/Modules/init/bash 2>&1 || true
+module load intel/2024.2 2>&1 || echo "(module load failed, falling back)"
 
-# Fresh uv venv on the compute node's local /tmp so installs are fast.
-VENV=/tmp/${USER}_puffer_$$
-/scratch/gpfs/ZHUANGL/jl0796/bin/uv venv "$VENV" --python 3.11 > /dev/null
-"$VENV/bin/python" -m ensurepip --quiet
-"$VENV/bin/pip" install --quiet torch numpy pybind11 rich rich_argparse scikit-learn gpytorch wandb 2>&1 | tail -3
+# CMPLR_ROOT is set by the intel module. Fall back to a known path.
+LIBOMP_DIR="${CMPLR_ROOT:-/opt/intel/oneapi/compiler/2024.2}/lib"
+if [ ! -f "$LIBOMP_DIR/libiomp5.so" ]; then
+    LIBOMP_DIR=/opt/intel/oneapi/compiler/2024.2/lib
+fi
+export LD_LIBRARY_PATH="${LIBOMP_DIR}:${LD_LIBRARY_PATH:-}"
+echo "host: $(hostname)   cpus: $SLURM_CPUS_PER_TASK   libomp: $(ls $LIBOMP_DIR/libiomp5.so 2>&1)"
+date
 
-# Build the nethack _C.so using our local repo.
+# Reuse the existing repo-local .venv (on shared /scratch). Skip install.
+VENV=$PWD/.venv
+if [ ! -x "$VENV/bin/python" ]; then
+    echo "ERROR: $VENV/bin/python missing — run uv venv first" >&2
+    exit 2
+fi
+echo "venv python: $($VENV/bin/python --version)"
+
 export NETHACK_LIBPATH="$PWD/vendor/nle/lib/libnethack.so"
 export NETHACKDIR="$PWD/vendor/nle/nethackdir"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-PYTHONPATH="$PWD" "$VENV/bin/python" -c "import pybind11; print('pybind11 from:', pybind11.get_include())"
-PYTHONPATH="$VENV/lib/python3.11/site-packages" bash build.sh nethack --cpu 2>&1 | tail -3
 
-echo "host: $(hostname)  cpus: $OMP_NUM_THREADS"
-date
+# _C.so must already be built for python3.11 (we did this on the login node).
+ls -la pufferlib/_C.cpython-311-*.so 2>&1 | tail -1
 
-# Run a small training session, --slowly to use torch backend (no CUDA).
-# Tiny config so we see throughput in ~5-10 minutes.
-PYTHONPATH="$PWD" "$VENV/bin/python" -u -m pufferlib.pufferl train nethack \
+# Tiny training session, --slowly to use torch backend (CPU).
+# Set --train.gpus 1 to avoid the ZeroDivisionError; the torch backend
+# will pick device='cpu' when _C.gpu == 0 (which it is for our --cpu build).
+"$VENV/bin/python" -u -m pufferlib.pufferl train nethack \
     --slowly \
-    --vec.total_agents 256 \
-    --vec.num_buffers 1 \
-    --train.total_timesteps 200000 \
+    --vec.total-agents 256 \
+    --vec.num-buffers 1 \
+    --train.total-timesteps 200000 \
     --train.horizon 64 \
-    --train.minibatch_size 2048 \
-    --train.gpus 0 \
+    --train.minibatch-size 2048 \
+    --train.gpus 1 \
     2>&1 | tee "$OUT/train.log"
 
 date
 echo "DONE"
-
-# Save a quick analysis script that reads the log for valid_moves rate etc.
-rm -rf "$VENV"
