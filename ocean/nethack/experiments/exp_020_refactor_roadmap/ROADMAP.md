@@ -36,7 +36,67 @@ one bug invalidates the entire run. Subsystem-by-subsystem migration:
 
 Each stage produces a green build + matching golden trajectory.
 
-### Stage 1 — RNG ⬅ in progress
+### Status as of 2026-05-20 (after this /goal session)
+
+10 stages committed on `4.0`, every commit verified against the 1K-step
+golden trajectory:
+
+| Stage | Subsystem | Commit |
+|-------|-----------|--------|
+| 1   | RNG (rnglist[2] → ctx)              | 79dd0bad |
+| 2   | NLE wrapper (settings, seeds_init)   | f9bb2de9 + 6c245a90 |
+| 3a  | has_strong_rngseed (1 bool)          | eccd680d |
+| 3b  | program_state (struct sinfo)         | 5bfdea49 |
+| 3c  | hackpid (1 int)                      | afbe7336 |
+| 3d  | restoring + ransacked + in_steed_dismounting | ab0c2ce7 |
+| 3e  | multi_reason + occtime + ODR fix     | 9ce12cca |
+| 3f  | nroom/nsubroom/doorindex/in_mklev/in_doagain | f6d349b4 |
+| 3g  | stoned/unweapon/mrg_to_wielded/defer_see_monsters | 5aafd265 |
+| 3h  | tbx/tby/otg_temp/yn_number           | 82b94415 |
+
+**Pattern established:**
+1. Add field to `struct nle_globals` in `vendor/nle/src/include/nle.h`.
+2. Remove `extern` from `vendor/nle/src/include/decl.h` and definition
+   from `vendor/nle/src/src/decl.c`.
+3. Bulk sed across caller .c files:
+   `sed 's/\bX\b/current_nle_ctx->X/g'`.
+4. Add `#include "nle.h"` to each toucher (after `#include "hack.h"`).
+5. Build, replay 1K-step golden, commit, push.
+
+**Gotchas hit:**
+- ODR violation on `current_nle_ctx`: was a tentative definition in
+  nle.h without `extern`. Many TUs including nle.h created duplicate
+  definitions. Fixed by making it `extern` (declaration) in nle.h and
+  defining once in nle.c. (Surfaced under ASan strict ODR.)
+- decl.h cannot `#include "nle.h"` globally because util binaries
+  (lev_comp, makedefs, dgn_comp, dlb) don't link fcontext. So each .c
+  file that wants `current_nle_ctx` must include nle.h itself.
+- Sed bulk-replace can clobber struct fields with the same name. Hit
+  in `extralev.c` where `struct rogueroom { int nroom; }` collided
+  with the migrated global `nroom`. Manual revert of struct accesses
+  needed.
+- Macros in header files (e.g., `random_obj_to_glyph` in display.h
+  uses `otg_temp`) also need migration — and every TU that expands
+  them now needs `nle.h`.
+- File reverts mid-session by the linter or IDE: re-do and commit
+  immediately.
+
+### Remaining work in Stage 3 (small bare-name globals in decl.c)
+
+| Global | Files | Difficulty |
+|--------|------:|------------|
+| `multi` (int)             | 40 | Medium — many callsites, but mechanical |
+| `bhitpos` (struct coord)  |  ~10 | Easy — struct, used like `bhitpos.x` |
+| `locknum` (int, #ifdef UNIX) | 2 | Trivial |
+| `m_shot` (struct)         |  ~8 | Easy |
+| `killer` (struct kinfo)   |  ~15 | Medium — used in many endgame paths |
+| `done_money` (long)       |   2 | Trivial |
+| `oldfruit, ffruit`        |   3 | Trivial |
+| `pl_character[], pl_race` |  ~10 | Easy |
+| `quest_status` (struct)   |  ~10 | Easy |
+| `warn_obj_cnt` (int)      |   3 | Trivial |
+
+### Stage 1 — RNG (DONE — kept here for the call-graph record)
 
 State: `rnglist[2]` (static in `rnd.c`), `nle_seeds[2]` (`hacklib.c`),
 `has_strong_rngseed` (`decl.c`).
