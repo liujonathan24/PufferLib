@@ -43,7 +43,8 @@
 #define LSF_SHOW 0x1        /* display the light source */
 #define LSF_NEEDS_FIXUP 0x2 /* need oid fixup */
 
-static light_source *light_base = 0;
+/* TLS — per-env light source list head (was process-global). */
+static __thread light_source *light_base = 0;
 
 STATIC_DCL void FDECL(write_ls, (int, light_source *));
 STATIC_DCL int FDECL(maybe_write_ls, (int, int, BOOLEAN_P));
