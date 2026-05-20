@@ -1,0 +1,2 @@
+profile complete: steps=50000 episodes=1 wall=12.067s sum_reward=1291.6
+wrote experiments/exp_003_parallel/random_50k/N16/p0.json

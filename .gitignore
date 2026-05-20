@@ -156,6 +156,9 @@ dmypy.json
 
 checkpoints/
 experiments/
+# Allow the env-local profiling experiments (small JSON + NOTES.md).
+!ocean/nethack/experiments/
+!ocean/nethack/experiments/**
 wandb/
 .neptune/
 raylib*/
@@ -172,3 +175,14 @@ pufferlib/ocean/impulse_wars/benchmark/
 resources/drive/data/*
 resources/drive/binaries/*
 
+
+# NetHack env build artifacts
+core.*
+/nethack
+/nethack_multi
+profile
+/trailer/trailer
+
+# NLE vendored binaries — see ocean/nethack/SETUP.md to recreate
+vendor/nle/lib/
+vendor/nle/nethackdir

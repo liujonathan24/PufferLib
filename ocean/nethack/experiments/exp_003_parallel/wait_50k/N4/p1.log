@@ -1,0 +1,2 @@
+profile complete: steps=50000 episodes=1 wall=15.812s sum_reward=5.0
+wrote experiments/exp_003_parallel/wait_50k/N4/p1.json
