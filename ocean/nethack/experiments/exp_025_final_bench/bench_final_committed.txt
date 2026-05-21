@@ -1,0 +1,102 @@
+=== bench against committed final code (commit 6cd3670f), 20k steps, 5 trials ===
+host=della-gpu.princeton.edu cpus=128 date=Thu May 21 12:00:00 AM EDT 2026
+--- threads=1 trial=1 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.013s (12.7 ms/env)
+wall=0.006s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3503348
+per-thread steps/sec   = 3503348
+--- threads=1 trial=2 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.013s (12.7 ms/env)
+wall=0.005s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3663442
+per-thread steps/sec   = 3663442
+--- threads=1 trial=3 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.019s (18.8 ms/env)
+wall=0.008s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 2413276
+per-thread steps/sec   = 2413276
+--- threads=1 trial=4 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.010s (9.8 ms/env)
+wall=0.006s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3408051
+per-thread steps/sec   = 3408051
+--- threads=1 trial=5 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.006s (6.4 ms/env)
+wall=0.018s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 1133556
+per-thread steps/sec   = 1133556
+--- threads=2 trial=1 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.061s (30.3 ms/env)
+wall=0.053s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 759461
+per-thread steps/sec   = 379730
+--- threads=2 trial=2 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.060s (30.0 ms/env)
+wall=0.066s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 607101
+per-thread steps/sec   = 303550
+--- threads=2 trial=3 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.066s (32.9 ms/env)
+wall=0.087s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 462316
+per-thread steps/sec   = 231158
+--- threads=2 trial=4 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.063s (31.7 ms/env)
+wall=0.064s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 627256
+per-thread steps/sec   = 313628
+--- threads=2 trial=5 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.065s (32.7 ms/env)
+wall=0.008s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 4938047
+per-thread steps/sec   = 2469023
+--- threads=4 trial=1 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.181s (45.3 ms/env)
+wall=0.033s total_steps=60364 alive=3 dead=1
+aggregate steps/sec    = 1816242
+per-thread steps/sec   = 454060
+--- threads=4 trial=2 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.183s (45.7 ms/env)
+wall=0.058s total_steps=40686 alive=2 dead=2
+aggregate steps/sec    = 699479
+per-thread steps/sec   = 174870
+--- threads=4 trial=3 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.192s (48.0 ms/env)
+wall=0.021s total_steps=20973 alive=1 dead=3
+aggregate steps/sec    = 1020749
+per-thread steps/sec   = 255187
+--- threads=4 trial=4 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.180s (44.9 ms/env)
+wall=0.092s total_steps=40684 alive=2 dead=2
+aggregate steps/sec    = 442381
+per-thread steps/sec   = 110595
+--- threads=4 trial=5 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.182s (45.5 ms/env)
+wall=0.087s total_steps=60315 alive=3 dead=1
+aggregate steps/sec    = 695110
+per-thread steps/sec   = 173777
+--- threads=8 trial=1 steps=20000 ---
+FAILED
+--- threads=8 trial=2 steps=20000 ---
+FAILED
+--- threads=8 trial=3 steps=20000 ---
+FAILED
+--- threads=8 trial=4 steps=20000 ---
+FAILED
+--- threads=8 trial=5 steps=20000 ---
+FAILED

@@ -1,0 +1,68 @@
+=== nethack multi_threaded bench, final code (commit 6cd3670f) ===
+host=della-gpu.princeton.edu  cpus=128  date=Wed May 20 11:45:42 PM EDT 2026
+--- threads=1 trial=1 steps=5000 ---
+running OMP with 1 threads on 1 envs, 5000 steps/env
+init+drain (parallel): 1 envs in 0.012s (12.4 ms/env)
+wall=0.002s total_steps=5000 alive=1 dead=0
+aggregate steps/sec    = 2042233
+per-thread steps/sec   = 2042233
+--- threads=1 trial=2 steps=5000 ---
+running OMP with 1 threads on 1 envs, 5000 steps/env
+init+drain (parallel): 1 envs in 0.013s (12.9 ms/env)
+wall=0.002s total_steps=5000 alive=1 dead=0
+aggregate steps/sec    = 2241851
+per-thread steps/sec   = 2241851
+--- threads=1 trial=3 steps=5000 ---
+running OMP with 1 threads on 1 envs, 5000 steps/env
+init+drain (parallel): 1 envs in 0.020s (20.1 ms/env)
+wall=0.018s total_steps=5000 alive=1 dead=0
+aggregate steps/sec    = 276590
+per-thread steps/sec   = 276590
+--- threads=2 trial=1 steps=5000 ---
+running OMP with 2 threads on 2 envs, 5000 steps/env
+init+drain (parallel): 2 envs in 0.087s (43.6 ms/env)
+wall=0.059s total_steps=10000 alive=2 dead=0
+aggregate steps/sec    = 169649
+per-thread steps/sec   = 84824
+--- threads=2 trial=2 steps=5000 ---
+running OMP with 2 threads on 2 envs, 5000 steps/env
+init+drain (parallel): 2 envs in 0.066s (33.2 ms/env)
+wall=0.078s total_steps=10000 alive=2 dead=0
+aggregate steps/sec    = 127545
+per-thread steps/sec   = 63773
+--- threads=2 trial=3 steps=5000 ---
+running OMP with 2 threads on 2 envs, 5000 steps/env
+init+drain (parallel): 2 envs in 0.077s (38.5 ms/env)
+wall=0.006s total_steps=10000 alive=2 dead=0
+aggregate steps/sec    = 1620308
+per-thread steps/sec   = 810154
+--- threads=4 trial=1 steps=5000 ---
+FAILED
+--- threads=4 trial=2 steps=5000 ---
+running OMP with 4 threads on 4 envs, 5000 steps/env
+init+drain (parallel): 4 envs in 0.198s (49.5 ms/env)
+wall=0.059s total_steps=16166 alive=3 dead=1
+aggregate steps/sec    = 273100
+per-thread steps/sec   = 68275
+--- threads=4 trial=3 steps=5000 ---
+running OMP with 4 threads on 4 envs, 5000 steps/env
+init+drain (parallel): 4 envs in 0.180s (45.0 ms/env)
+wall=0.070s total_steps=11137 alive=2 dead=2
+aggregate steps/sec    = 159195
+per-thread steps/sec   = 39799
+--- threads=8 trial=1 steps=5000 ---
+FAILED
+--- threads=8 trial=2 steps=5000 ---
+FAILED
+--- threads=8 trial=3 steps=5000 ---
+running OMP with 8 threads on 8 envs, 5000 steps/env
+init+drain (parallel): 8 envs in 0.390s (48.7 ms/env)
+wall=0.099s total_steps=21350 alive=4 dead=4
+aggregate steps/sec    = 216020
+per-thread steps/sec   = 27002
+--- threads=16 trial=1 steps=5000 ---
+FAILED
+--- threads=16 trial=2 steps=5000 ---
+FAILED
+--- threads=16 trial=3 steps=5000 ---
+FAILED

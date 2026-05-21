@@ -1,0 +1,61 @@
+=== multi_shared (sequential N envs) baseline ===
+--- envs=1 trial=1 steps=10000 ---
+init+drain: 1 envs in 0.006s (6.0 ms/env)
+steps_per_env=10000 total_steps=10000 wall=0.003s
+aggregate c_steps/sec  = 3451031
+per-env c_steps/sec    = 3451031
+--- envs=1 trial=2 steps=10000 ---
+init+drain: 1 envs in 0.002s (1.8 ms/env)
+steps_per_env=10000 total_steps=10000 wall=0.004s
+aggregate c_steps/sec  = 2837788
+per-env c_steps/sec    = 2837788
+--- envs=1 trial=3 steps=10000 ---
+init+drain: 1 envs in 0.002s (1.8 ms/env)
+steps_per_env=10000 total_steps=10000 wall=0.006s
+aggregate c_steps/sec  = 1553933
+per-env c_steps/sec    = 1553933
+--- envs=2 trial=1 steps=10000 ---
+init+drain: 2 envs in 0.057s (28.6 ms/env)
+steps_per_env=10000 total_steps=20000 wall=0.081s
+aggregate c_steps/sec  = 246620
+per-env c_steps/sec    = 123310
+--- envs=2 trial=2 steps=10000 ---
+init+drain: 2 envs in 0.055s (27.3 ms/env)
+steps_per_env=10000 total_steps=20000 wall=0.083s
+aggregate c_steps/sec  = 240088
+per-env c_steps/sec    = 120044
+--- envs=2 trial=3 steps=10000 ---
+init+drain: 2 envs in 0.055s (27.6 ms/env)
+steps_per_env=10000 total_steps=683 wall=0.011s
+aggregate c_steps/sec  = 62621
+per-env c_steps/sec    = 31310
+--- envs=4 trial=1 steps=10000 ---
+init+drain: 4 envs in 0.167s (41.7 ms/env)
+steps_per_env=10000 total_steps=1223 wall=0.038s
+aggregate c_steps/sec  = 31808
+per-env c_steps/sec    = 7952
+--- envs=4 trial=2 steps=10000 ---
+init+drain: 4 envs in 0.164s (41.0 ms/env)
+steps_per_env=10000 total_steps=1709 wall=0.060s
+aggregate c_steps/sec  = 28573
+per-env c_steps/sec    = 7143
+--- envs=4 trial=3 steps=10000 ---
+init+drain: 4 envs in 0.165s (41.3 ms/env)
+steps_per_env=10000 total_steps=1228 wall=0.035s
+aggregate c_steps/sec  = 34707
+per-env c_steps/sec    = 8677
+--- envs=8 trial=1 steps=10000 ---
+init+drain: 8 envs in 0.383s (47.8 ms/env)
+steps_per_env=10000 total_steps=2297 wall=0.099s
+aggregate c_steps/sec  = 23266
+per-env c_steps/sec    = 2908
+--- envs=8 trial=2 steps=10000 ---
+init+drain: 8 envs in 0.382s (47.7 ms/env)
+steps_per_env=10000 total_steps=2807 wall=0.141s
+aggregate c_steps/sec  = 19973
+per-env c_steps/sec    = 2497
+--- envs=8 trial=3 steps=10000 ---
+init+drain: 8 envs in 0.381s (47.7 ms/env)
+steps_per_env=10000 total_steps=2397 wall=0.100s
+aggregate c_steps/sec  = 23876
+per-env c_steps/sec    = 2985

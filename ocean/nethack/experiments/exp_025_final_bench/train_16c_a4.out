@@ -1,0 +1,30 @@
+Loading intel/2024.2
+  Loading requirement: intel-tbb/2021.13 intel-rt/2024.2
+host: della-l08g4   cpus: 16   agents_per_cpu: 4   tag: 16c_a4
+commit: 6cd3670f
+GPU 0: NVIDIA A100-SXM4-80GB (UUID: GPU-de47e784-b81f-4a55-bb6f-099142193ae3)
+Wed May 20 11:53:26 PM EDT 2026
+[ 31%] Building C object CMakeFiles/nethack.dir/src/files.c.o
+[ 32%] Linking CXX shared library libnethack.so
+[100%] Built target nethack
+Detected discrete action space with 1 heads
+Num workers: 1
+Num workers: 1
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                GPU: 76%      VRAM: 0.9/79G      RAM: 1.1G  │
+│                                                                              │
+│  Summary          Value    Evaluate     0ms   0%    Losses            Value  │
+│  Env            nethack      GPU        0ms   0%    policy           -0.008  │
+│  Params            4.0M      Env        0ms   0%    value             0.000  │
+│  Steps              0.0    Train      106ms  99%    entropy           3.112  │
+│  SPS                0.0      Misc      11ms  10%    total            -0.072  │
+│  Epoch                0      Forwa…    95ms  89%    old_kl            0.001  │
+│  Uptime             0ms                             kl                0.000  │
+│  Remaini…   A hair past                             clipfrac          0.392  │
+│               a freckle                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Wed May 20 11:53:30 PM EDT 2026
+DONE-16c_a4

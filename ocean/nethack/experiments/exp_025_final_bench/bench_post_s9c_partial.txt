@@ -1,0 +1,57 @@
+=== bench after stage 9'C partial heap migration ===
+--- threads=1 trial=1 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.037s (36.8 ms/env)
+wall=0.022s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 914313
+per-thread steps/sec   = 914313
+--- threads=1 trial=2 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.024s (24.3 ms/env)
+wall=0.005s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3678781
+per-thread steps/sec   = 3678781
+--- threads=1 trial=3 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.017s (17.4 ms/env)
+wall=0.008s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 2413200
+per-thread steps/sec   = 2413200
+--- threads=2 trial=1 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.074s (37.0 ms/env)
+wall=0.065s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 619650
+per-thread steps/sec   = 309825
+--- threads=2 trial=2 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.080s (40.0 ms/env)
+wall=0.035s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 1138707
+per-thread steps/sec   = 569353
+--- threads=2 trial=3 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.086s (43.2 ms/env)
+wall=0.006s total_steps=20318 alive=1 dead=1
+aggregate steps/sec    = 3347180
+per-thread steps/sec   = 1673590
+--- threads=4 trial=1 steps=20000 ---
+FAILED
+--- threads=4 trial=2 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.196s (49.0 ms/env)
+wall=0.016s total_steps=40702 alive=2 dead=2
+aggregate steps/sec    = 2554360
+per-thread steps/sec   = 638590
+--- threads=4 trial=3 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.204s (51.0 ms/env)
+wall=0.072s total_steps=80000 alive=4 dead=0
+aggregate steps/sec    = 1118315
+per-thread steps/sec   = 279579
+--- threads=8 trial=1 steps=20000 ---
+FAILED
+--- threads=8 trial=2 steps=20000 ---
+FAILED
+--- threads=8 trial=3 steps=20000 ---
+FAILED

@@ -1,0 +1,44 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ in _run_module_as_main:198                                                   │
+│ in _run_code:88                                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:687 in <module>  │
+│                                                                              │
+│   684 │   │   raise ValueError(err)                                          │
+│   685                                                                        │
+│   686 if __name__ == '__main__':                                             │
+│ ❱ 687 │   main()                                                             │
+│   688                                                                        │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:671 in main      │
+│                                                                              │
+│   668 │   args = load_config(env_name)                                       │
+│   669 │                                                                      │
+│   670 │   if 'train' in mode:                                                │
+│ ❱ 671 │   │   train(env_name=env_name, args=args)                            │
+│   672 │   elif 'eval' in mode:                                               │
+│   673 │   │   eval(env_name=env_name, args=args)                             │
+│   674 │   elif 'sweep' in mode:                                              │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:381 in train     │
+│                                                                              │
+│   378                                                                        │
+│   379 def train(env_name, args=None, gpus=None, **kwargs):                   │
+│   380 │   args = args or load_config(env_name)                               │
+│ ❱ 381 │   validate_config(args)                                              │
+│   382 │                                                                      │
+│   383 │   subprocess = gpus is not None                                      │
+│   384 │   gpus = list(gpus or range(args['train']['gpus']))                  │
+│                                                                              │
+│ /scratch/gpfs/ZHUANGL/jl0796/PufferLib/pufferlib/pufferl.py:168 in           │
+│ validate_config                                                              │
+│                                                                              │
+│   165 │   total_agents = args['vec']['total_agents']                         │
+│   166 │   assert (minibatch_size % horizon) == 0, \                          │
+│   167 │   │   f'minibatch_size {minibatch_size} must be divisible by horizon │
+│ ❱ 168 │   assert minibatch_size <= horizon * total_agents, \                 │
+│   169 │   │   f'minibatch_size {minibatch_size} > total_agents {total_agents │
+│   170                                                                        │
+│   171 def _resolve_backend(args):                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+AssertionError: minibatch_size 4096 > total_agents 32 * horizon 64

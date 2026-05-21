@@ -1,0 +1,41 @@
+=== bench after stage 7' partial heap migration ===
+--- threads=1 trial=1 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.006s (6.1 ms/env)
+wall=0.009s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 2242598
+per-thread steps/sec   = 2242598
+--- threads=1 trial=2 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.007s (6.9 ms/env)
+wall=0.019s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 1064805
+per-thread steps/sec   = 1064805
+--- threads=1 trial=3 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.006s (5.7 ms/env)
+wall=0.017s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 1181448
+per-thread steps/sec   = 1181448
+--- threads=2 trial=1 steps=20000 ---
+FAILED
+--- threads=2 trial=2 steps=20000 ---
+FAILED
+--- threads=2 trial=3 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.069s (34.3 ms/env)
+wall=0.006s total_steps=20320 alive=1 dead=1
+aggregate steps/sec    = 3466599
+per-thread steps/sec   = 1733299
+--- threads=4 trial=1 steps=20000 ---
+FAILED
+--- threads=4 trial=2 steps=20000 ---
+FAILED
+--- threads=4 trial=3 steps=20000 ---
+FAILED
+--- threads=8 trial=1 steps=20000 ---
+FAILED
+--- threads=8 trial=2 steps=20000 ---
+FAILED
+--- threads=8 trial=3 steps=20000 ---
+FAILED

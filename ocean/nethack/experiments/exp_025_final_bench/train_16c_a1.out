@@ -1,0 +1,10 @@
+Loading intel/2024.2
+  Loading requirement: intel-tbb/2021.13 intel-rt/2024.2
+host: della-l08g4   cpus: 16   agents_per_cpu: 1   tag: 16c_a1
+commit: 6cd3670f
+GPU 0: NVIDIA A100-SXM4-80GB (UUID: GPU-de47e784-b81f-4a55-bb6f-099142193ae3)
+Wed May 20 11:52:25 PM EDT 2026
+[ 30%] Built target lev_comp
+[ 83%] Built target dat
+Built target nethack
+[2026-05-20T23:52:27.013] error: *** JOB 8534564 ON della-l08g4 CANCELLED AT 2026-05-20T23:52:27 DUE to SIGNAL Terminated ***

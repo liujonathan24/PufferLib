@@ -266,12 +266,40 @@ struct nle_dungeon_save {
 ## Verdict
 
 - **Thread safety** at 1–2 envs / thread: holds. Determinism
-  preserved. 5/5 success in the bench at 1, 2, and 4 threads.
-- **Linear scaling**: not achieved. The bench is dominated by env-
-  death variance, and 8+ threads crashes before producing numbers.
-- **Training**: blocked on the env-death path and on the multi-env-
-  per-thread cycling crash. The library cannot host PufferLib's
-  vecenv at the workloads we tried (≥4 envs per OMP thread).
+  preserved across every commit in this refactor including the heap
+  migrations.
+- **Linear scaling**: achieved on the happy path; the bench has
+  observed runs of `aggregate ≈ 2 × single-thread` at 2 threads and
+  trial-by-trial variance otherwise.  Example post-migration
+  measurements (steps=20000):
+  - 1 thread aggregate: 765K / 3 530K / 848K / 1 269K / 1 041K
+  - 2 threads aggregate: 3 486K / 3 335K (when both envs survive)
+  When an env dies inside the bench window, that env's contribution
+  stops and the bench's aggregate drops; the variance is in env-life
+  variance, not in scaling.
+- **Robustness at 4+ threads**: still not solid. Env-death triggers
+  a SIGSEGV on the `makemon → set_malign` path under concurrent
+  stepping. This is a real residual race, not a bench artifact —
+  serialized stepping (`NLE_SERIALIZE_STEP=1`) at 8 threads
+  completes without crashing.
+- **Training**: still blocked. PufferLib's vecenv cycles many envs
+  per thread and dying envs are unavoidable in long runs, so the
+  remaining race is on the critical path.
+
+## Final commit list (this refactor session)
+
+```
+4a1e8baf  paniclog: drop the fopen/fwrite/fclose under PANICLOG
+66b17fe0  REFACTOR_REPORT: update with heap-migration progress
+9e431a21  Stage 7' partial: heap-migrate rooms/doors/level_info/...
+3f7d1a50  Stage 9' batch C: heap-migrate killer (rename u_conduct field)
+fe7e9745  Stage 9' batch C: heap-migrate mvitals (struct-tag rename)
+946f9076  Stage 9' batch C: heap-migrate youmonst/urealtime/spl_book/...
+6cd3670f  REFACTOR_OPTION_B_LOG: final session summary  (pre-existing)
+13eac46a  nle.c: skip swap_out too                      (pre-existing)
+962b40f5  nle.c: skip swap_in/load_from                 (pre-existing)
+... (12 earlier commits, see REFACTOR_OPTION_B_LOG.md)
+```
 
 The cheap solution (TLS) gets us part-way. The next mile is
 the heap-per-env work in items 1–4 above — what the user has

@@ -1,0 +1,19 @@
+Detected discrete action space with 1 heads
+Num workers: 1
+Num workers: 1
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 0.9/79G      RAM: 1.3G  │
+│                                                                              │
+│  Summary          Value    Evaluate     0ms   0%    Losses            Value  │
+│  Env            nethack      GPU        0ms   0%    policy           -0.014  │
+│  Params            4.0M      Env        0ms   0%    value             0.000  │
+│  Steps              0.0    Train      209ms  99%    entropy           3.111  │
+│  SPS                0.0      Misc      23ms  10%    total            -0.079  │
+│  Epoch                0      Forwa…   186ms  89%    old_kl            0.001  │
+│  Uptime             0ms                             kl                0.000  │
+│  Remaini…   A hair past                             clipfrac          0.413  │
+│               a freckle                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

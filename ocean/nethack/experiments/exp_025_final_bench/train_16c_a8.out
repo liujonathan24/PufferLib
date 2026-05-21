@@ -1,0 +1,30 @@
+Loading intel/2024.2
+  Loading requirement: intel-tbb/2021.13 intel-rt/2024.2
+host: della-l09g1   cpus: 16   agents_per_cpu: 8   tag: 16c_a8
+commit: 6cd3670f
+GPU 0: NVIDIA A100-SXM4-80GB (UUID: GPU-64458b78-e00a-2046-6d8d-a91db38a8b12)
+Wed May 20 11:52:56 PM EDT 2026
+[ 82%] Built target lev_comp
+[ 86%] Built target dat
+Built target nethack
+Detected discrete action space with 1 heads
+Num workers: 1
+Num workers: 1
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 0%      VRAM: 0.9/79G      RAM: 1.4G  │
+│                                                                              │
+│  Summary          Value    Evaluate     0ms   0%    Losses            Value  │
+│  Env            nethack      GPU        0ms   0%    policy           -0.014  │
+│  Params            4.0M      Env        0ms   0%    value             0.000  │
+│  Steps              0.0    Train      190ms  99%    entropy           3.111  │
+│  SPS                0.0      Misc      21ms  11%    total            -0.079  │
+│  Epoch                0      Forwa…   169ms  88%    old_kl            0.001  │
+│  Uptime             0ms                             kl                0.000  │
+│  Remaini…   A hair past                             clipfrac          0.413  │
+│               a freckle                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Wed May 20 11:52:59 PM EDT 2026
+DONE-16c_a8

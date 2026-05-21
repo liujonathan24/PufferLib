@@ -1,0 +1,73 @@
+=== bench after paniclog no-op fix ===
+--- threads=1 trial=1 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.013s (13.0 ms/env)
+wall=0.008s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 2569259
+per-thread steps/sec   = 2569259
+--- threads=1 trial=2 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.012s (11.6 ms/env)
+wall=0.006s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3510346
+per-thread steps/sec   = 3510346
+--- threads=1 trial=3 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.010s (9.5 ms/env)
+wall=0.006s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 3193196
+per-thread steps/sec   = 3193196
+--- threads=1 trial=4 steps=20000 ---
+running OMP with 1 threads on 1 envs, 20000 steps/env
+init+drain (parallel): 1 envs in 0.011s (10.6 ms/env)
+wall=0.008s total_steps=20000 alive=1 dead=0
+aggregate steps/sec    = 2393326
+per-thread steps/sec   = 2393326
+--- threads=2 trial=1 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.068s (33.9 ms/env)
+wall=0.006s total_steps=20393 alive=1 dead=1
+aggregate steps/sec    = 3600732
+per-thread steps/sec   = 1800366
+--- threads=2 trial=2 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.076s (38.1 ms/env)
+wall=0.077s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 520803
+per-thread steps/sec   = 260402
+--- threads=2 trial=3 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.066s (33.1 ms/env)
+wall=0.009s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 4614993
+per-thread steps/sec   = 2307496
+--- threads=2 trial=4 steps=20000 ---
+running OMP with 2 threads on 2 envs, 20000 steps/env
+init+drain (parallel): 2 envs in 0.070s (34.8 ms/env)
+wall=0.009s total_steps=40000 alive=2 dead=0
+aggregate steps/sec    = 4304640
+per-thread steps/sec   = 2152320
+--- threads=4 trial=1 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.173s (43.3 ms/env)
+wall=0.026s total_steps=21273 alive=1 dead=3
+aggregate steps/sec    = 803646
+per-thread steps/sec   = 200911
+--- threads=4 trial=2 steps=20000 ---
+FAILED
+--- threads=4 trial=3 steps=20000 ---
+FAILED
+--- threads=4 trial=4 steps=20000 ---
+running OMP with 4 threads on 4 envs, 20000 steps/env
+init+drain (parallel): 4 envs in 0.179s (44.6 ms/env)
+wall=0.078s total_steps=40672 alive=2 dead=2
+aggregate steps/sec    = 519156
+per-thread steps/sec   = 129789
+--- threads=8 trial=1 steps=20000 ---
+FAILED
+--- threads=8 trial=2 steps=20000 ---
+FAILED
+--- threads=8 trial=3 steps=20000 ---
+FAILED
+--- threads=8 trial=4 steps=20000 ---
+FAILED
