@@ -834,7 +834,7 @@ char *
 from_what(propidx)
 int propidx; /* special cases can have negative values */
 {
-    static char buf[BUFSZ];
+    static __thread char buf[BUFSZ];
 
     buf[0] = '\0';
     /*

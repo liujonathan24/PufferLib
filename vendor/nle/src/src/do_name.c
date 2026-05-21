@@ -2043,7 +2043,7 @@ char *
 rndmonnam(code)
 char *code;
 {
-    static char buf[BUFSZ];
+    static __thread char buf[BUFSZ];
     char *mname;
     int name;
 #define BOGUSMONSIZE 100 /* arbitrary */

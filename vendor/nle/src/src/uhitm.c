@@ -2113,10 +2113,10 @@ gulpum(mdef, mattk)
 register struct monst *mdef;
 register struct attack *mattk;
 {
-#ifdef LINT /* static char msgbuf[BUFSZ]; */
+#ifdef LINT /* static __thread char msgbuf[BUFSZ]; */
     char msgbuf[BUFSZ];
 #else
-    static char msgbuf[BUFSZ]; /* for nomovemsg */
+    static __thread char msgbuf[BUFSZ]; /* for nomovemsg */
 #endif
     register int tmp;
     register int dam = d((int) mattk->damn, (int) mattk->damd);

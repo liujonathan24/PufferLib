@@ -1937,7 +1937,7 @@ const char *default_configfile =
 #endif
 
 /* used for messaging */
-char configfile[BUFSZ];
+__thread char configfile[BUFSZ];
 
 #ifdef MSDOS
 /* conflict with speed-dial under windows

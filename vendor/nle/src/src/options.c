@@ -489,7 +489,7 @@ static const struct Comp_Opt compopt_baseline[] = {
 
 #else /* use rest of file */
 
-extern char configfile[]; /* for messages */
+extern __thread char configfile[]; /* TLS — per-thread to fix race */
 
 extern const struct symparse loadsyms[];
 static boolean need_redraw; /* for doset() */

@@ -2591,7 +2591,7 @@ STATIC_OVL const char *
 compress_str(str)
 const char *str;
 {
-    static char cbuf[BUFSZ];
+    static __thread char cbuf[BUFSZ];
 
     /* compress out consecutive spaces if line is too long;
        topline wrapping converts space at wrap point into newline,

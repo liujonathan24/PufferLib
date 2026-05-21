@@ -2458,10 +2458,10 @@ boolean dot;     /* append period; (dot && cost => Iu) */
 long cost;       /* cost (for inventory of unpaid or expended items) */
 long quan;       /* if non-0, print this quantity, not obj->quan */
 {
-#ifdef LINT /* handle static char li[BUFSZ]; */
+#ifdef LINT /* handle static __thread char li[BUFSZ]; */
     char li[BUFSZ];
 #else
-    static char li[BUFSZ];
+    static __thread char li[BUFSZ];
 #endif
     boolean use_invlet = (flags.invlet_constant
                           && let != CONTAINED_SYM && let != HANDS_SYM);
@@ -3307,7 +3307,7 @@ char *buf;
     struct rm *lev = &levl[x][y];
     int ltyp = lev->typ, cmap = -1;
     const char *dfeature = 0;
-    static char altbuf[BUFSZ];
+    static __thread char altbuf[BUFSZ];
 
     if (IS_DOOR(ltyp)) {
         switch (lev->doormask) {
