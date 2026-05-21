@@ -1,11 +1,21 @@
 # NetHack thread-safety refactor — final report
 
-Repo head: `dd459f3b` on branch `4.0` (was `6cd3670f`; nine new
-commits added during this session, comprising heap migrations and
-race-fix follow-ups).
+Repo head: `a76735cc` on branch `4.0`.
 Library under test: `vendor/nle/src/build/libnethack.so`
 rebuilt after every code change. Determinism re-verified against
-`ocean/nethack/golden/golden_seed42_1k.bin` after each rebuild.
+16 seeded golden trajectories (1000 steps each, with menu predrain)
+under `ocean/nethack/golden/golden_seed{01..16}_1k.bin` after each
+rebuild via `ocean/nethack/verify_determinism_all.sh`.
+
+## Headline numbers
+
+| Metric                              | Value             |
+|-------------------------------------|-------------------|
+| Writable global storage, baseline   | 198,740 bytes     |
+| Writable global storage, HEAD       | 19,370 bytes      |
+| Reduction                           | **90.3%**         |
+| Determinism replays passing         | 16/16 at every commit |
+| Plot                                | `ocean/nethack/experiments/exp_026_globals_plot/globals.png` |
 
 ## What this refactor was trying to do
 
