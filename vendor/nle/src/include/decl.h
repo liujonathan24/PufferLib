@@ -153,13 +153,21 @@ struct dgn_topology { /* special dungeon levels for speed */
 /* quest_status — stage 9' batch C migrated to nle_ctx_t. */
 #define quest_status (*current_nle_ctx->s9c_quest_status_p)
 
+/* pl_character/pl_race/pl_fruit/tune — per-env, migrated to nle_ctx_t
+ * (cluster W). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char pl_character[PL_CSIZ];
-E NEARDATA char pl_race; /* character's race */
-
+E NEARDATA char pl_race;
 E NEARDATA char pl_fruit[PL_FSIZ];
-E NEARDATA struct fruit *ffruit;
-
 E NEARDATA char tune[6];
+#else
+#define pl_character (current_nle_ctx->pl_character_v)
+#define pl_race      (current_nle_ctx->pl_race_v)
+#define pl_fruit     (current_nle_ctx->pl_fruit_v)
+#define tune         (current_nle_ctx->tune_v)
+#endif
+
+E NEARDATA struct fruit *ffruit;
 
 #define MAXLINFO (MAXDUNGEON * MAXLEVEL)
 /* level_info — stage 7' partial migrated to nle_ctx_t. */
@@ -203,7 +211,12 @@ struct kinfo {
  * to free the `killer` token for this macro. */
 #define killer (*current_nle_ctx->s9c_killer_p)
 
+/* plname — per-env player name, migrated to nle_ctx_t (cluster W). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char plname[PL_NSIZ];
+#else
+#define plname (current_nle_ctx->plname_v)
+#endif
 E NEARDATA char dogname[];
 E NEARDATA char catname[];
 E NEARDATA char horsename[];

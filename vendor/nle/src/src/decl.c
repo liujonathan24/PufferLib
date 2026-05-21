@@ -21,11 +21,16 @@ char chosen_windowtype[WINTYPELEN];
 
 #ifdef NLE_OBJECTS_GLOBAL
 int bases[MAXOCLASSES];
-/* cluster V build-tool stubs — only used by makedefs/lev_comp linking. */
+/* cluster V/W build-tool stubs — only used by makedefs/lev_comp linking. */
 NEARDATA int doorindex = 0;
 NEARDATA int in_doagain = 0;
 NEARDATA boolean in_mklev = FALSE;
 NEARDATA coord bhitpos = DUMMY;
+NEARDATA char plname[PL_NSIZ] = DUMMY;
+NEARDATA char pl_character[PL_CSIZ] = DUMMY;
+NEARDATA char pl_race = '\0';
+NEARDATA char pl_fruit[PL_FSIZ] = DUMMY;
+NEARDATA char tune[6] = DUMMY;
 #endif
 /* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
@@ -52,14 +57,8 @@ NEARDATA char *save_cm = 0;
 
 /* killer — stage 9' batch C migrated to nle_ctx_t. */
 const char *nomovemsg = 0;
-NEARDATA char plname[PL_NSIZ] = DUMMY; /* player name */
-NEARDATA char pl_character[PL_CSIZ] = DUMMY;
-NEARDATA char pl_race = '\0';
-
-NEARDATA char pl_fruit[PL_FSIZ] = DUMMY;
+/* plname/pl_character/pl_race/pl_fruit/tune — migrated to nle_ctx_t (cluster W). */
 NEARDATA struct fruit *ffruit = (struct fruit *) 0;
-
-NEARDATA char tune[6] = DUMMY;
 
 const char *occtxt = DUMMY;
 const char quitchars[] = " \r\n\033";

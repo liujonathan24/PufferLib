@@ -139,6 +139,13 @@ typedef struct nle_globals {
     /* bhitpos — per-env throw/zap impact point. Stored as a pointer so
      * we can keep coord.h out of nle.h. Allocated in init_nle. */
     struct nhcoord      *bhitpos_p;
+    /* cluster W — per-env player identity buffers. PL_NSIZ=32, PL_CSIZ=20,
+     * PL_FSIZ=32. Allocated inline (small enough). */
+    char                 plname_v[32];        /* PL_NSIZ */
+    char                 pl_character_v[32];  /* PL_CSIZ */
+    char                 pl_race_v;
+    char                 pl_fruit_v[32];      /* PL_FSIZ */
+    char                 tune_v[6];
     /* stage 3j — turn loop state (big migration, ~40 callsites) */
     int                 multi;              /* was decl.c (multi-step action counter) */
     /* stage 4 — player state (the big one — ~94 files, hundreds of refs) */
