@@ -232,6 +232,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s9c_mvitals_p      = calloc(NUMMONS, sizeof(struct nle_mvitals_t));
     nle->s9c_killer_p       = calloc(1, sizeof(struct kinfo));
     nle->s8_tcap_p          = calloc(1, sizeof(struct nle_tcap_t));
+    nle->s7_level_p         = calloc(1, sizeof(dlevel_t));
     nle->s7_rooms_p         = calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
     nle->s7_doors_p         = calloc(DOORMAX, sizeof(coord));
     nle->s7_level_info_p    = calloc(MAXLINFO, sizeof(struct linfo));
@@ -243,7 +244,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     if (!nle->s9c_m_shot_p || !nle->s9c_urealtime_p
         || !nle->s9c_quest_status_p || !nle->s9c_spl_book_p
         || !nle->s9c_youmonst_p || !nle->s9c_mvitals_p
-        || !nle->s9c_killer_p || !nle->s8_tcap_p || !nle->s7_rooms_p
+        || !nle->s9c_killer_p || !nle->s8_tcap_p || !nle->s7_level_p
+        || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
         || !nle->s7_lastseentyp_p) {
         fprintf(stderr, "init_nle: failed to allocate stage 9' batch C state\n");
@@ -586,12 +588,8 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
  * the globals). */
 struct nle_dungeon_save {
     /* stage 6' — dungeon graph migrated direct to nle_ctx_t. */
-    /* stage 7 — current level (biggest single struct, ~40 KB).
-     * Most stage-7 items migrated direct to nle_ctx_t (s7_*). Only
-     * `level` itself stays in this swap blob — the `level` token
-     * collides with struct field names in context.h, so the macro
-     * pattern doesn't apply and a symbol-rename is the next step. */
-    dlevel_t            level;
+    /* stage 7 completed — `level` now lives in nle_ctx_t (s7_level_p).
+     * struct dig_info.level was renamed to .dlvl to free the token. */
     /* stage 8 — display / message state migrated direct to nle_ctx_t
      * (vision_full_recalc, viz_array, WIN_*, toplines, tc_gbl_data). */
     /* stage 9' — remaining swap entries (DEFERRED to batch C):
@@ -617,9 +615,8 @@ static void
 nle_dungeon_save_to(struct nle_dungeon_save *s)
 {
     /* stage 6' — dungeon topology migrated direct to nle_ctx_t. */
-    /* stage 7' partial — all stage-7 items except `level` itself
+    /* stage 7' completed — all stage-7 items including `level` itself
      * migrated direct to nle_ctx_t (s7_*). Save/load no longer needed. */
-    s->level = level;
     /* stage 8' completed: tc_gbl_data + vision_full_recalc + viz_array
      * + WIN_* + toplines all migrated direct to nle_ctx_t. */
     /* stage 9' batch C — partial migration. youmonst/urealtime/spl_book/
@@ -640,10 +637,7 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
 static void
 nle_dungeon_load_from(const struct nle_dungeon_save *s)
 {
-    /* stage 6' — dungeon topology migrated direct to nle_ctx_t. */
-    /* stage 7' partial — only `level` itself still load/save. */
-    level = s->level;
-    /* stage 8' completed (see save_to). */
+    /* stage 6'/7'/8' completed — nothing left to load for those stages. */
     /* stage 9' batch C — partial migration (see save_to). */
     uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
     uquiver = s->uquiver; uarmu = s->uarmu;

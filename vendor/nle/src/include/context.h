@@ -21,7 +21,9 @@
 
 struct dig_info { /* apply.c, hack.c */
     int effort;
-    d_level level;
+    d_level dlvl;            /* renamed from `level` so the global token
+                                `level` can become a macro for the per-env
+                                dlevel_t (stage 7' completion). */
     coord pos;
     long lastdigtime;
     boolean down, chew, warned, quiet;

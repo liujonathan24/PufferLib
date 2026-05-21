@@ -589,7 +589,9 @@ struct levelflags {
                                   rather than ROOM */
 };
 
-typedef struct {
+/* Tag added (`struct nle_dlevel`) so nle.h can forward-declare the
+ * type for the per-env field. Existing code keeps using `dlevel_t`. */
+typedef struct nle_dlevel {
     struct rm locations[COLNO][ROWNO];
 #ifndef MICROPORT_BUG
     struct obj *objects[COLNO][ROWNO];
@@ -615,7 +617,10 @@ typedef struct {
  * preserve it with a typed pointer-to-array macro. */
 #define lastseentyp ((schar (*)[ROWNO]) current_nle_ctx->s7_lastseentyp_p)
 
-extern NEARDATA dlevel_t level; /* structure describing the current level */
+/* level — stage 7' completion migrated to nle_ctx_t. The `level` token
+ * was previously also used as a struct field name in dig_info; that
+ * field was renamed to `dlvl` so this macro is unambiguous. */
+#define level (*current_nle_ctx->s7_level_p)
 
 /*
  * Macros for compatibility with old code. Someday these will go away.

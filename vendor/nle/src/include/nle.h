@@ -47,6 +47,7 @@ struct nle_tcap_t;       /* include/decl.h (stage 8' completion) */
 struct mkroom;           /* include/mkroom.h (stage 7' partial) */
 struct linfo;            /* include/dungeon.h (stage 7' partial) */
 struct trap;             /* include/trap.h   (stage 7' partial) */
+struct nle_dlevel;       /* include/rm.h     (stage 7' completion) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -216,6 +217,11 @@ typedef struct nle_globals {
     struct mkroom       *s7_dnstairs_room;    /* macro: dnstairs_room */
     struct mkroom       *s7_sstairs_room;     /* macro: sstairs_room */
     struct trap         *s7_ftrap;            /* macro: ftrap */
+    /* stage 7' completion — `dlevel_t level` (40 KB, the largest single
+     * global) heap-allocated per-env. The macro pattern works now that
+     * `struct dig_info.level` was renamed to `.dlvl` in context.h.
+     * Forward-declared `struct nle_dlevel` (tag added in rm.h). */
+    struct nle_dlevel   *s7_level_p;          /* macro: level */
 } nle_ctx_t;
 
 /*

@@ -828,7 +828,7 @@ wiz_makemap(VOID_ARGS)
         /* reset lock picking unless it's for a carried container */
         maybe_reset_pick((struct obj *) 0);
         /* reset interrupted digging if it was taking place on this level */
-        if (on_level(&context.digging.level, &u.uz))
+        if (on_level(&context.digging.dlvl, &u.uz))
             (void) memset((genericptr_t) &context.digging, 0,
                           sizeof (struct dig_info));
         /* reset cached targets */

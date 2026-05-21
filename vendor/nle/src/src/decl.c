@@ -108,10 +108,9 @@ NEARDATA coord bhitpos = DUMMY;
  * / ftrap — stage 7' partial migrated to nle_ctx_t (heap, see init_nle).
  * subrooms is initialized to point at rooms[MAXNROFROOMS+1] in init_nle
  * directly (no longer needs the per-startup subrooms_init() shim). */
-NEARDATA dlevel_t level; /* level map — stage 7' deferred: macro pattern
-                            is blocked by the `level` token also being a
-                            struct field name in context.h, so the
-                            symbol-rename approach is the next step. */
+/* level — stage 7' completed: per-env on nle_ctx_t (s7_level_p).
+ * The blocker (struct dig_info.level token collision) was solved by
+ * renaming that struct field to `dlvl`. */
 
 void
 subrooms_init(void)
