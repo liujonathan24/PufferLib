@@ -68,8 +68,10 @@ STATIC_DCL struct wseg *FDECL(create_worm_tail, (int));
  *  segment, and remove hit points from the worm.
  */
 
-struct wseg *wheads[MAX_NUM_WORMS] = DUMMY, *wtails[MAX_NUM_WORMS] = DUMMY;
-long wgrowtime[MAX_NUM_WORMS] = DUMMY;
+/* Per-env worm tables migrated to nle_ctx_t. */
+#define wheads    ((struct wseg **) current_nle_ctx->s_wheads_p)
+#define wtails    ((struct wseg **) current_nle_ctx->s_wtails_p)
+#define wgrowtime ((long *) current_nle_ctx->s_wgrowtime_p)
 
 /*
  *  get_wormno()

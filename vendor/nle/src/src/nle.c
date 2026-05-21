@@ -270,6 +270,10 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s_SpLev_Map_p      = calloc(COLNO * ROWNO, 1);
     /* fqn_filename_buffer = char[FQN_NUMBUF=4][FQN_MAX_FILENAME=512] = 2048 B */
     nle->s_fqn_fname_p      = calloc(4 * 512, 1);
+    /* worm tables (worm.c). MAX_NUM_WORMS=32. */
+    nle->s_wheads_p         = calloc(32, sizeof(void *));
+    nle->s_wtails_p         = calloc(32, sizeof(void *));
+    nle->s_wgrowtime_p      = calloc(32, sizeof(long));
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                NUM_OBJECTS * sizeof(struct objclass));

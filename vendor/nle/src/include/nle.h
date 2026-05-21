@@ -286,6 +286,10 @@ typedef struct nle_globals {
     void                *s_SpLev_Map_p;
     /* file-path scratch buffers (files.c fqn_filename_buffer[FQN_NUMBUF][FQN_MAX_FILENAME]). */
     void                *s_fqn_fname_p;       /* 2048 bytes */
+    /* per-env worm tables (worm.c). MAX_NUM_WORMS=32. */
+    void                *s_wheads_p;
+    void                *s_wtails_p;
+    void                *s_wgrowtime_p;
 } nle_ctx_t;
 
 /*
