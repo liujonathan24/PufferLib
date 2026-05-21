@@ -15,7 +15,34 @@ rebuild via `ocean/nethack/verify_determinism_all.sh`.
 | Writable global storage, HEAD       | 19,370 bytes      |
 | Reduction                           | **90.3%**         |
 | Determinism replays passing         | 16/16 at every commit |
+| `multi_shared` N=1 (shared libnethack, single env) | ✅ works |
+| `multi_shared` N≥2 (shared libnethack, vecenv pattern) | ❌ still races |
+| PufferLib vecenv (per-env dlopen, current production) | ✅ works |
 | Plot                                | `ocean/nethack/experiments/exp_026_globals_plot/globals.png` |
+
+## Two vecenv paths
+
+**Path A — per-env dlopen (PufferLib current):** Each env loads its own
+copy of `libnethack.so` via `memfd_create` + dlopen. Each env's
+globals live in its own library instance, so cross-env contamination
+is impossible by construction. This is what `build.sh:127` documents
+and what PufferLib's nethack vecenv actually uses today. Works out of
+the box; no refactor needed for correctness. Cost: ~3.7 MB of code
+per env. At 2048 envs that's ~7.5 GB; init also pays one dlopen per
+env (~10 ms × 2048 = 20 s startup).
+
+**Path B — shared libnethack (the target of this refactor):** Single
+`libnethack.so` instance, all envs share the code, each env has its
+own state in `nle_ctx_t`. Stepping is `current_nle_ctx = env_i;
+nle_step(env_i)`. Memory drops to one copy of libnethack plus
+`N × sizeof(nle_ctx_t)`. Init drops to one `calloc` per env.
+
+This refactor took Path B from 199 KB of writable globals to 19 KB —
+**but the last 19 KB is enough to make N≥2 envs collide**. The
+`multi_shared 2 500` bench crashes during the second env's
+`welcome → pline → bot → sprintf`, because per-game state still
+lives in ~126 NEARDATA globals that aren't in `nle_ctx_t` and aren't
+in the swap blob.
 
 ## What this refactor was trying to do
 
