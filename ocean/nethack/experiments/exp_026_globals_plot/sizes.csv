@@ -45,3 +45,4 @@ idx,sha,short,data,bss,tdata,tbss,total,subject
 48,53ad8693cc006c13bb8b27012b0e335e865d9a2c,53ad8693,31812,12576,750,1736,46874,"Cluster V: doorindex/in_doagain/in_mklev/bhitpos → nle_ctx_t"
 49,1e02b4bca9f66091904255ae7015014d808a286e,1e02b4bc,31812,12576,750,1608,46746,"Cluster W: plname/pl_character/pl_race/pl_fruit/tune → nle_ctx_t"
 50,6fc9956d7f35b55f9dbe264bed2395e6e33b30cb,6fc9956d,31812,12576,750,1400,46538,"Cluster X: dogname/catname/horsename/ffruit/save_cm → nle_ctx_t"
+51,b3e8d29d54f37d148d6831cc323a4ef0d9ef8f04,b3e8d29d,4292,12576,750,1400,19018,"Cluster Y: const mons[] (role_init no-op)"
