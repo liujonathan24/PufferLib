@@ -326,7 +326,7 @@ ing_suffix(s)
 const char *s;
 {
     static const char vowel[] = "aeiouwy";
-    static __thread char buf[BUFSZ];
+    static char buf[BUFSZ];
     char onoff[10];
     char *p;
 

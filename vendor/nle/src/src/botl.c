@@ -49,7 +49,7 @@ check_gold_symbol()
 char *
 do_statusline1()
 {
-    static __thread char newbot1[BUFSZ];
+    static char newbot1[BUFSZ];
     register char *nb;
     register int i, j;
 
@@ -98,7 +98,7 @@ do_statusline1()
 char *
 do_statusline2()
 {
-    static __thread char newbot2[BUFSZ], /* MAXCO: botl.h */
+    static char newbot2[BUFSZ], /* MAXCO: botl.h */
          /* dungeon location (and gold), hero health (HP, PW, AC),
             experience (HD if poly'd, else Exp level and maybe Exp points),
             time (in moves), varying number of status conditions */
@@ -2372,7 +2372,7 @@ STATIC_OVL char *
 conditionbitmask2str(ul)
 unsigned long ul;
 {
-    static __thread char buf[BUFSZ];
+    static char buf[BUFSZ];
     int i;
     boolean first = TRUE;
     const char *alias = (char *) 0;
@@ -2827,7 +2827,7 @@ STATIC_OVL char *
 status_hilite2str(hl)
 struct hilite_s *hl;
 {
-    static __thread char buf[BUFSZ];
+    static char buf[BUFSZ];
     int clr = 0, attr = 0;
     char behavebuf[BUFSZ];
     char clrbuf[BUFSZ];
