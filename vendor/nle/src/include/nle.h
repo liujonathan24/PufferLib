@@ -290,6 +290,10 @@ typedef struct nle_globals {
     void                *s_wheads_p;
     void                *s_wtails_p;
     void                *s_wgrowtime_p;
+    /* options.c boolopt[] — per-env copy of the boolean-options
+     * table. Baseline is const in options.c; init_nle calloc's a
+     * mutable slot, options.c seeds it from baseline at game init. */
+    void                *s_boolopt_p;
 } nle_ctx_t;
 
 /*

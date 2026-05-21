@@ -55,11 +55,17 @@ static char empty_optstr[] = { '\0' };
  *  option (e.g. time and timed_delay) the shorter one must come first.
  */
 
-static struct Bool_Opt {
+struct Bool_Opt {
     const char *name;
     boolean *addr, initvalue;
     int optflags;
-} boolopt[] = {
+};
+/* Per-env boolean-options table. The `addr` field points into the
+ * per-env `nle_ctx_t.flags_ptr` / `u`, so each env needs its own
+ * writable copy. A shared const baseline is captured here and copied
+ * into the per-env slot at init time. The macro `boolopt` points at
+ * the per-env copy. */
+static const struct Bool_Opt boolopt_baseline[] = {
     { "acoustics", (boolean *) 0, TRUE, SET_IN_GAME },
 #if defined(SYSFLAGS) && defined(AMIGA)
     /* Amiga altmeta causes Alt+key to be converted into Meta+key by
@@ -263,6 +269,13 @@ static struct Bool_Opt {
 #endif
     { (char *) 0, (boolean *) 0, FALSE, 0 }
 };
+/* Number of entries (including the terminator). */
+#define BOOLOPT_COUNT (sizeof(boolopt_baseline) / sizeof(boolopt_baseline[0]))
+
+/* Per-env boolopt — macro to per-env heap. The init code at
+ * options.c:initoptions_init copies boolopt_baseline into this slot
+ * and then patches the addr fields with per-env pointers. */
+#define boolopt ((struct Bool_Opt *) current_nle_ctx->s_boolopt_p)
 
 /* compound options, for option_help() and external programs like Amiga
  * frontend */
@@ -705,6 +718,10 @@ initoptions_init()
     char *opts;
 #endif
     int i;
+
+    /* Seed the per-env boolopt[] from the const baseline. The addr
+     * patcher below then fills in per-env pointers. */
+    memcpy(boolopt, boolopt_baseline, sizeof(boolopt_baseline));
 
     /* set up the command parsing */
     reset_commands(TRUE); /* init */
