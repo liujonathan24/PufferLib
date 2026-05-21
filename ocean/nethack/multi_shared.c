@@ -118,9 +118,24 @@ static int drain_prompts(Env* e, nle_step_fn fn_step) {
     return n;
 }
 
+#include <execinfo.h>
+#include <signal.h>
+static int g_current_env = -1;
+static long g_current_t = -1;
+static void on_alrm(int sig) {
+    (void)sig;
+    fprintf(stderr, "\n[ALARM] hung at t=%ld env=%d\n", g_current_t, g_current_env);
+    void* bt[20]; int n = backtrace(bt, 20);
+    backtrace_symbols_fd(bt, n, 2);
+    _exit(2);
+}
 int main(int argc, char** argv) {
+    signal(SIGALRM, on_alrm);
+    alarm(20);
     int num_envs    = (argc >= 2) ? atoi(argv[1]) : 4;
     long steps_per_env = (argc >= 3) ? atol(argv[2]) : 5000;
+    const char* policy = (argc >= 4) ? argv[3] : "random";
+    int wait_only = (strcmp(policy, "wait") == 0);
 
     const char* libpath = getenv("NETHACK_LIBPATH");
     if (!libpath) libpath = "./vendor/nle/src/build/libnethack.so";
@@ -161,19 +176,30 @@ int main(int argc, char** argv) {
     printf("init+drain: %d envs in %.3fs (%.1f ms/env)\n",
            num_envs, init_dt, init_dt * 1000.0 / num_envs);
 
-    /* Bench: round-robin step each env. Random actions per env. */
-    long total_steps = (long) num_envs * steps_per_env;
+    /* Bench: round-robin step each env. Stop counting once any env dies
+     * so the SPS number reflects ALIVE stepping, not post-death no-ops
+     * (nle_step on a consumed fcontext is UB and may return instantly).
+     * 'wait' policy (key '.') stays alive much longer. */
+    long total_steps = 0;
+    int any_done = 0;
     double t0 = now_sec();
-    for (long t = 0; t < steps_per_env; t++) {
+    for (long t = 0; t < steps_per_env && !any_done; t++) {
+        g_current_t = t;
         for (int i = 0; i < num_envs; i++) {
-            unsigned r = envs[i].rng;
-            r ^= r << 13; r ^= r >> 17; r ^= r << 5; /* xorshift */
-            envs[i].rng = r;
-            envs[i].obs.action = ACTION_TABLE[r % NUM_ACTIONS];
+            g_current_env = i;
+            if (wait_only) {
+                envs[i].obs.action = '.';
+            } else {
+                unsigned r = envs[i].rng;
+                r ^= r << 13; r ^= r >> 17; r ^= r << 5;
+                envs[i].rng = r;
+                envs[i].obs.action = ACTION_TABLE[r % NUM_ACTIONS];
+            }
             envs[i].ctx = fn_step(envs[i].ctx, &envs[i].obs);
+            total_steps++;
             if (envs[i].obs.done) {
-                /* End-of-game: skip; would normally reset. */
-                envs[i].obs.done = 0;
+                any_done = 1;
+                break;
             }
         }
     }

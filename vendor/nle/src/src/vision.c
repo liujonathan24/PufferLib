@@ -1102,15 +1102,19 @@ int row, col;
 /*
  * Variables local to both Algorithms C and D.
  */
-static int start_row;
-static int start_col;
-static int step;
-static char **cs_rows;
-static char *cs_left;
-static char *cs_right;
-
-static void FDECL((*vis_func), (int, int, genericptr_t));
-static genericptr_t varg;
+/* Cluster AA: file-scope statics moved per-env to nle_ctx_t. The original
+ * file-scope statics broke under shared-libnethack vecenv: if env A yielded
+ * mid-view_from (e.g. via a --more-- prompt inside an iflags.status_updates
+ * pline), env B's view_from clobbered start_col/step/cs_rows/etc. When env A
+ * resumed, left_side/right_side recursed on stale state → infinite loop. */
+#define start_row  (current_nle_ctx->s_vis_start_row)
+#define start_col  (current_nle_ctx->s_vis_start_col)
+#define step       (current_nle_ctx->s_vis_step)
+#define cs_rows    (current_nle_ctx->s_vis_cs_rows)
+#define cs_left    (current_nle_ctx->s_vis_cs_left)
+#define cs_right   (current_nle_ctx->s_vis_cs_right)
+#define vis_func   (current_nle_ctx->s_vis_func)
+#define varg       (current_nle_ctx->s_vis_varg)
 
 /*
  * Both Algorithms C and D use the following macros.

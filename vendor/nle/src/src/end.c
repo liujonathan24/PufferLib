@@ -1216,8 +1216,11 @@ int how;
  * entire death path. The fast (non-dying) step path is unaffected.
  * Death happens at most once per env, so the contention is tiny.
  */
-#include <pthread.h>
-static pthread_mutex_t nle_endgame_mtx = PTHREAD_MUTEX_INITIALIZER;
+/* cluster AC: removed pthread mutex around death path. It was added for
+ * the old multithreaded mode; under single-thread vecenv it caused
+ * deadlock when an env yielded mid-death (via a --more-- prompt or
+ * dump output) — the mutex was never unlocked, so the NEXT env's
+ * really_done() blocked forever. Single-thread vecenv doesn't need it. */
 
 /* separated from done() in order to specify the __noreturn__ attribute */
 STATIC_OVL void
@@ -1233,7 +1236,6 @@ int how;
     long umoney;
     long tmp;
 
-    pthread_mutex_lock(&nle_endgame_mtx);
     /*
      *  The game is now over...
      */
@@ -1643,9 +1645,6 @@ int how;
         raw_print("");
         raw_print("");
     }
-    /* NLE: release the death-path mutex BEFORE nh_terminate jumps
-     * back to the harness. */
-    pthread_mutex_unlock(&nle_endgame_mtx);
     nh_terminate(EXIT_SUCCESS);
 }
 

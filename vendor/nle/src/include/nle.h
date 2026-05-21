@@ -287,6 +287,24 @@ typedef struct nle_globals {
      * static booleans that tripped in shared-libnethack vecenv when env 2
      * inherited env 1's TRUE state). */
     char                 s_blstats_initalready; /* botl.c init_blstats */
+    /* cluster AA: vision.c transient computation state. These are set at
+     * the top of view_from() and used by left_side/right_side recursively.
+     * If a vecenv env yields mid-vision_recalc, another env will clobber
+     * the statics, breaking the recursion → infinite loop. Moved per-env.
+     * (genericptr_t typed as void* via opaque cast.) */
+    int                  s_vis_start_row;
+    int                  s_vis_start_col;
+    int                  s_vis_step;
+    char               **s_vis_cs_rows;
+    char                *s_vis_cs_left;
+    char                *s_vis_cs_right;
+    void               (*s_vis_func)();
+    void                *s_vis_varg;
+    /* cluster AB: timeout.c timer queue — was __thread, broken under vecenv
+     * because all envs share one thread; env A's timers fire while env B
+     * holds the globals → "extract_nexthere: object lost" panic. */
+    void                *s_timer_base;            /* timer_element * */
+    unsigned long        s_timer_id;
     boolean              s_valset[23];        /* MAXBLSTATS */
     void                *s_status_hilites_p;
     /* vision work buffers (vision.c). */
