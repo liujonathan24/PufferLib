@@ -1,69 +1,69 @@
-[  0%] Building C object util/CMakeFiles/recover.dir/recover.c.o
-[  1%] Building C object util/CMakeFiles/dlb.dir/dlb_main.c.o
-[  2%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/make_x86_64_sysv_elf_gas.S.o
+[  0%] Building C object CMakeFiles/tmt.dir/third_party/libtmt/tmt.c.o
+[  2%] Building C object util/CMakeFiles/dlb.dir/dlb_main.c.o
+[  2%] Building C object util/CMakeFiles/recover.dir/recover.c.o
 [  2%] Building C object util/CMakeFiles/makedefs.dir/makedefs.c.o
-[  2%] Building C object util/CMakeFiles/makedefs.dir/__/src/monst.c.o
-[  2%] Building C object CMakeFiles/tmt.dir/third_party/libtmt/tmt.c.o
+[  2%] Building C object util/CMakeFiles/dlb.dir/__/src/alloc.c.o
 [  2%] Building C object util/CMakeFiles/dlb.dir/__/src/dlb.c.o
-[  3%] Building C object third_party/deboost.context/CMakeFiles/fcontext.dir/source/stack.c.o
-[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/jump_x86_64_sysv_elf_gas.S.o
-[  4%] Building C object util/CMakeFiles/makedefs.dir/__/src/objects.c.o
-[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/ontop_x86_64_sysv_elf_gas.S.o
-[  5%] Linking C static library libfcontext.a
-[  6%] Linking C executable recover
-[  7%] Building C object util/CMakeFiles/dlb.dir/panic.c.o
-[  8%] Building C object util/CMakeFiles/dlb.dir/__/src/alloc.c.o
-[  8%] Built target recover
-[  8%] Built target fcontext
+[  3%] Building C object util/CMakeFiles/dlb.dir/panic.c.o
+[  4%] Building C object third_party/deboost.context/CMakeFiles/fcontext.dir/source/stack.c.o
+[  5%] Building C object util/CMakeFiles/makedefs.dir/__/src/monst.c.o
+[  5%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/make_x86_64_sysv_elf_gas.S.o
+[  5%] Building C object util/CMakeFiles/makedefs.dir/__/src/objects.c.o
+[  6%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/jump_x86_64_sysv_elf_gas.S.o
+[  6%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/ontop_x86_64_sysv_elf_gas.S.o
+[  7%] Linking C executable recover
+[  8%] Linking C static library libfcontext.a
 [  8%] Linking C executable dlb
+[  8%] Built target recover
 [  8%] Built target dlb
+[  8%] Built target fcontext
 [ 10%] Linking C static library libtmt.a
 [ 10%] Built target tmt
 [ 11%] Linking C executable makedefs
 [ 11%] Built target makedefs
 [ 11%] Generating ../include/date.h
-[ 12%] Generating ../include/onames.h
+[ 13%] Generating ../include/onames.h
 [ 13%] Generating ../include/pm.h
 [ 13%] Built target util
-[ 13%] Generating dgn_scanner.c
+[ 14%] Generating dgn_scanner.c
 [ 14%] Generating dgn_parser.c, dgn_comp.h
 [ 15%] Generating lev_scanner.c
 [ 15%] Generating lev_parser.c, lev_comp.h
 [ 15%] Building C object util/CMakeFiles/dgn_comp.dir/panic.c.o
-[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_main.c.o
-[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_parser.c.o
-[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/__/src/alloc.c.o
+[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/__/src/alloc.c.o
+[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_main.c.o
+[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_parser.c.o
 [ 18%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_scanner.c.o
 [ 18%] Linking C executable dgn_comp
-[ 18%] Building C object util/CMakeFiles/lev_comp.dir/__/src/decl.c.o
-[ 20%] Building C object util/CMakeFiles/lev_comp.dir/__/src/drawing.c.o
 [ 20%] Building C object util/CMakeFiles/lev_comp.dir/panic.c.o
-[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/objects.c.o
-[ 21%] Building C object util/CMakeFiles/lev_comp.dir/lev_main.c.o
+[ 20%] Building C object util/CMakeFiles/lev_comp.dir/lev_main.c.o
+[ 20%] Building C object util/CMakeFiles/lev_comp.dir/__/src/decl.c.o
 [ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/monst.c.o
+[ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/objects.c.o
 [ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/alloc.c.o
+[ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/drawing.c.o
 [ 22%] Built target dgn_comp
 [ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_parser.c.o
 [ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_scanner.c.o
 [ 24%] Linking C executable lev_comp
 [ 24%] Built target lev_comp
-[ 25%] Generating Arc-fila.lev, Arc-filb.lev, Arc-goal.lev, Arc-loca.lev, Arc-strt.lev, Bar-fila.lev, Bar-filb.lev, Bar-goal.lev, Bar-loca.lev, Bar-strt.lev, Cav-fila.lev, Cav-filb.lev, Cav-goal.lev, Cav-loca.lev, Cav-strt.lev, Hea-fila.lev, Hea-filb.lev, Hea-goal.lev, Hea-loca.lev, Hea-strt.lev, Kni-fila.lev, Kni-filb.lev, Kni-goal.lev, Kni-loca.lev, Kni-strt.lev, Mon-fila.lev, Mon-filb.lev, Mon-goal.lev, Mon-loca.lev, Mon-strt.lev, Pri-fila.lev, Pri-filb.lev, Pri-goal.lev, Pri-loca.lev, Pri-strt.lev, Ran-fila.lev, Ran-filb.lev, Ran-goal.lev, Ran-loca.lev, Ran-strt.lev, Rog-fila.lev, Rog-filb.lev, Rog-goal.lev, Rog-loca.lev, Rog-strt.lev, Sam-fila.lev, Sam-filb.lev, Sam-goal.lev, Sam-loca.lev, Sam-strt.lev, Tou-fila.lev, Tou-filb.lev, Tou-goal.lev, Tou-loca.lev, Tou-strt.lev, Val-fila.lev, Val-filb.lev, Val-goal.lev, Val-loca.lev, Val-strt.lev, Wiz-fila.lev, Wiz-filb.lev, Wiz-goal.lev, Wiz-loca.lev, Wiz-strt.lev, air.lev, asmodeus.lev, astral.lev, baalz.lev, bigrm-1.lev, bigrm-10.lev, bigrm-2.lev, bigrm-3.lev, bigrm-4.lev, bigrm-5.lev, bigrm-6.lev, bigrm-7.lev, bigrm-8.lev, bigrm-9.lev, castle.lev, earth.lev, fakewiz1.lev, fakewiz2.lev, fire.lev, juiblex.lev, knox.lev, medusa-1.lev, medusa-2.lev, medusa-3.lev, medusa-4.lev, minefill.lev, minend-1.lev, minend-2.lev, minend-3.lev, minetn-1.lev, minetn-2.lev, minetn-3.lev, minetn-4.lev, minetn-5.lev, minetn-6.lev, minetn-7.lev, oracle.lev, orcus.lev, sanctum.lev, soko1-1.lev, soko1-2.lev, soko2-1.lev, soko2-2.lev, soko3-1.lev, soko3-2.lev, soko4-1.lev, soko4-2.lev, tower1.lev, tower2.lev, tower3.lev, valley.lev, water.lev, wizard1.lev, wizard2.lev, wizard3.lev
-[ 25%] Generating bogusmon, epitaph, engrave
+[ 25%] Generating quest.dat
+[ 27%] Generating Arc-fila.lev, Arc-filb.lev, Arc-goal.lev, Arc-loca.lev, Arc-strt.lev, Bar-fila.lev, Bar-filb.lev, Bar-goal.lev, Bar-loca.lev, Bar-strt.lev, Cav-fila.lev, Cav-filb.lev, Cav-goal.lev, Cav-loca.lev, Cav-strt.lev, Hea-fila.lev, Hea-filb.lev, Hea-goal.lev, Hea-loca.lev, Hea-strt.lev, Kni-fila.lev, Kni-filb.lev, Kni-goal.lev, Kni-loca.lev, Kni-strt.lev, Mon-fila.lev, Mon-filb.lev, Mon-goal.lev, Mon-loca.lev, Mon-strt.lev, Pri-fila.lev, Pri-filb.lev, Pri-goal.lev, Pri-loca.lev, Pri-strt.lev, Ran-fila.lev, Ran-filb.lev, Ran-goal.lev, Ran-loca.lev, Ran-strt.lev, Rog-fila.lev, Rog-filb.lev, Rog-goal.lev, Rog-loca.lev, Rog-strt.lev, Sam-fila.lev, Sam-filb.lev, Sam-goal.lev, Sam-loca.lev, Sam-strt.lev, Tou-fila.lev, Tou-filb.lev, Tou-goal.lev, Tou-loca.lev, Tou-strt.lev, Val-fila.lev, Val-filb.lev, Val-goal.lev, Val-loca.lev, Val-strt.lev, Wiz-fila.lev, Wiz-filb.lev, Wiz-goal.lev, Wiz-loca.lev, Wiz-strt.lev, air.lev, asmodeus.lev, astral.lev, baalz.lev, bigrm-1.lev, bigrm-10.lev, bigrm-2.lev, bigrm-3.lev, bigrm-4.lev, bigrm-5.lev, bigrm-6.lev, bigrm-7.lev, bigrm-8.lev, bigrm-9.lev, castle.lev, earth.lev, fakewiz1.lev, fakewiz2.lev, fire.lev, juiblex.lev, knox.lev, medusa-1.lev, medusa-2.lev, medusa-3.lev, medusa-4.lev, minefill.lev, minend-1.lev, minend-2.lev, minend-3.lev, minetn-1.lev, minetn-2.lev, minetn-3.lev, minetn-4.lev, minetn-5.lev, minetn-6.lev, minetn-7.lev, oracle.lev, orcus.lev, sanctum.lev, soko1-1.lev, soko1-2.lev, soko2-1.lev, soko2-2.lev, soko3-1.lev, soko3-2.lev, soko4-1.lev, soko4-2.lev, tower1.lev, tower2.lev, tower3.lev, valley.lev, water.lev, wizard1.lev, wizard2.lev, wizard3.lev
 [ 27%] Generating data
-[ 27%] Generating quest.dat
+[ 27%] Generating oracles
 [ 27%] Generating rumors
-[ 28%] Generating oracles
+[ 27%] Generating bogusmon, epitaph, engrave
 [ 28%] Generating perm, record, logfile, xlogfile
 [ 28%] Generating dungeon, dungeon.pdf
 [ 28%] Generating nhdat
 [ 30%] Built target dat
-[ 30%] Building C object CMakeFiles/nethack.dir/src/allmain.c.o
-[ 30%] Building C object CMakeFiles/nethack.dir/src/apply.c.o
-[ 30%] Building C object CMakeFiles/nethack.dir/src/attrib.c.o
-[ 32%] Building C object CMakeFiles/nethack.dir/src/artifact.c.o
+[ 31%] Building C object CMakeFiles/nethack.dir/src/alloc.c.o
+[ 31%] Building C object CMakeFiles/nethack.dir/src/allmain.c.o
+[ 31%] Building C object CMakeFiles/nethack.dir/src/apply.c.o
+[ 32%] Building C object CMakeFiles/nethack.dir/src/attrib.c.o
 [ 32%] Building C object CMakeFiles/nethack.dir/src/ball.c.o
-[ 32%] Building C object CMakeFiles/nethack.dir/src/bones.c.o
-[ 34%] Building C object CMakeFiles/nethack.dir/src/alloc.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/artifact.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/bones.c.o
 [ 34%] Building C object CMakeFiles/nethack.dir/src/botl.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c: In function ‘its_dead’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:220:35: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
@@ -162,8 +162,8 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
       |                         ^
 [ 36%] Building C object CMakeFiles/nethack.dir/src/decl.c.o
 [ 36%] Building C object CMakeFiles/nethack.dir/src/detect.c.o
-[ 37%] Building C object CMakeFiles/nethack.dir/src/dig.c.o
 [ 37%] Building C object CMakeFiles/nethack.dir/src/display.c.o
+[ 37%] Building C object CMakeFiles/nethack.dir/src/dig.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c: In function ‘dig’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c:450:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   450 |                 mtmp = makemon(&mons[PM_EARTH_ELEMENTAL], dpx, dpy,
@@ -233,17 +233,16 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
-[ 41%] Building C object CMakeFiles/nethack.dir/src/dogmove.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c: In function ‘dogfood’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:751:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   751 |             fptr = &mons[obj->corpsenm];
       |                  ^
+[ 41%] Building C object CMakeFiles/nethack.dir/src/dogmove.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c: In function ‘dog_eat’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:337:32: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   337 |         struct permonst *ptr = slimer ? &mons[PM_GREEN_SLIME] : 0;
       |                                ^~~~~~
 [ 42%] Building C object CMakeFiles/nethack.dir/src/dokick.c.o
-[ 42%] Building C object CMakeFiles/nethack.dir/src/dothrow.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c: In function ‘droppables’:
 cc1: warning: function may return address of local variable [-Wreturn-local-addr]
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
@@ -253,6 +252,7 @@ cc1: warning: function may return address of local variable [-Wreturn-local-addr
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+[ 42%] Building C object CMakeFiles/nethack.dir/src/dothrow.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c: In function ‘dokick’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:1150:49: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
  1150 |                     if (enexto(&mm, mm.x, mm.y, &mons[PM_KILLER_BEE])
@@ -413,7 +413,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 [ 46%] Building C object CMakeFiles/nethack.dir/src/explode.c.o
 [ 46%] Building C object CMakeFiles/nethack.dir/src/extralev.c.o
 [ 47%] Building C object CMakeFiles/nethack.dir/src/files.c.o
-[ 47%] Building C object CMakeFiles/nethack.dir/src/fountain.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/extralev.c: In function ‘makerogueghost’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/extralev.c:314:27: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   314 |     if (!(ghost = makemon(&mons[PM_GHOST], x, y, NO_MM_FLAGS)))
@@ -427,6 +426,7 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
+[ 47%] Building C object CMakeFiles/nethack.dir/src/fountain.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c: In function ‘dowatersnakes’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:47:33: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
    47 |             if ((mtmp = makemon(&mons[PM_WATER_MOCCASIN], u.ux, u.uy,
@@ -1268,7 +1268,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 [ 65%] Building C object CMakeFiles/nethack.dir/src/objects.c.o
 [ 65%] Building C object CMakeFiles/nethack.dir/src/objnam.c.o
 [ 66%] Building C object CMakeFiles/nethack.dir/src/options.c.o
-[ 66%] Building C object CMakeFiles/nethack.dir/src/pager.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c: In function ‘xname_flags’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:610:40: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   610 |                        : the_unique_pm(&mons[omndx])
@@ -1292,6 +1291,7 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:1408:36: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
  1408 |             else if (the_unique_pm(&mons[omndx]) && !no_prefix)
       |                                    ^~~~~~~~~~~~
+[ 66%] Building C object CMakeFiles/nethack.dir/src/pager.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:831:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
   831 | struct permonst *ptr;
       |                  ^~~
@@ -1300,8 +1300,8 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
   417 |             pm = &mons[PM_WIZARD];
       |                ^
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/options.c: In function ‘match_sym’:
-/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/options.c:6354:20: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
- 6354 |             return sp;
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/options.c:6379:20: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 6379 |             return sp;
       |                    ^~
 [ 67%] Building C object CMakeFiles/nethack.dir/src/pickup.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pickup.c: In function ‘observe_quantum_cat’:
@@ -1438,7 +1438,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
       |                       ^
 [ 71%] Building C object CMakeFiles/nethack.dir/src/quest.c.o
 [ 71%] Building C object CMakeFiles/nethack.dir/src/questpgr.c.o
-[ 72%] Building C object CMakeFiles/nethack.dir/src/read.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c: In function ‘qt_montype’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c:664:20: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   664 |             return &mons[qpm];
@@ -1446,6 +1445,8 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c:669:16: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   669 |         return &mons[qpm];
       |                ^~~~~~~~~~
+[ 72%] Building C object CMakeFiles/nethack.dir/src/read.c.o
+[ 73%] Building C object CMakeFiles/nethack.dir/src/rect.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c: In function ‘seffects’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:1356:38: warning: passing argument 2 of ‘create_critters’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
  1355 |                             confused ? &mons[PM_ACID_BLOB]
@@ -1498,10 +1499,9 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
-[ 73%] Building C object CMakeFiles/nethack.dir/src/rect.c.o
 [ 73%] Building C object CMakeFiles/nethack.dir/src/region.c.o
-[ 74%] Building C object CMakeFiles/nethack.dir/src/rip.c.o
 [ 74%] Building C object CMakeFiles/nethack.dir/src/restore.c.o
+[ 74%] Building C object CMakeFiles/nethack.dir/src/rip.c.o
 [ 75%] Building C object CMakeFiles/nethack.dir/src/rnd.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c: In function ‘restmonchn’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c:435:20: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
@@ -1515,18 +1515,19 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 [ 76%] Building C object CMakeFiles/nethack.dir/src/rumors.c.o
 [ 76%] Building C object CMakeFiles/nethack.dir/src/save.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c: In function ‘role_init’:
-/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2061:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
- 2061 |         pm = &mons[urole.ldrnum];
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2065:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2065 |         pm = &mons[urole.ldrnum];
       |            ^
-/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2076:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
- 2076 |         pm = &mons[urole.guardnum];
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2080:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2080 |         pm = &mons[urole.guardnum];
       |            ^
-/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2083:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
- 2083 |         pm = &mons[urole.neminum];
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2087:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2087 |         pm = &mons[urole.neminum];
       |            ^
 [ 77%] Building C object CMakeFiles/nethack.dir/src/shk.c.o
 [ 77%] Building C object CMakeFiles/nethack.dir/src/shknam.c.o
 [ 78%] Building C object CMakeFiles/nethack.dir/src/sit.c.o
+[ 78%] Building C object CMakeFiles/nethack.dir/src/sounds.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c: In function ‘makekops’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c:4073:42: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
  4073 |             if (enexto(mm, mm->x, mm->y, &mons[mndx]))
@@ -1552,7 +1553,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
-[ 78%] Building C object CMakeFiles/nethack.dir/src/sounds.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shknam.c: In function ‘shkinit’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shknam.c:656:25: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   656 |     if (!(shk = makemon(&mons[PM_SHOPKEEPER], sx, sy, MM_ESHK)))
@@ -1773,7 +1773,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
       |                       ^
 [ 86%] Building C object CMakeFiles/nethack.dir/src/vault.c.o
 [ 86%] Building C object CMakeFiles/nethack.dir/src/version.c.o
-[ 87%] Building C object CMakeFiles/nethack.dir/src/vision.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/vault.c: In function ‘invault’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/vault.c:388:31: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   388 |         if (!(guard = makemon(&mons[PM_GUARD], x, y, MM_EGD)))
@@ -1787,6 +1786,7 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
+[ 87%] Building C object CMakeFiles/nethack.dir/src/vision.c.o
 [ 87%] Building C object CMakeFiles/nethack.dir/src/weapon.c.o
 [ 88%] Building C object CMakeFiles/nethack.dir/src/were.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/weapon.c: In function ‘abon’:
@@ -1831,6 +1831,12 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 [ 88%] Building C object CMakeFiles/nethack.dir/src/wield.c.o
 [ 90%] Building C object CMakeFiles/nethack.dir/src/windows.c.o
 [ 90%] Building C object CMakeFiles/nethack.dir/src/wizard.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/windows.c:106:7: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  106 |     { &tty_procs, win_tty_init CHAINR(0) },
+      |       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/windows.c:142:7: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  142 |     { &rl_procs, 0 CHAINR(0) },
+      |       ^
 [ 91%] Building C object CMakeFiles/nethack.dir/src/worm.c.o
 [ 92%] Building C object CMakeFiles/nethack.dir/src/worn.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c: In function ‘clonewiz’:
@@ -1900,7 +1906,6 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 [ 93%] Building C object CMakeFiles/nethack.dir/src/zap.c.o
 [ 93%] Building C object CMakeFiles/nethack.dir/sys/share/ioctl.c.o
 [ 94%] Building C object CMakeFiles/nethack.dir/sys/share/posixregex.c.o
-[ 94%] Building C object CMakeFiles/nethack.dir/sys/unix/unixmain.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘bhitm’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:266:45: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   266 |                            && newcham(mtmp, &mons[mtmp->cham],
@@ -1969,6 +1974,7 @@ In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/incl
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
   193 | #define FDECL(f, p) f p
       |                       ^
+[ 94%] Building C object CMakeFiles/nethack.dir/sys/unix/unixmain.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘cancel_monst’:
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:2787:27: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
  2787 |             newcham(mdef, &mons[mdef->cham], FALSE, FALSE);
