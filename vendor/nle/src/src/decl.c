@@ -127,7 +127,7 @@ NEARDATA struct flag flags = DUMMY;
 #ifdef SYSFLAGS
 NEARDATA struct sysflag sysflags = DUMMY;
 #endif
-NEARDATA struct instance_flags iflags = DUMMY;
+/* iflags — migrated to nle_ctx_t.iflags_ptr (per-env, heap). */
 /* struct you u migrated to nle_ctx_t (stage 4). Heap-allocated in
  * init_nle, accessed via the `u` macro in decl.h. */
 /* ubirthday migrated direct (stage 9' batch A). */
