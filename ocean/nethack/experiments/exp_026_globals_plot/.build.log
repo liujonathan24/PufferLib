@@ -1,82 +1,247 @@
-[  2%] Building C object util/CMakeFiles/dlb.dir/panic.c.o
-[  2%] Building C object util/CMakeFiles/dlb.dir/dlb_main.c.o
-[  2%] Building C object util/CMakeFiles/recover.dir/recover.c.o
+[  0%] Building C object util/CMakeFiles/recover.dir/recover.c.o
+[  1%] Building C object util/CMakeFiles/dlb.dir/dlb_main.c.o
+[  2%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/make_x86_64_sysv_elf_gas.S.o
 [  2%] Building C object util/CMakeFiles/makedefs.dir/makedefs.c.o
-[  2%] Building C object util/CMakeFiles/dlb.dir/__/src/dlb.c.o
+[  2%] Building C object util/CMakeFiles/makedefs.dir/__/src/monst.c.o
 [  2%] Building C object CMakeFiles/tmt.dir/third_party/libtmt/tmt.c.o
+[  2%] Building C object util/CMakeFiles/dlb.dir/__/src/dlb.c.o
 [  3%] Building C object third_party/deboost.context/CMakeFiles/fcontext.dir/source/stack.c.o
-[  4%] Building C object util/CMakeFiles/dlb.dir/__/src/alloc.c.o
-[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/make_x86_64_sysv_elf_gas.S.o
-[  5%] Building C object util/CMakeFiles/makedefs.dir/__/src/monst.c.o
-[  6%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/jump_x86_64_sysv_elf_gas.S.o
-[  6%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/ontop_x86_64_sysv_elf_gas.S.o
-[  6%] Building C object util/CMakeFiles/makedefs.dir/__/src/objects.c.o
-[  7%] Linking C executable recover
-[  8%] Linking C static library libfcontext.a
+[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/jump_x86_64_sysv_elf_gas.S.o
+[  4%] Building C object util/CMakeFiles/makedefs.dir/__/src/objects.c.o
+[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/ontop_x86_64_sysv_elf_gas.S.o
+[  5%] Linking C static library libfcontext.a
+[  6%] Linking C executable recover
+[  7%] Building C object util/CMakeFiles/dlb.dir/panic.c.o
+[  8%] Building C object util/CMakeFiles/dlb.dir/__/src/alloc.c.o
 [  8%] Built target recover
-[  8%] Linking C executable dlb
 [  8%] Built target fcontext
+[  8%] Linking C executable dlb
 [  8%] Built target dlb
 [ 10%] Linking C static library libtmt.a
 [ 10%] Built target tmt
 [ 11%] Linking C executable makedefs
 [ 11%] Built target makedefs
-[ 12%] Generating ../include/date.h
-[ 12%] Generating ../include/pm.h
-[ 13%] Generating ../include/onames.h
+[ 11%] Generating ../include/date.h
+[ 12%] Generating ../include/onames.h
+[ 13%] Generating ../include/pm.h
 [ 13%] Built target util
 [ 13%] Generating dgn_scanner.c
-[ 13%] Generating lev_parser.c, lev_comp.h
-[ 15%] Generating dgn_parser.c, dgn_comp.h
+[ 14%] Generating dgn_parser.c, dgn_comp.h
 [ 15%] Generating lev_scanner.c
-[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_main.c.o
-[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/panic.c.o
+[ 15%] Generating lev_parser.c, lev_comp.h
+[ 15%] Building C object util/CMakeFiles/dgn_comp.dir/panic.c.o
+[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_main.c.o
+[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_parser.c.o
 [ 17%] Building C object util/CMakeFiles/dgn_comp.dir/__/src/alloc.c.o
-[ 17%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_parser.c.o
 [ 18%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_scanner.c.o
 [ 18%] Linking C executable dgn_comp
+[ 18%] Building C object util/CMakeFiles/lev_comp.dir/__/src/decl.c.o
+[ 20%] Building C object util/CMakeFiles/lev_comp.dir/__/src/drawing.c.o
 [ 20%] Building C object util/CMakeFiles/lev_comp.dir/panic.c.o
-[ 20%] Building C object util/CMakeFiles/lev_comp.dir/lev_main.c.o
-[ 20%] Building C object util/CMakeFiles/lev_comp.dir/__/src/decl.c.o
 [ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/objects.c.o
-[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/alloc.c.o
-[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/drawing.c.o
+[ 21%] Building C object util/CMakeFiles/lev_comp.dir/lev_main.c.o
 [ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/monst.c.o
+[ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/alloc.c.o
 [ 22%] Built target dgn_comp
 [ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_parser.c.o
 [ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_scanner.c.o
 [ 24%] Linking C executable lev_comp
 [ 24%] Built target lev_comp
-[ 25%] Generating bogusmon, epitaph, engrave
 [ 25%] Generating Arc-fila.lev, Arc-filb.lev, Arc-goal.lev, Arc-loca.lev, Arc-strt.lev, Bar-fila.lev, Bar-filb.lev, Bar-goal.lev, Bar-loca.lev, Bar-strt.lev, Cav-fila.lev, Cav-filb.lev, Cav-goal.lev, Cav-loca.lev, Cav-strt.lev, Hea-fila.lev, Hea-filb.lev, Hea-goal.lev, Hea-loca.lev, Hea-strt.lev, Kni-fila.lev, Kni-filb.lev, Kni-goal.lev, Kni-loca.lev, Kni-strt.lev, Mon-fila.lev, Mon-filb.lev, Mon-goal.lev, Mon-loca.lev, Mon-strt.lev, Pri-fila.lev, Pri-filb.lev, Pri-goal.lev, Pri-loca.lev, Pri-strt.lev, Ran-fila.lev, Ran-filb.lev, Ran-goal.lev, Ran-loca.lev, Ran-strt.lev, Rog-fila.lev, Rog-filb.lev, Rog-goal.lev, Rog-loca.lev, Rog-strt.lev, Sam-fila.lev, Sam-filb.lev, Sam-goal.lev, Sam-loca.lev, Sam-strt.lev, Tou-fila.lev, Tou-filb.lev, Tou-goal.lev, Tou-loca.lev, Tou-strt.lev, Val-fila.lev, Val-filb.lev, Val-goal.lev, Val-loca.lev, Val-strt.lev, Wiz-fila.lev, Wiz-filb.lev, Wiz-goal.lev, Wiz-loca.lev, Wiz-strt.lev, air.lev, asmodeus.lev, astral.lev, baalz.lev, bigrm-1.lev, bigrm-10.lev, bigrm-2.lev, bigrm-3.lev, bigrm-4.lev, bigrm-5.lev, bigrm-6.lev, bigrm-7.lev, bigrm-8.lev, bigrm-9.lev, castle.lev, earth.lev, fakewiz1.lev, fakewiz2.lev, fire.lev, juiblex.lev, knox.lev, medusa-1.lev, medusa-2.lev, medusa-3.lev, medusa-4.lev, minefill.lev, minend-1.lev, minend-2.lev, minend-3.lev, minetn-1.lev, minetn-2.lev, minetn-3.lev, minetn-4.lev, minetn-5.lev, minetn-6.lev, minetn-7.lev, oracle.lev, orcus.lev, sanctum.lev, soko1-1.lev, soko1-2.lev, soko2-1.lev, soko2-2.lev, soko3-1.lev, soko3-2.lev, soko4-1.lev, soko4-2.lev, tower1.lev, tower2.lev, tower3.lev, valley.lev, water.lev, wizard1.lev, wizard2.lev, wizard3.lev
-[ 27%] Generating oracles
+[ 25%] Generating bogusmon, epitaph, engrave
 [ 27%] Generating data
+[ 27%] Generating quest.dat
 [ 27%] Generating rumors
-[ 28%] Generating quest.dat
+[ 28%] Generating oracles
 [ 28%] Generating perm, record, logfile, xlogfile
 [ 28%] Generating dungeon, dungeon.pdf
 [ 28%] Generating nhdat
 [ 30%] Built target dat
 [ 30%] Building C object CMakeFiles/nethack.dir/src/allmain.c.o
-[ 32%] Building C object CMakeFiles/nethack.dir/src/attrib.c.o
-[ 32%] Building C object CMakeFiles/nethack.dir/src/apply.c.o
+[ 30%] Building C object CMakeFiles/nethack.dir/src/apply.c.o
+[ 30%] Building C object CMakeFiles/nethack.dir/src/attrib.c.o
+[ 32%] Building C object CMakeFiles/nethack.dir/src/artifact.c.o
 [ 32%] Building C object CMakeFiles/nethack.dir/src/ball.c.o
-[ 33%] Building C object CMakeFiles/nethack.dir/src/artifact.c.o
-[ 34%] Building C object CMakeFiles/nethack.dir/src/botl.c.o
+[ 32%] Building C object CMakeFiles/nethack.dir/src/bones.c.o
 [ 34%] Building C object CMakeFiles/nethack.dir/src/alloc.c.o
-[ 34%] Building C object CMakeFiles/nethack.dir/src/bones.c.o
+[ 34%] Building C object CMakeFiles/nethack.dir/src/botl.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c: In function ‘its_dead’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:220:35: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  220 |                 mptr = mtmp->data = &mons[mtmp->mnum];
+      |                                   ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:224:22: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  224 |                 mptr = &mons[corpse->corpsenm];
+      |                      ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:268:14: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  268 |         mptr = &mons[statue->corpsenm];
+      |              ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c: In function ‘savebones’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:423:40: warning: passing argument 2 of ‘mk_named_object’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  423 |         otmp = mk_named_object(STATUE, &mons[u.umonnum], u.ux, u.uy, plname);
+      |                                        ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1360:27: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1360 |                     (int, struct permonst *, int, int, const char *));
+      |                           ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:436:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  436 |         mtmp = makemon(&mons[PM_GHOST], u.ux, u.uy, MM_NONAME);
+      |                        ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:446:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  446 |         mtmp = makemon(&mons[u.ugrave_arise], u.ux, u.uy, NO_MINVENT);
+      |                        ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/bones.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c: In function ‘fig_transform’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:2118:45: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2118 |         okay_spot = enexto(&cc, cc.x, cc.y, &mons[figurine->corpsenm]);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/apply.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 34%] Building C object CMakeFiles/nethack.dir/src/cmd.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c: In function ‘wiz_smell’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:1373:28: warning: passing argument 1 of ‘usmellmon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1373 |             if (!usmellmon(&mons[mndx]))
+      |                            ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1210:29: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1210 | E boolean FDECL(usmellmon, (struct permonst *));
+      |                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c: In function ‘wiz_intrinsic’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:1485:42: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1485 |                                          = &mons[context.warntype.speciesidx];
+      |                                          ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c: In function ‘bind_key’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:3652:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3652 |     for (extcmd = extcmdlist; extcmd->ef_txt; extcmd++) {
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c: In function ‘commands_init’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:3676:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3676 |     for (extcmd = extcmdlist; extcmd->ef_txt; extcmd++)
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c: In function ‘parseautocomplete’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/cmd.c:4483:14: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 4483 |     for (efp = extcmdlist; efp->ef_txt; efp++) {
+      |              ^
 [ 35%] Building C object CMakeFiles/nethack.dir/src/dbridge.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dbridge.c: In function ‘m_to_e’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dbridge.c:326:25: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  326 |             etmp->edata = &mons[PM_LONG_WORM_TAIL];
+      |                         ^
 [ 36%] Building C object CMakeFiles/nethack.dir/src/decl.c.o
 [ 36%] Building C object CMakeFiles/nethack.dir/src/detect.c.o
 [ 37%] Building C object CMakeFiles/nethack.dir/src/dig.c.o
 [ 37%] Building C object CMakeFiles/nethack.dir/src/display.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c: In function ‘dig’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c:450:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  450 |                 mtmp = makemon(&mons[PM_EARTH_ELEMENTAL], dpx, dpy,
+      |                                ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c:454:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  454 |                 mtmp = makemon(&mons[PM_XORN], dpx, dpy, NO_MM_FLAGS);
+      |                                ^~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dig.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 38%] Building C object CMakeFiles/nethack.dir/src/dlb.c.o
 [ 38%] Building C object CMakeFiles/nethack.dir/src/do.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/do.c: In function ‘dropz’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/do.c:732:47: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  731 |                                    could_poly ? (struct permonst *) 0
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  732 |                                               : &mons[PM_GREEN_SLIME],
+      |                                               ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/do.c:8:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/do.c: In function ‘revive_mon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/do.c:1875:29: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1875 |     struct permonst *mptr = &mons[body->corpsenm];
+      |                             ^
 [ 40%] Building C object CMakeFiles/nethack.dir/src/do_name.c.o
 [ 40%] Building C object CMakeFiles/nethack.dir/src/do_wear.c.o
 [ 41%] Building C object CMakeFiles/nethack.dir/src/dog.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c: In function ‘make_familiar’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:84:16: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   84 |             pm = &mons[mndx];
+      |                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:97:16: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   97 |             pm = &mons[pet_type()];
+      |                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c: In function ‘makedog’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:185:20: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  185 |     mtmp = makemon(&mons[pettype], u.ux, u.uy, MM_EDOG);
+      |                    ^~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 41%] Building C object CMakeFiles/nethack.dir/src/dogmove.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c: In function ‘dogfood’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dog.c:751:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  751 |             fptr = &mons[obj->corpsenm];
+      |                  ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c: In function ‘dog_eat’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:337:32: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  337 |         struct permonst *ptr = slimer ? &mons[PM_GREEN_SLIME] : 0;
+      |                                ^~~~~~
 [ 42%] Building C object CMakeFiles/nethack.dir/src/dokick.c.o
 [ 42%] Building C object CMakeFiles/nethack.dir/src/dothrow.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c: In function ‘droppables’:
@@ -88,41 +253,1009 @@ cc1: warning: function may return address of local variable [-Wreturn-local-addr
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c: In function ‘dokick’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:1150:49: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1150 |                     if (enexto(&mm, mm.x, mm.y, &mons[PM_KILLER_BEE])
+      |                                                 ^~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:1151:36: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1151 |                         && makemon(&mons[PM_KILLER_BEE], mm.x, mm.y,
+      |                                    ^~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:1186:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1186 |                 (void) makemon(&mons[PM_BLACK_PUDDING], x, y, NO_MM_FLAGS);
+      |                                ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:1195:29: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1195 |                 if (makemon(&mons[washerndx], x, y, NO_MM_FLAGS))
+      |                             ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dokick.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dothrow.c: In function ‘release_camera_demon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dothrow.c:1950:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1950 |         && (mtmp = makemon(&mons[rn2(3) ? PM_HOMUNCULUS : PM_IMP], x, y,
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dothrow.c:8:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 43%] Building C object CMakeFiles/nethack.dir/src/drawing.c.o
 [ 43%] Building C object CMakeFiles/nethack.dir/src/dungeon.c.o
 [ 44%] Building C object CMakeFiles/nethack.dir/src/eat.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dungeon.c: In function ‘init_dungeons’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dungeon.c:972:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  972 |     for (lev_map = level_map; lev_map->lev_name[0]; lev_map++) {
+      |                  ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c: In function ‘maybe_cannibal’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:648:29: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  648 |     struct permonst *fptr = &mons[pm]; /* food type */
+      |                             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c: In function ‘cpostfx’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:1104:32: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1104 |         struct permonst *ptr = &mons[pm];
+      |                                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c: In function ‘consume_tin’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:1338:31: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1338 |             if (the_unique_pm(&mons[mnum]))
+      |                               ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1719:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1719 | E boolean FDECL(the_unique_pm, (struct permonst *));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:1366:25: warning: passing argument 1 of ‘eating_conducts’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1366 |         eating_conducts(&mons[mnum]);
+      |                         ^~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:486:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+  486 | struct permonst *pd;
+      |                  ^~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c: In function ‘eatcorpse’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:1712:39: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1712 |                  ? "" : the_unique_pm(&mons[mnum]) ? "The " : "This ",
+      |                                       ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/eat.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1719:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1719 | E boolean FDECL(the_unique_pm, (struct permonst *));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 44%] Building C object CMakeFiles/nethack.dir/src/end.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c: In function ‘done_in_by’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:424:32: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  424 |                     *champtr = ((mtmp->cham >= LOW_PM)
+      |                                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:461:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  461 |             mptr = &mons[mtmp->mappearance];
+      |                  ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c: In function ‘really_done’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:1391:42: warning: passing argument 2 of ‘mk_named_object’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1391 |         corpse = mk_named_object(CORPSE, &mons[mnum], u.ux, u.uy, plname);
+      |                                          ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:8:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1360:27: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1360 |                     (int, struct permonst *, int, int, const char *));
+      |                           ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:1542:42: warning: passing argument 1 of ‘adj_lev’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1542 |                 int mhp, m_lev = adj_lev(&mons[PM_HOUSECAT]);
+      |                                          ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/end.c:8:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1196:23: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1196 | E int FDECL(adj_lev, (struct permonst *));
+      |                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 45%] Building C object CMakeFiles/nethack.dir/src/engrave.c.o
 [ 45%] Building C object CMakeFiles/nethack.dir/src/exper.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/engrave.c: In function ‘doengrave’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/engrave.c:588:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  588 |             (void) makemon(&mons[PM_GHOUL], u.ux, u.uy, NO_MM_FLAGS);
+      |                            ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/engrave.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 46%] Building C object CMakeFiles/nethack.dir/src/explode.c.o
 [ 46%] Building C object CMakeFiles/nethack.dir/src/extralev.c.o
 [ 47%] Building C object CMakeFiles/nethack.dir/src/files.c.o
 [ 47%] Building C object CMakeFiles/nethack.dir/src/fountain.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/extralev.c: In function ‘makerogueghost’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/extralev.c:314:27: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  314 |     if (!(ghost = makemon(&mons[PM_GHOST], x, y, NO_MM_FLAGS)))
+      |                           ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/extralev.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c: In function ‘dowatersnakes’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:47:33: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   47 |             if ((mtmp = makemon(&mons[PM_WATER_MOCCASIN], u.ux, u.uy,
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:7:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c: In function ‘dowaterdemon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:62:29: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   62 |         if ((mtmp = makemon(&mons[PM_WATER_DEMON], u.ux, u.uy,
+      |                             ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:7:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c: In function ‘dowaternymph’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:90:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   90 |         && (mtmp = makemon(&mons[PM_WATER_NYMPH], u.ux, u.uy,
+      |                            ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:7:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c: In function ‘drinksink’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:549:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  549 |             mtmp = makemon(&mons[PM_SEWER_RAT], u.ux, u.uy, NO_MM_FLAGS);
+      |                            ^~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:7:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:589:25: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  589 |             || !makemon(&mons[PM_WATER_ELEMENTAL], u.ux, u.uy, NO_MM_FLAGS))
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/fountain.c:7:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 48%] Building C object CMakeFiles/nethack.dir/src/hack.c.o
 [ 48%] Building C object CMakeFiles/nethack.dir/src/hacklib.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c: In function ‘check_special_room’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2504:29: warning: passing argument 1 of ‘monstinroom’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2504 |             if (monstinroom(&mons[PM_SOLDIER], roomno)
+      |                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2296:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2296 | struct permonst *mdat;
+      |                  ^~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2505:32: warning: passing argument 1 of ‘monstinroom’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2505 |                 || monstinroom(&mons[PM_SERGEANT], roomno)
+      |                                ^~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2296:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2296 | struct permonst *mdat;
+      |                  ^~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2506:32: warning: passing argument 1 of ‘monstinroom’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2506 |                 || monstinroom(&mons[PM_LIEUTENANT], roomno)
+      |                                ^~~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2296:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2296 | struct permonst *mdat;
+      |                  ^~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2507:32: warning: passing argument 1 of ‘monstinroom’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2507 |                 || monstinroom(&mons[PM_CAPTAIN], roomno))
+      |                                ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2296:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2296 | struct permonst *mdat;
+      |                  ^~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2513:48: warning: passing argument 1 of ‘monstinroom’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2513 |             struct monst *oracle = monstinroom(&mons[PM_ORACLE], roomno);
+      |                                                ^~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/hack.c:2296:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2296 | struct permonst *mdat;
+      |                  ^~~~
 [ 50%] Building C object CMakeFiles/nethack.dir/src/invent.c.o
 [ 50%] Building C object CMakeFiles/nethack.dir/src/isaac64.c.o
 [ 51%] Building C object CMakeFiles/nethack.dir/src/light.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/invent.c: In function ‘display_minventory’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/invent.c:4371:23: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 4371 |         youmonst.data = &mons[u.umonnum]; /* most basic part of set_uasmon */
+      |                       ^
 [ 51%] Building C object CMakeFiles/nethack.dir/src/lock.c.o
 [ 52%] Building C object CMakeFiles/nethack.dir/src/mail.c.o
 [ 52%] Building C object CMakeFiles/nethack.dir/src/makemon.c.o
 [ 53%] Building C object CMakeFiles/nethack.dir/src/mapglyph.c.o
 [ 54%] Building C object CMakeFiles/nethack.dir/src/mcastu.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘newmonhp’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:988:28: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  988 |     struct permonst *ptr = &mons[mndx];
+      |                            ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘create_critters’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1456:53: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1456 |         if (!mptr && u.uinwater && enexto(&c, x, y, &mons[PM_GIANT_EEL]))
+      |                                                     ^~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘rndmonst’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1570:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1570 |             ptr = &mons[mndx];
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1612:12: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1612 |     return &mons[mndx];
+      |            ^~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘mk_gen_ok’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1635:28: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1635 |     struct permonst *ptr = &mons[mndx];
+      |                            ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘mkclass_aligned’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1720:47: warning: passing argument 1 of ‘adj_lev’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1720 |                 nums[last] = k + 1 - (adj_lev(&mons[last]) > (u.ulevel * 2));
+      |                                               ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1196:23: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1196 | E int FDECL(adj_lev, (struct permonst *));
+      |                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1734:39: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1734 |     return nums[first] ? &mons[first] : (struct permonst *) 0;
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c: In function ‘grow_up’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/makemon.c:1871:13: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1871 |         ptr = &mons[newtype];
+      |             ^
 [ 54%] Building C object CMakeFiles/nethack.dir/src/mhitm.c.o
 [ 55%] Building C object CMakeFiles/nethack.dir/src/mhitu.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c: In function ‘gulpmm’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:755:26: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  755 |         && newcham(mdef, &mons[mdef->cham], FALSE, FALSE)) {
+      |                          ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c: In function ‘mdamagem’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:1423:35: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1423 |                 if (newcham(mdef, &mons[PM_GREEN_SLIME], FALSE,
+      |                                   ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:1476:38: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1476 |                 (void) newcham(magr, &mons[PM_GREEN_SLIME], FALSE, TRUE);
+      |                                      ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mhitm.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 55%] Building C object CMakeFiles/nethack.dir/src/minion.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c: In function ‘msummon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:75:13: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   75 |         ptr = &mons[PM_WIZARD_OF_YENDOR];
+      |             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:139:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  139 |         mtmp = makemon(&mons[dtype], u.ux, u.uy, MM_EMIN);
+      |                        ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c: In function ‘summon_minion’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:191:23: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  191 |         mon = makemon(&mons[mnum], u.ux, u.uy, MM_EMIN);
+      |                       ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:201:23: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  201 |         mon = makemon(&mons[mnum], u.ux, u.uy, MM_EMIN);
+      |                       ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:208:23: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  208 |         mon = makemon(&mons[mnum], u.ux, u.uy, NO_MM_FLAGS);
+      |                       ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c: In function ‘lose_guardian_angel’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:453:37: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  453 |         if (enexto(&mm, mm.x, mm.y, &mons[PM_ANGEL]))
+      |                                     ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:454:30: warning: passing argument 1 of ‘mk_roamer’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  454 |             (void) mk_roamer(&mons[PM_ANGEL], u.ualign.type, mm.x, mm.y,
+      |                              ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2028:35: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2028 | E struct monst *FDECL(mk_roamer, (struct permonst *, ALIGNTYP_P, XCHAR_P,
+      |                                   ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c: In function ‘gain_guardian_angel’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:485:37: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  485 |         if (enexto(&mm, mm.x, mm.y, &mons[PM_ANGEL])
+      |                                     ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:486:34: warning: passing argument 1 of ‘mk_roamer’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  486 |             && (mtmp = mk_roamer(&mons[PM_ANGEL], u.ualign.type, mm.x, mm.y,
+      |                                  ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/minion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2028:35: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2028 | E struct monst *FDECL(mk_roamer, (struct permonst *, ALIGNTYP_P, XCHAR_P,
+      |                                   ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 56%] Building C object CMakeFiles/nethack.dir/src/mklev.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mklev.c: In function ‘mktrap’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mklev.c:1396:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1396 |         (void) makemon(&mons[PM_GIANT_SPIDER], m.x, m.y, NO_MM_FLAGS);
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mklev.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mklev.c:1530:41: warning: passing argument 3 of ‘mkcorpstat’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1530 |         otmp = mkcorpstat(CORPSE, NULL, &mons[victim_mnum], m.x, m.y,
+      |                                         ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mklev.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1353:55: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1353 | E struct obj *FDECL(mkcorpstat, (int, struct monst *, struct permonst *, int,
+      |                                                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 56%] Building C object CMakeFiles/nethack.dir/src/mkmap.c.o
 [ 57%] Building C object CMakeFiles/nethack.dir/src/mkmaze.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c: In function ‘fixup_special’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:554:50: warning: passing argument 1 of ‘poly_when_stoned’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  554 |                 while (otmp && (poly_when_stoned(&mons[otmp->corpsenm])
+      |                                                  ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1484:36: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1484 | E boolean FDECL(poly_when_stoned, (struct permonst *));
+      |                                    ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:571:40: warning: passing argument 1 of ‘poly_when_stoned’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  571 |                    || poly_when_stoned(&mons[otmp->corpsenm])) {
+      |                                        ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1484:36: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1484 | E boolean FDECL(poly_when_stoned, (struct permonst *));
+      |                                    ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c: In function ‘stolen_booty’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:763:20: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  763 |     mtmp = makemon(&mons[PM_ORC_CAPTAIN], 0, 0, MM_NONAME);
+      |                    ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:799:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  799 |         mtmp = makemon(&mons[mtyp], 0, 0, MM_NONAME);
+      |                        ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c: In function ‘makemaz’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:1099:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1099 |         (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
+      |                        ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkmaze.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 57%] Building C object CMakeFiles/nethack.dir/src/mkobj.c.o
 [ 58%] Building C object CMakeFiles/nethack.dir/src/mkroom.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkobj.c: In function ‘rndmonnum’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkobj.c:373:13: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  373 |         ptr = &mons[i];
+      |             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘mk_zoo_thronemon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:256:33: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  256 |     struct monst *mon = makemon(&mons[pm], x, y, NO_MM_FLAGS);
+      |                                 ^~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:18:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘fill_zoo’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:333:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  331 |             mon = makemon((type == COURT)
+      |                           ~~~~~~~~~~~~~~~
+  332 |                            ? courtmon()
+      |                            ~~~~~~~~~~~~
+  333 |                            : (type == BARRACKS)
+      |                            ^~~~~~~~~~~~~~~~~~~~
+  334 |                               ? squadmon()
+      |                               ~~~~~~~~~~~~
+  335 |                               : (type == MORGUE)
+      |                               ~~~~~~~~~~~~~~~~~~
+  336 |                                  ? morguemon()
+      |                                  ~~~~~~~~~~~~~
+  337 |                                  : (type == BEEHIVE)
+      |                                  ~~~~~~~~~~~~~~~~~~~
+  338 |                                      ? (sx == tx && sy == ty
+      |                                      ~~~~~~~~~~~~~~~~~~~~~~~
+  339 |                                          ? &mons[PM_QUEEN_BEE]
+      |                                          ~~~~~~~~~~~~~~~~~~~~~
+  340 |                                          : &mons[PM_KILLER_BEE])
+      |                                          ~~~~~~~~~~~~~~~~~~~~~~~
+  341 |                                      : (type == LEPREHALL)
+      |                                      ~~~~~~~~~~~~~~~~~~~~~
+  342 |                                          ? &mons[PM_LEPRECHAUN]
+      |                                          ~~~~~~~~~~~~~~~~~~~~~~
+  343 |                                          : (type == COCKNEST)
+      |                                          ~~~~~~~~~~~~~~~~~~~~
+  344 |                                              ? &mons[PM_COCKATRICE]
+      |                                              ~~~~~~~~~~~~~~~~~~~~~~
+  345 |                                              : (type == ANTHOLE)
+      |                                              ~~~~~~~~~~~~~~~~~~~
+  346 |                                                  ? antholemon()
+      |                                                  ~~~~~~~~~~~~~~
+  347 |                                                  : (struct permonst *) 0,
+      |                                                  ~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:18:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘morguemon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:474:24: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  474 |                 return &mons[ndemon_res];
+      |                        ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:483:22: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  482 |     return ((i < 20) ? &mons[PM_GHOST]
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  483 |                      : (i < 40) ? &mons[PM_WRAITH]
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  484 |                                 : mkclass(S_ZOMBIE, 0));
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘antholemon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:512:46: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  511 |     return ((mvitals[mtyp].mvflags & G_GONE) ? (struct permonst *) 0
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  512 |                                              : &mons[mtyp]);
+      |                                              ^~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘mkswamp’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:539:47: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  537 |                             (void) makemon(rn2(5)
+      |                                            ~~~~~~
+  538 |                                               ? &mons[PM_GIANT_EEL]
+      |                                               ~~~~~~~~~~~~~~~~~~~~~
+  539 |                                               : rn2(2)
+      |                                               ^~~~~~~~
+  540 |                                                  ? &mons[PM_PIRANHA]
+      |                                                  ~~~~~~~~~~~~~~~~~~~
+  541 |                                                  : &mons[PM_ELECTRIC_EEL],
+      |                                                  ~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:18:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘courtmon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:755:16: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  755 |         return &mons[PM_BUGBEAR];
+      |                ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:757:16: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  757 |         return &mons[PM_HOBGOBLIN];
+      |                ^~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c: In function ‘squadmon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mkroom.c:793:16: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  793 |         return &mons[mndx];
+      |                ^~~~~~~~~~~
 [ 58%] Building C object CMakeFiles/nethack.dir/src/mon.c.o
 [ 60%] Building C object CMakeFiles/nethack.dir/src/mondata.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘genus’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:248:36: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  248 |             struct permonst *ptr = &mons[mndx];
+      |                                    ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘make_corpse’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:354:40: warning: passing argument 3 of ‘mkcorpstat’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  354 |         obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, corpstatflags);
+      |                                        ^~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1353:55: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1353 | E struct obj *FDECL(mkcorpstat, (int, struct monst *, struct permonst *, int,
+      |                                                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:375:40: warning: passing argument 3 of ‘mkcorpstat’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  375 |         obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, corpstatflags);
+      |                                        ^~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1353:55: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1353 | E struct obj *FDECL(mkcorpstat, (int, struct monst *, struct permonst *, int,
+      |                                                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘mondead’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:1981:57: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1981 |                 if (enexto(&new_xy, mtmp->mx, mtmp->my, &mons[mndx])) {
+      |                                                         ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:1985:27: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1985 |             newcham(mtmp, &mons[mndx], FALSE, FALSE);
+      |                           ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2018:28: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2018 |         set_mon_data(mtmp, &mons[mtmp->cham]);
+      |                            ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2021:28: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2021 |         set_mon_data(mtmp, &mons[PM_HUMAN_WEREJACKAL]);
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2023:28: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2023 |         set_mon_data(mtmp, &mons[PM_HUMAN_WEREWOLF]);
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2025:28: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2025 |         set_mon_data(mtmp, &mons[PM_HUMAN_WERERAT]);
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘mon_to_stone’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2530:27: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2530 |         if (newcham(mtmp, &mons[PM_STONE_GOLEM], FALSE, FALSE)) {
+      |                           ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘vamp_stone’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2576:57: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2576 |                 if (enexto(&new_xy, mtmp->mx, mtmp->my, &mons[mndx])) {
+      |                                                         ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2584:27: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2584 |             newcham(mtmp, &mons[mndx], FALSE, FALSE);
+      |                           ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2605:30: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2605 |         (void) newcham(mtmp, &mons[mtmp->cham], FALSE, TRUE);
+      |                              ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘m_respond’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2869:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2869 |                 (void) makemon(&mons[PM_PURPLE_WORM], 0, 0, NO_MM_FLAGS);
+      |                                ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘setmangry’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:2941:39: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2941 |         struct permonst *q_guardian = &mons[quest_info(MS_GUARDIAN)];
+      |                                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘rescham’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3116:34: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3116 |             (void) newcham(mtmp, &mons[mcham], FALSE, FALSE);
+      |                                  ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘restore_cham’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3162:33: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3162 |             (void) newcham(mon, &mons[mcham], FALSE, FALSE);
+      |                                 ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘decide_to_shapeshift’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3331:21: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3331 |                 ptr = &mons[mon->cham];
+      |                     ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3343:25: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3343 |                     ptr = &mons[mndx];
+      |                         ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘validspecmon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3417:32: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3417 |         struct permonst *ptr = &mons[mndx];
+      |                                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c: In function ‘accept_newcham_form’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mon.c:3623:10: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 3623 |     mdat = &mons[mndx];
+      |          ^
 [ 60%] Building C object CMakeFiles/nethack.dir/src/monmove.c.o
 [ 61%] Building C object CMakeFiles/nethack.dir/src/monst.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/monmove.c: In function ‘m_move’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/monmove.c:1287:38: warning: passing argument 2 of ‘vamp_shift’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1287 |                 if (vamp_shift(mtmp, &mons[PM_FOG_CLOUD], sawmon)) {
+      |                                      ^~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/monmove.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/monmove.c:19:51: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+   19 | STATIC_DCL int FDECL(vamp_shift, (struct monst *, struct permonst *,
+      |                                                   ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 61%] Building C object CMakeFiles/nethack.dir/src/mplayer.c.o
 [ 62%] Building C object CMakeFiles/nethack.dir/src/mthrowu.c.o
 [ 62%] Building C object CMakeFiles/nethack.dir/src/muse.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mplayer.c: In function ‘create_mplayers’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mplayer.c:345:32: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  345 |         set_mon_data(&fakemon, &mons[pm]);
+      |                                ^~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mplayer.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mplayer.c:357:27: warning: passing argument 1 of ‘mk_mplayer’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  357 |         (void) mk_mplayer(&mons[pm], (xchar) x, (xchar) y, special);
+      |                           ^~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/mplayer.c:122:27: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+  122 | register struct permonst *ptr;
+      |                           ^~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c: In function ‘precheck’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:84:52: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   84 |                 if (!enexto(&cc, mon->mx, mon->my, &mons[PM_GHOST]))
+      |                                                    ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:88:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   88 |                 mtmp = makemon(&mons[PM_GHOST], cc.x, cc.y, NO_MM_FLAGS);
+      |                                ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:110:48: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  110 |             if (!enexto(&cc, mon->mx, mon->my, &mons[PM_DJINNI]))
+      |                                                ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:114:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  114 |             mtmp = makemon(&mons[PM_DJINNI], cc.x, cc.y, NO_MM_FLAGS);
+      |                            ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c: In function ‘use_defensive’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:786:13: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  786 |             !is_pool(mtmp->mx, mtmp->my)
+      |             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:811:23: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  811 |             pm = fish = &mons[PM_ACID_BLOB];
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:813:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  813 |             fish = &mons[u.uinwater ? PM_GIANT_EEL : PM_CROCODILE];
+      |                  ^
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/decl.h:243,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:170,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:9:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c: In function ‘muse_newcham_mon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/obj.h:276:5: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  276 |     &mons[PM_GRAY_DRAGON + (obj)->otyp - GRAY_DRAGON_SCALES]
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:1769:20: note: in expansion of macro ‘Dragon_scales_to_pm’
+ 1769 |             return Dragon_scales_to_pm(m_armr);
+      |                    ^~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/obj.h:278:5: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  278 |     &mons[PM_GRAY_DRAGON + (obj)->otyp - GRAY_DRAGON_SCALE_MAIL]
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/muse.c:1771:20: note: in expansion of macro ‘Dragon_mail_to_pm’
+ 1771 |             return Dragon_mail_to_pm(m_armr);
+      |                    ^~~~~~~~~~~~~~~~~
 [ 63%] Building C object CMakeFiles/nethack.dir/src/music.c.o
 [ 63%] Building C object CMakeFiles/nethack.dir/src/nle.c.o
 /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/nle.c: In function ‘init_nle’:
@@ -136,54 +1269,719 @@ cc1: warning: function may return address of local variable [-Wreturn-local-addr
 [ 65%] Building C object CMakeFiles/nethack.dir/src/objnam.c.o
 [ 66%] Building C object CMakeFiles/nethack.dir/src/options.c.o
 [ 66%] Building C object CMakeFiles/nethack.dir/src/pager.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c: In function ‘xname_flags’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:610:40: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  610 |                        : the_unique_pm(&mons[omndx])
+      |                                        ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1719:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1719 | E boolean FDECL(the_unique_pm, (struct permonst *));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c: In function ‘corpse_xname’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:1400:27: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1400 |         if (the_unique_pm(&mons[omndx]) || type_is_pname(&mons[omndx])) {
+      |                           ^~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:831:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+  831 | struct permonst *ptr;
+      |                  ^~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:1408:36: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1408 |             else if (the_unique_pm(&mons[omndx]) && !no_prefix)
+      |                                    ^~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/objnam.c:831:18: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+  831 | struct permonst *ptr;
+      |                  ^~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pager.c: In function ‘lookat’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pager.c:417:16: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  417 |             pm = &mons[PM_WIZARD];
+      |                ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/options.c: In function ‘match_sym’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/options.c:6354:20: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 6354 |             return sp;
+      |                    ^~
 [ 67%] Building C object CMakeFiles/nethack.dir/src/pickup.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pickup.c: In function ‘observe_quantum_cat’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pickup.c:2412:31: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2412 |             livecat = makemon(&mons[PM_HOUSECAT], box->ox, box->oy,
+      |                               ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pickup.c:10:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 67%] Building C object CMakeFiles/nethack.dir/src/pline.c.o
 [ 68%] Building C object CMakeFiles/nethack.dir/src/polyself.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c: In function ‘set_uasmon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:45:29: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   45 |     struct permonst *mdat = &mons[u.umonnum];
+      |                             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c: In function ‘polyself’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:476:35: warning: passing argument 1 of ‘the_unique_pm’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  476 |                 if (the_unique_pm(&mons[mntmp]))
+      |                                   ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:22:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1719:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1719 | E boolean FDECL(the_unique_pm, (struct permonst *));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c: In function ‘polymon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:661:36: warning: passing argument 1 of ‘poly_when_stoned’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  661 |     if (Stoned && poly_when_stoned(&mons[mntmp])) {
+      |                                    ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:22:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1484:36: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1484 | E boolean FDECL(poly_when_stoned, (struct permonst *));
+      |                                    ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:712:31: warning: passing argument 1 of ‘is_home_elemental’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  712 |         if (is_home_elemental(&mons[mntmp]))
+      |                               ^~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:22:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1182:37: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1182 | E boolean FDECL(is_home_elemental, (struct permonst *));
+      |                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c: In function ‘polysense’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/polyself.c:1876:34: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1876 |         context.warntype.species = &mons[warnidx];
+      |                                  ^
 [ 68%] Building C object CMakeFiles/nethack.dir/src/potion.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c: In function ‘ghost_from_bottle’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c:468:34: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  468 |     struct monst *mtmp = makemon(&mons[PM_GHOST], u.ux, u.uy, NO_MM_FLAGS);
+      |                                  ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c: In function ‘djinni_from_bottle’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c:2328:26: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2328 |     if (!(mtmp = makemon(&mons[PM_DJINNI], u.ux, u.uy, NO_MM_FLAGS))) {
+      |                          ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/potion.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 70%] Building C object CMakeFiles/nethack.dir/src/pray.c.o
 [ 70%] Building C object CMakeFiles/nethack.dir/src/priest.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pray.c: In function ‘dosacrifice’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pray.c:1359:41: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1359 |         register struct permonst *ptr = &mons[otmp->corpsenm];
+      |                                         ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pray.c:1417:40: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1417 |                     && (dmon = makemon(&mons[pm], u.ux, u.uy, NO_MM_FLAGS))
+      |                                        ^~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/pray.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c: In function ‘priestini’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c:240:22: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  240 |     priest = makemon(&mons[sanctum ? PM_HIGH_PRIEST : PM_ALIGNED_PRIEST],
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c: In function ‘intemple’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c:499:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  499 |             && (mtmp = makemon(&mons[PM_GHOST], u.ux, u.uy, NO_MM_FLAGS))
+      |                                ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/priest.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 71%] Building C object CMakeFiles/nethack.dir/src/quest.c.o
 [ 71%] Building C object CMakeFiles/nethack.dir/src/questpgr.c.o
 [ 72%] Building C object CMakeFiles/nethack.dir/src/read.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c: In function ‘qt_montype’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c:664:20: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  664 |             return &mons[qpm];
+      |                    ^~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/questpgr.c:669:16: warning: return discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  669 |         return &mons[qpm];
+      |                ^~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c: In function ‘seffects’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:1356:38: warning: passing argument 2 of ‘create_critters’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1355 |                             confused ? &mons[PM_ACID_BLOB]
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1356 |                                      : (struct permonst *) 0,
+      |                                      ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1190:40: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1190 | E boolean FDECL(create_critters, (int, struct permonst *, BOOLEAN_P));
+      |                                        ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:1463:48: warning: passing argument 2 of ‘create_critters’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1462 |             (void) create_critters(1, !scursed ? &mons[PM_YELLOW_LIGHT]
+      |                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1463 |                                                : &mons[PM_BLACK_LIGHT],
+      |                                                ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1190:40: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1190 | E boolean FDECL(create_critters, (int, struct permonst *, BOOLEAN_P));
+      |                                        ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c: In function ‘do_genocide’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:2199:13: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2199 |         ptr = &mons[mndx];
+      |             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:2231:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2231 |             ptr = &mons[mndx];
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c: In function ‘create_particular_creation’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:2544:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2544 |         whichpm = &mons[d->which];
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:2608:34: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2608 |             (void) newcham(mtmp, &mons[firstchoice], FALSE, FALSE);
+      |                                  ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/read.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 73%] Building C object CMakeFiles/nethack.dir/src/rect.c.o
 [ 73%] Building C object CMakeFiles/nethack.dir/src/region.c.o
-[ 74%] Building C object CMakeFiles/nethack.dir/src/restore.c.o
 [ 74%] Building C object CMakeFiles/nethack.dir/src/rip.c.o
+[ 74%] Building C object CMakeFiles/nethack.dir/src/restore.c.o
 [ 75%] Building C object CMakeFiles/nethack.dir/src/rnd.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c: In function ‘restmonchn’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c:435:20: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  435 |         mtmp->data = &mons[offset];
+      |                    ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c: In function ‘restgamestate’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/restore.c:562:30: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  562 |     context.warntype.species = (context.warntype.speciesidx >= LOW_PM)
+      |                              ^
 [ 75%] Building C object CMakeFiles/nethack.dir/src/role.c.o
 [ 76%] Building C object CMakeFiles/nethack.dir/src/rumors.c.o
 [ 76%] Building C object CMakeFiles/nethack.dir/src/save.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c: In function ‘role_init’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2061:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2061 |         pm = &mons[urole.ldrnum];
+      |            ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2076:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2076 |         pm = &mons[urole.guardnum];
+      |            ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/role.c:2083:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2083 |         pm = &mons[urole.neminum];
+      |            ^
 [ 77%] Building C object CMakeFiles/nethack.dir/src/shk.c.o
 [ 77%] Building C object CMakeFiles/nethack.dir/src/shknam.c.o
 [ 78%] Building C object CMakeFiles/nethack.dir/src/sit.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c: In function ‘makekops’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c:4073:42: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 4073 |             if (enexto(mm, mm->x, mm->y, &mons[mndx]))
+      |                                          ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c:4074:32: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 4074 |                 (void) makemon(&mons[mndx], mm->x, mm->y, NO_MM_FLAGS);
+      |                                ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shk.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 78%] Building C object CMakeFiles/nethack.dir/src/sounds.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shknam.c: In function ‘shkinit’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shknam.c:656:25: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  656 |     if (!(shk = makemon(&mons[PM_SHOPKEEPER], sx, sy, MM_ESHK)))
+      |                         ^~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/shknam.c:8:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sounds.c: In function ‘domonnoise’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sounds.c:517:37: warning: passing argument 2 of ‘same_race’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  517 |                   || same_race(ptr, &mons[Race_switch])) /* unpoly'd form */
+      |                                     ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sounds.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1508:48: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1508 | E boolean FDECL(same_race, (struct permonst *, struct permonst *));
+      |                                                ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 80%] Building C object CMakeFiles/nethack.dir/src/sp_lev.c.o
 [ 80%] Building C object CMakeFiles/nethack.dir/src/spell.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c: In function ‘create_monster’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:1614:12: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1614 |         pm = &mons[m->id];
+      |            ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:1755:45: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1755 |                     struct permonst *mdat = &mons[mndx];
+      |                                             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c: In function ‘create_object’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:1999:27: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1999 |             was = makemon(&mons[wastyp], 0, 0, MM_NOCOUNTBIRTH);
+      |                           ^~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:12:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c: In function ‘fill_empty_maze’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:2649:28: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2649 |             (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
+      |                            ^~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/sp_lev.c:12:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/spell.c: In function ‘deadbook’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/spell.c:281:41: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  281 |         if (!rn2(3) && ((mtmp = makemon(&mons[PM_MASTER_LICH], u.ux, u.uy,
+      |                                         ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/spell.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/spell.c:283:44: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  283 |                         || (mtmp = makemon(&mons[PM_NALFESHNEE], u.ux, u.uy,
+      |                                            ^~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/spell.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 81%] Building C object CMakeFiles/nethack.dir/src/steal.c.o
 [ 81%] Building C object CMakeFiles/nethack.dir/src/steed.c.o
 [ 82%] Building C object CMakeFiles/nethack.dir/src/sys.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/steed.c: In function ‘dismount_steed’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/steed.c:574:46: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  574 |             && !enexto(&steedcc, u.ux, u.uy, &mons[PM_BAT]))
+      |                                              ^~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/steed.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/steed.c:576:49: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  576 |             (void) enexto(&steedcc, u.ux, u.uy, &mons[PM_GHOST]);
+      |                                                 ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/steed.c:5:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 82%] Building C object CMakeFiles/nethack.dir/src/teleport.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/teleport.c: In function ‘enexto_core’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/teleport.c:144:14: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  144 |         mdat = &mons[u.umonster];
+      |              ^
 [ 83%] Building C object CMakeFiles/nethack.dir/src/timeout.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/timeout.c: In function ‘hatch_egg’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/timeout.c:833:40: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  833 |                 if (!enexto(&cc, x, y, &mons[mnum])
+      |                                        ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/timeout.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/timeout.c:834:40: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  834 |                     || !(mon = makemon(&mons[mnum], cc.x, cc.y, NO_MINVENT)))
+      |                                        ^~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/timeout.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 83%] Building C object CMakeFiles/nethack.dir/src/topten.c.o
 [ 84%] Building C object CMakeFiles/nethack.dir/src/track.c.o
 [ 84%] Building C object CMakeFiles/nethack.dir/src/trap.c.o
 [ 85%] Building C object CMakeFiles/nethack.dir/src/u_init.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c: In function ‘maketrap’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:381:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  381 |             mptr = &mons[rndmonnum()];
+      |                  ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:386:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  386 |         mtmp = makemon(&mons[statue->corpsenm], 0, 0, MM_NOCOUNTBIRTH);
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c: In function ‘animate_statue’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:576:29: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  576 |     struct permonst *mptr = &mons[mnum];
+      |                             ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:591:18: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  591 |             mptr = &mons[mnum];
+      |                  ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:597:14: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  597 |         mptr = &mons[PM_FLESH_GOLEM];
+      |              ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:617:27: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  617 |             mon = makemon(&mons[PM_DOPPELGANGER], x, y,
+      |                           ^~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/trap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 85%] Building C object CMakeFiles/nethack.dir/src/uhitm.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c: In function ‘demonpet’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c:1492:8: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1492 |     pm = i != NON_PM ? &mons[i] : youmonst.data;
+      |        ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c: In function ‘damageum’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c:1983:35: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1983 |                 if (newcham(mdef, &mons[PM_GREEN_SLIME], FALSE, FALSE))
+      |                                   ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c: In function ‘gulpum’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c:2145:30: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2145 |             && newcham(mdef, &mons[mdef->cham], FALSE, FALSE)) {
+      |                              ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/uhitm.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 86%] Building C object CMakeFiles/nethack.dir/src/vault.c.o
 [ 86%] Building C object CMakeFiles/nethack.dir/src/version.c.o
 [ 87%] Building C object CMakeFiles/nethack.dir/src/vision.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/vault.c: In function ‘invault’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/vault.c:388:31: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  388 |         if (!(guard = makemon(&mons[PM_GUARD], x, y, MM_EGD)))
+      |                               ^~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/vault.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 87%] Building C object CMakeFiles/nethack.dir/src/weapon.c.o
 [ 88%] Building C object CMakeFiles/nethack.dir/src/were.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/weapon.c: In function ‘abon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/weapon.c:894:25: warning: passing argument 1 of ‘adj_lev’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  894 |         return (adj_lev(&mons[u.umonnum]) - 3);
+      |                         ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/weapon.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1196:23: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1196 | E int FDECL(adj_lev, (struct permonst *));
+      |                       ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c: In function ‘new_were’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c:111:23: warning: passing argument 2 of ‘set_mon_data’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  111 |     set_mon_data(mon, &mons[pm]);
+      |                       ^~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1480:45: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1480 | E void FDECL(set_mon_data, (struct monst *, struct permonst *));
+      |                                             ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c: In function ‘were_summon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c:164:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  164 |         mtmp = makemon(&mons[typ], u.ux, u.uy, NO_MM_FLAGS);
+      |                        ^~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/were.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 88%] Building C object CMakeFiles/nethack.dir/src/wield.c.o
 [ 90%] Building C object CMakeFiles/nethack.dir/src/windows.c.o
 [ 90%] Building C object CMakeFiles/nethack.dir/src/wizard.c.o
 [ 91%] Building C object CMakeFiles/nethack.dir/src/worm.c.o
 [ 92%] Building C object CMakeFiles/nethack.dir/src/worn.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c: In function ‘clonewiz’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:502:26: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  502 |     if ((mtmp2 = makemon(&mons[PM_WIZARD_OF_YENDOR], u.ux, u.uy, NO_MM_FLAGS))
+      |                          ^~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c: In function ‘nasty’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:594:42: warning: passing argument 1 of ‘attacktype’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  594 |                          && ((attacktype(&mons[makeindex], AT_MAGC)
+      |                                          ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1482:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1482 | E boolean FDECL(attacktype, (struct permonst *, int));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:601:41: warning: passing argument 4 of ‘enexto’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  601 |                                         &mons[makeindex]))
+      |                                         ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:2430:53: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 2430 | E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
+      |                                                     ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:605:37: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  605 |                 if ((mtmp = makemon(&mons[makeindex], bypos.x, bypos.y,
+      |                                     ^~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c: In function ‘resurrect’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:639:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  639 |         mtmp = makemon(&mons[PM_WIZARD_OF_YENDOR], u.ux, u.uy, MM_NOWAIT);
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/wizard.c:11:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 92%] Building C object CMakeFiles/nethack.dir/src/write.c.o
-[ 92%] Building C object CMakeFiles/nethack.dir/sys/share/ioctl.c.o
 [ 93%] Building C object CMakeFiles/nethack.dir/src/zap.c.o
+[ 93%] Building C object CMakeFiles/nethack.dir/sys/share/ioctl.c.o
 [ 94%] Building C object CMakeFiles/nethack.dir/sys/share/posixregex.c.o
 [ 94%] Building C object CMakeFiles/nethack.dir/sys/unix/unixmain.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘bhitm’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:266:45: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  266 |                            && newcham(mtmp, &mons[mtmp->cham],
+      |                                             ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:419:31: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  419 |             if (newcham(mtmp, &mons[PM_FLESH_GOLEM], FALSE, FALSE)) {
+      |                               ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘montraits’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:592:21: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  592 |         mtmp2->data = &mons[mtmp2->mnum];
+      |                     ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘revive’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:778:10: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  778 |     mptr = &mons[montype];
+      |          ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:799:24: warning: passing argument 1 of ‘makemon’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  799 |         mtmp = makemon(&mons[montype], x, y, NO_MINVENT | MM_NOWAIT);
+      |                        ^~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1189:33: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1189 | E struct monst *FDECL(makemon, (struct permonst *, int, int, int));
+      |                                 ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘create_polymon’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:1352:14: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1352 |         mdat = &mons[pm_index];
+      |              ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘stone_to_flesh_obj’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:1719:17: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1719 |             ptr = &mons[obj->corpsenm];
+      |                 ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:1733:25: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1733 |                     ptr = &mons[PM_FLESH_GOLEM];
+      |                         ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:1757:41: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1757 |                     (void) newcham(mon, &mons[PM_FLESH_GOLEM], TRUE, FALSE);
+      |                                         ^~~~~~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c: In function ‘cancel_monst’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:2787:27: warning: passing argument 2 of ‘newcham’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 2787 |             newcham(mdef, &mons[mdef->cham], FALSE, FALSE);
+      |                           ^~~~~~~~~~~~~~~~~
+In file included from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/config.h:408,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/hack.h:10,
+                 from /scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/zap.c:6:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/extern.h:1467:30: note: expected ‘struct permonst *’ but argument is of type ‘const struct permonst *’
+ 1467 |             (struct monst *, struct permonst *, BOOLEAN_P, BOOLEAN_P));
+      |                              ^~~~~~~~~~~~~~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/include/tradstdc.h:193:23: note: in definition of macro ‘FDECL’
+  193 | #define FDECL(f, p) f p
+      |                       ^
 [ 95%] Building C object CMakeFiles/nethack.dir/sys/unix/unixres.c.o
 [ 95%] Building C object CMakeFiles/nethack.dir/sys/unix/unixunix.c.o
 [ 96%] Building CXX object CMakeFiles/nethack.dir/win/rl/winrl.cc.o
