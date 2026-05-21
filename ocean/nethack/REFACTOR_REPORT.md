@@ -1,24 +1,38 @@
-# NetHack thread-safety refactor — final report
+# NetHack vecenv refactor — final report
 
-Repo head: `a76735cc` on branch `4.0`.
+Repo head: branch `4.0`.
 Library under test: `vendor/nle/src/build/libnethack.so`
 rebuilt after every code change. Determinism re-verified against
 16 seeded golden trajectories (1000 steps each, with menu predrain)
 under `ocean/nethack/golden/golden_seed{01..16}_1k.bin` after each
 rebuild via `ocean/nethack/verify_determinism_all.sh`.
 
-## Headline numbers
+## Headline numbers (after Cluster AK)
 
 | Metric                              | Value             |
 |-------------------------------------|-------------------|
 | Writable global storage, baseline   | 198,740 bytes     |
-| Writable global storage, HEAD       | 19,370 bytes      |
-| Reduction                           | **90.3%**         |
+| Writable global storage, HEAD       | 19,018 bytes      |
+| Reduction                           | **90.4%**         |
 | Determinism replays passing         | 16/16 at every commit |
-| `multi_shared` N=1 (shared libnethack, single env) | ✅ works |
-| `multi_shared` N≥2 (shared libnethack, vecenv pattern) | ❌ still races |
-| PufferLib vecenv (per-env dlopen, current production) | ✅ works |
+| `multi_shared` N=1 single libnethack | ✅ works |
+| `multi_shared` N=64 × 5000 steps random | ✅ 10/10 trials pass |
+| `multi_shared` N=88 × 5000 steps random | ✅ 10/10 trials pass |
+| `multi_shared` N=92+ × 1000 steps random | ❌ deterministic vision-recursion hang (one specific env+step combination) |
+| PufferLib binding: single process-wide dlopen | ✅ no memfd/per-env copies |
 | Plot                                | `ocean/nethack/experiments/exp_026_globals_plot/globals.png` |
+
+## Vecenv path (Path B — now production-ready up to N≈88)
+
+Single `libnethack.so` instance, all envs share the code, each env has
+its own state in `nle_ctx_t`. Stepping is `nle_step(env_i, &obs_i)`.
+Memory cost: one libnethack (~3.7 MB) plus `N × sizeof(nle_ctx_t)` (~50 KB
+per env). Startup is one `calloc` per env.
+
+PufferLib's binding (`ocean/nethack/nethack.h`) now does ONE dlopen for
+the entire process. The function pointers `nle_start/nle_step/nle_end`
+are resolved once and reused across all envs. No memfd copy, no per-env
+dlopen overhead.
 
 ## Two vecenv paths
 
