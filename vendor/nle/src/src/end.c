@@ -1205,6 +1205,20 @@ int how;
     /*NOTREACHED*/
 }
 
+/* NLE: serialize env-death across OMP threads.
+ *
+ * The done() / really_done() path walks display_inventory →
+ * tty_end_menu → various TTY allocators. Several of those helpers
+ * still hold residual process-shared state (file-scope statics that
+ * the bulk-TLS sweep missed: condition tables, menu scratch). Under
+ * concurrent stepping that races and segfaults. Until each of those
+ * sites is migrated, we hold one process-wide mutex around the
+ * entire death path. The fast (non-dying) step path is unaffected.
+ * Death happens at most once per env, so the contention is tiny.
+ */
+#include <pthread.h>
+static pthread_mutex_t nle_endgame_mtx = PTHREAD_MUTEX_INITIALIZER;
+
 /* separated from done() in order to specify the __noreturn__ attribute */
 STATIC_OVL void
 really_done(how)
@@ -1219,6 +1233,7 @@ int how;
     long umoney;
     long tmp;
 
+    pthread_mutex_lock(&nle_endgame_mtx);
     /*
      *  The game is now over...
      */
@@ -1628,6 +1643,9 @@ int how;
         raw_print("");
         raw_print("");
     }
+    /* NLE: release the death-path mutex BEFORE nh_terminate jumps
+     * back to the harness. */
+    pthread_mutex_unlock(&nle_endgame_mtx);
     nh_terminate(EXIT_SUCCESS);
 }
 
