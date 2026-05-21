@@ -305,6 +305,11 @@ typedef struct nle_globals {
      * holds the globals → "extract_nexthere: object lost" panic. */
     void                *s_timer_base;            /* timer_element * */
     unsigned long        s_timer_id;
+    /* cluster AG: light source list head (light.c light_base). Was
+     * __thread; under vecenv env A's lights leaked into env B's
+     * vision_recalc → impossible objects on the wrong levels →
+     * eventual cascade in left_ptrs causing infinite recursion. */
+    void                *s_light_base;            /* light_source * */
     /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */
