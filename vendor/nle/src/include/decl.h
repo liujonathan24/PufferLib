@@ -378,10 +378,13 @@ E const char *materialnm[];
 /* toplines — stage 8' migrated to nle_ctx_t (macro). */
 #define toplines (current_nle_ctx->top_lines)
 #ifndef TCAP_H
-E NEARDATA struct tc_gbl_data {   /* also declared in tcap.h */
+/* tc_gbl_data — stage 8' migrated to nle_ctx_t. Struct tag renamed
+ * to nle_tcap_t to free the `tc_gbl_data` token for the macro. */
+struct nle_tcap_t {
     char *tc_AS, *tc_AE; /* graphics start and end (tty font swapping) */
     int tc_LI, tc_CO;    /* lines and columns */
-} tc_gbl_data;
+};
+#define tc_gbl_data (*current_nle_ctx->s8_tcap_p)
 #define AS tc_gbl_data.tc_AS
 #define AE tc_gbl_data.tc_AE
 #define LI tc_gbl_data.tc_LI

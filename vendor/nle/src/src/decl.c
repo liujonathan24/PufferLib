@@ -248,7 +248,7 @@ const char *materialnm[] = { "mysterious", "liquid",  "wax",        "organic",
 /* Global windowing data — stage 8' migrated to nle_ctx_t
  * (WIN_MESSAGE/STATUS/MAP/INVEN, toplines).
  * tc_gbl_data deferred (struct-tag self-reference). */
-NEARDATA struct tc_gbl_data tc_gbl_data = { 0, 0, 0, 0 }; /* AS,AE, LI,CO */
+/* tc_gbl_data — stage 8' migrated to nle_ctx_t. Heap-alloc'd in init_nle. */
 
 char *fqn_prefix[PREFIX_COUNT] = { (char *) 0, (char *) 0, (char *) 0,
                                    (char *) 0, (char *) 0, (char *) 0,

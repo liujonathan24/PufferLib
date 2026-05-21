@@ -43,6 +43,7 @@ struct q_score;          /* include/quest.h (stage 9' batch C) */
 struct spell;            /* include/spell.h (stage 9' batch C) */
 struct nle_mvitals_t;    /* include/decl.h (stage 9' batch C) */
 struct kinfo;            /* include/decl.h (stage 9' batch C) */
+struct nle_tcap_t;       /* include/decl.h (stage 8' completion) */
 struct mkroom;           /* include/mkroom.h (stage 7' partial) */
 struct linfo;            /* include/dungeon.h (stage 7' partial) */
 struct trap;             /* include/trap.h   (stage 7' partial) */
@@ -202,6 +203,7 @@ typedef struct nle_globals {
     struct monst        *s9c_youmonst_p;      /* macro: youmonst */
     struct nle_mvitals_t *s9c_mvitals_p;      /* macro: mvitals (array head) */
     struct kinfo        *s9c_killer_p;        /* macro: killer */
+    struct nle_tcap_t   *s8_tcap_p;           /* macro: tc_gbl_data */
     /* stage 7' partial — easy items from the current-level swap bundle
      * that don't have the `level` token-collision problem. All heap-
      * allocated in init_nle. */

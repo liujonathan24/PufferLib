@@ -22,10 +22,13 @@
 #endif
 
 #ifndef DECL_H
-extern NEARDATA struct tc_gbl_data { /* also declared in decl.h; defined in decl.c */
+/* See decl.h for the canonical declaration; struct tag is now
+ * nle_tcap_t and tc_gbl_data is a macro to the per-env field. */
+struct nle_tcap_t {
     char *tc_AS, *tc_AE;    /* graphics start and end (tty font swapping) */
     int tc_LI, tc_CO;       /* lines and columns */
-} tc_gbl_data;
+};
+#define tc_gbl_data (*current_nle_ctx->s8_tcap_p)
 #define AS tc_gbl_data.tc_AS
 #define AE tc_gbl_data.tc_AE
 #define LI tc_gbl_data.tc_LI
