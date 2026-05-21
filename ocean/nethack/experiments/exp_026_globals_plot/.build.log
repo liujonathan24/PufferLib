@@ -1,0 +1,196 @@
+[  1%] Building C object util/CMakeFiles/makedefs.dir/makedefs.c.o
+[  1%] Building C object util/CMakeFiles/dlb.dir/dlb_main.c.o
+[  1%] Building C object util/CMakeFiles/dlb.dir/__/src/dlb.c.o
+[  1%] Building C object util/CMakeFiles/makedefs.dir/__/src/objects.c.o
+[  2%] Building C object CMakeFiles/tmt.dir/third_party/libtmt/tmt.c.o
+[  2%] Building C object util/CMakeFiles/makedefs.dir/__/src/monst.c.o
+[  2%] Building C object util/CMakeFiles/recover.dir/recover.c.o
+[  3%] Building C object third_party/deboost.context/CMakeFiles/fcontext.dir/source/stack.c.o
+[  3%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/make_x86_64_sysv_elf_gas.S.o
+[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/ontop_x86_64_sysv_elf_gas.S.o
+[  4%] Building ASM object third_party/deboost.context/CMakeFiles/fcontext.dir/asm/jump_x86_64_sysv_elf_gas.S.o
+[  5%] Linking C executable recover
+[  6%] Building C object util/CMakeFiles/dlb.dir/panic.c.o
+[  7%] Building C object util/CMakeFiles/dlb.dir/__/src/alloc.c.o
+[  8%] Linking C static library libfcontext.a
+[  8%] Built target recover
+[  8%] Built target fcontext
+[  8%] Linking C executable dlb
+[  8%] Built target dlb
+[ 10%] Linking C static library libtmt.a
+[ 10%] Built target tmt
+[ 11%] Linking C executable makedefs
+[ 11%] Built target makedefs
+[ 12%] Generating ../include/pm.h
+[ 13%] Generating ../include/date.h
+[ 13%] Generating ../include/onames.h
+[ 13%] Built target util
+[ 13%] Generating dgn_scanner.c
+[ 13%] Generating lev_parser.c, lev_comp.h
+[ 14%] Generating dgn_parser.c, dgn_comp.h
+[ 15%] Generating lev_scanner.c
+[ 15%] Building C object util/CMakeFiles/dgn_comp.dir/panic.c.o
+[ 16%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_main.c.o
+[ 18%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_parser.c.o
+[ 18%] Building C object util/CMakeFiles/dgn_comp.dir/dgn_scanner.c.o
+[ 18%] Building C object util/CMakeFiles/dgn_comp.dir/__/src/alloc.c.o
+[ 18%] Linking C executable dgn_comp
+[ 18%] Building C object util/CMakeFiles/lev_comp.dir/lev_main.c.o
+[ 20%] Building C object util/CMakeFiles/lev_comp.dir/__/src/decl.c.o
+[ 20%] Building C object util/CMakeFiles/lev_comp.dir/panic.c.o
+[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/alloc.c.o
+[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/objects.c.o
+[ 21%] Building C object util/CMakeFiles/lev_comp.dir/__/src/drawing.c.o
+[ 22%] Building C object util/CMakeFiles/lev_comp.dir/__/src/monst.c.o
+[ 22%] Built target dgn_comp
+[ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_parser.c.o
+[ 23%] Building C object util/CMakeFiles/lev_comp.dir/lev_scanner.c.o
+[ 24%] Linking C executable lev_comp
+[ 24%] Built target lev_comp
+[ 25%] Generating Arc-fila.lev, Arc-filb.lev, Arc-goal.lev, Arc-loca.lev, Arc-strt.lev, Bar-fila.lev, Bar-filb.lev, Bar-goal.lev, Bar-loca.lev, Bar-strt.lev, Cav-fila.lev, Cav-filb.lev, Cav-goal.lev, Cav-loca.lev, Cav-strt.lev, Hea-fila.lev, Hea-filb.lev, Hea-goal.lev, Hea-loca.lev, Hea-strt.lev, Kni-fila.lev, Kni-filb.lev, Kni-goal.lev, Kni-loca.lev, Kni-strt.lev, Mon-fila.lev, Mon-filb.lev, Mon-goal.lev, Mon-loca.lev, Mon-strt.lev, Pri-fila.lev, Pri-filb.lev, Pri-goal.lev, Pri-loca.lev, Pri-strt.lev, Ran-fila.lev, Ran-filb.lev, Ran-goal.lev, Ran-loca.lev, Ran-strt.lev, Rog-fila.lev, Rog-filb.lev, Rog-goal.lev, Rog-loca.lev, Rog-strt.lev, Sam-fila.lev, Sam-filb.lev, Sam-goal.lev, Sam-loca.lev, Sam-strt.lev, Tou-fila.lev, Tou-filb.lev, Tou-goal.lev, Tou-loca.lev, Tou-strt.lev, Val-fila.lev, Val-filb.lev, Val-goal.lev, Val-loca.lev, Val-strt.lev, Wiz-fila.lev, Wiz-filb.lev, Wiz-goal.lev, Wiz-loca.lev, Wiz-strt.lev, air.lev, asmodeus.lev, astral.lev, baalz.lev, bigrm-1.lev, bigrm-10.lev, bigrm-2.lev, bigrm-3.lev, bigrm-4.lev, bigrm-5.lev, bigrm-6.lev, bigrm-7.lev, bigrm-8.lev, bigrm-9.lev, castle.lev, earth.lev, fakewiz1.lev, fakewiz2.lev, fire.lev, juiblex.lev, knox.lev, medusa-1.lev, medusa-2.lev, medusa-3.lev, medusa-4.lev, minefill.lev, minend-1.lev, minend-2.lev, minend-3.lev, minetn-1.lev, minetn-2.lev, minetn-3.lev, minetn-4.lev, minetn-5.lev, minetn-6.lev, minetn-7.lev, oracle.lev, orcus.lev, sanctum.lev, soko1-1.lev, soko1-2.lev, soko2-1.lev, soko2-2.lev, soko3-1.lev, soko3-2.lev, soko4-1.lev, soko4-2.lev, tower1.lev, tower2.lev, tower3.lev, valley.lev, water.lev, wizard1.lev, wizard2.lev, wizard3.lev
+[ 26%] Generating data
+[ 26%] Generating rumors
+[ 26%] Generating bogusmon, epitaph, engrave
+[ 26%] Generating oracles
+[ 27%] Generating perm, record, logfile, xlogfile
+[ 28%] Generating quest.dat
+[ 28%] Generating dungeon, dungeon.pdf
+[ 28%] Generating nhdat
+[ 30%] Built target dat
+[ 30%] Building C object CMakeFiles/nethack.dir/src/allmain.c.o
+[ 32%] Building C object CMakeFiles/nethack.dir/src/apply.c.o
+[ 32%] Building C object CMakeFiles/nethack.dir/src/ball.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/artifact.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/attrib.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/alloc.c.o
+[ 33%] Building C object CMakeFiles/nethack.dir/src/bones.c.o
+[ 34%] Building C object CMakeFiles/nethack.dir/src/botl.c.o
+[ 34%] Building C object CMakeFiles/nethack.dir/src/cmd.c.o
+[ 35%] Building C object CMakeFiles/nethack.dir/src/dbridge.c.o
+[ 36%] Building C object CMakeFiles/nethack.dir/src/decl.c.o
+[ 36%] Building C object CMakeFiles/nethack.dir/src/detect.c.o
+[ 37%] Building C object CMakeFiles/nethack.dir/src/dig.c.o
+[ 37%] Building C object CMakeFiles/nethack.dir/src/display.c.o
+[ 38%] Building C object CMakeFiles/nethack.dir/src/dlb.c.o
+[ 38%] Building C object CMakeFiles/nethack.dir/src/do.c.o
+[ 40%] Building C object CMakeFiles/nethack.dir/src/do_name.c.o
+[ 40%] Building C object CMakeFiles/nethack.dir/src/do_wear.c.o
+[ 41%] Building C object CMakeFiles/nethack.dir/src/dog.c.o
+[ 41%] Building C object CMakeFiles/nethack.dir/src/dogmove.c.o
+[ 42%] Building C object CMakeFiles/nethack.dir/src/dokick.c.o
+[ 42%] Building C object CMakeFiles/nethack.dir/src/dothrow.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c: In function ‘droppables’:
+cc1: warning: function may return address of local variable [-Wreturn-local-addr]
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+   30 |     struct obj *obj, *wep, dummy, *pickaxe, *unihorn, *key;
+      |                            ^~~~~
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/dogmove.c:30:28: note: declared here
+[ 43%] Building C object CMakeFiles/nethack.dir/src/drawing.c.o
+[ 43%] Building C object CMakeFiles/nethack.dir/src/dungeon.c.o
+[ 44%] Building C object CMakeFiles/nethack.dir/src/eat.c.o
+[ 44%] Building C object CMakeFiles/nethack.dir/src/end.c.o
+[ 45%] Building C object CMakeFiles/nethack.dir/src/engrave.c.o
+[ 45%] Building C object CMakeFiles/nethack.dir/src/exper.c.o
+[ 46%] Building C object CMakeFiles/nethack.dir/src/explode.c.o
+[ 46%] Building C object CMakeFiles/nethack.dir/src/extralev.c.o
+[ 46%] Building C object CMakeFiles/nethack.dir/src/fountain.c.o
+[ 47%] Building C object CMakeFiles/nethack.dir/src/files.c.o
+[ 48%] Building C object CMakeFiles/nethack.dir/src/hack.c.o
+[ 48%] Building C object CMakeFiles/nethack.dir/src/hacklib.c.o
+[ 50%] Building C object CMakeFiles/nethack.dir/src/invent.c.o
+[ 50%] Building C object CMakeFiles/nethack.dir/src/isaac64.c.o
+[ 51%] Building C object CMakeFiles/nethack.dir/src/light.c.o
+[ 51%] Building C object CMakeFiles/nethack.dir/src/lock.c.o
+[ 52%] Building C object CMakeFiles/nethack.dir/src/mail.c.o
+[ 52%] Building C object CMakeFiles/nethack.dir/src/makemon.c.o
+[ 53%] Building C object CMakeFiles/nethack.dir/src/mapglyph.c.o
+[ 54%] Building C object CMakeFiles/nethack.dir/src/mcastu.c.o
+[ 54%] Building C object CMakeFiles/nethack.dir/src/mhitm.c.o
+[ 55%] Building C object CMakeFiles/nethack.dir/src/mhitu.c.o
+[ 55%] Building C object CMakeFiles/nethack.dir/src/minion.c.o
+[ 56%] Building C object CMakeFiles/nethack.dir/src/mklev.c.o
+[ 56%] Building C object CMakeFiles/nethack.dir/src/mkmap.c.o
+[ 57%] Building C object CMakeFiles/nethack.dir/src/mkmaze.c.o
+[ 57%] Building C object CMakeFiles/nethack.dir/src/mkobj.c.o
+[ 58%] Building C object CMakeFiles/nethack.dir/src/mkroom.c.o
+[ 58%] Building C object CMakeFiles/nethack.dir/src/mon.c.o
+[ 60%] Building C object CMakeFiles/nethack.dir/src/mondata.c.o
+[ 60%] Building C object CMakeFiles/nethack.dir/src/monmove.c.o
+[ 61%] Building C object CMakeFiles/nethack.dir/src/monst.c.o
+[ 61%] Building C object CMakeFiles/nethack.dir/src/mplayer.c.o
+[ 62%] Building C object CMakeFiles/nethack.dir/src/mthrowu.c.o
+[ 62%] Building C object CMakeFiles/nethack.dir/src/muse.c.o
+[ 63%] Building C object CMakeFiles/nethack.dir/src/music.c.o
+[ 63%] Building C object CMakeFiles/nethack.dir/src/nle.c.o
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/nle.c: In function ‘init_nle’:
+/scratch/gpfs/ZHUANGL/jl0796/PufferLib/vendor/nle/src/src/nle.c:197:5: warning: implicit declaration of function ‘worn_init’; did you mean ‘role_init’? [-Wimplicit-function-declaration]
+  197 |     worn_init();
+      |     ^~~~~~~~~
+      |     role_init
+[ 64%] Building C object CMakeFiles/nethack.dir/src/nle_fast_reset.c.o
+[ 64%] Building C object CMakeFiles/nethack.dir/src/o_init.c.o
+[ 65%] Building C object CMakeFiles/nethack.dir/src/objects.c.o
+[ 65%] Building C object CMakeFiles/nethack.dir/src/objnam.c.o
+[ 66%] Building C object CMakeFiles/nethack.dir/src/options.c.o
+[ 66%] Building C object CMakeFiles/nethack.dir/src/pager.c.o
+[ 67%] Building C object CMakeFiles/nethack.dir/src/pickup.c.o
+[ 67%] Building C object CMakeFiles/nethack.dir/src/pline.c.o
+[ 68%] Building C object CMakeFiles/nethack.dir/src/polyself.c.o
+[ 68%] Building C object CMakeFiles/nethack.dir/src/potion.c.o
+[ 70%] Building C object CMakeFiles/nethack.dir/src/pray.c.o
+[ 70%] Building C object CMakeFiles/nethack.dir/src/priest.c.o
+[ 71%] Building C object CMakeFiles/nethack.dir/src/quest.c.o
+[ 71%] Building C object CMakeFiles/nethack.dir/src/questpgr.c.o
+[ 72%] Building C object CMakeFiles/nethack.dir/src/read.c.o
+[ 73%] Building C object CMakeFiles/nethack.dir/src/rect.c.o
+[ 73%] Building C object CMakeFiles/nethack.dir/src/region.c.o
+[ 74%] Building C object CMakeFiles/nethack.dir/src/restore.c.o
+[ 74%] Building C object CMakeFiles/nethack.dir/src/rip.c.o
+[ 75%] Building C object CMakeFiles/nethack.dir/src/rnd.c.o
+[ 75%] Building C object CMakeFiles/nethack.dir/src/role.c.o
+[ 76%] Building C object CMakeFiles/nethack.dir/src/rumors.c.o
+[ 76%] Building C object CMakeFiles/nethack.dir/src/save.c.o
+[ 77%] Building C object CMakeFiles/nethack.dir/src/shk.c.o
+[ 77%] Building C object CMakeFiles/nethack.dir/src/shknam.c.o
+[ 78%] Building C object CMakeFiles/nethack.dir/src/sit.c.o
+[ 78%] Building C object CMakeFiles/nethack.dir/src/sounds.c.o
+[ 80%] Building C object CMakeFiles/nethack.dir/src/sp_lev.c.o
+[ 80%] Building C object CMakeFiles/nethack.dir/src/spell.c.o
+[ 81%] Building C object CMakeFiles/nethack.dir/src/steal.c.o
+[ 81%] Building C object CMakeFiles/nethack.dir/src/steed.c.o
+[ 82%] Building C object CMakeFiles/nethack.dir/src/sys.c.o
+[ 82%] Building C object CMakeFiles/nethack.dir/src/teleport.c.o
+[ 83%] Building C object CMakeFiles/nethack.dir/src/timeout.c.o
+[ 83%] Building C object CMakeFiles/nethack.dir/src/topten.c.o
+[ 84%] Building C object CMakeFiles/nethack.dir/src/track.c.o
+[ 84%] Building C object CMakeFiles/nethack.dir/src/trap.c.o
+[ 85%] Building C object CMakeFiles/nethack.dir/src/u_init.c.o
+[ 85%] Building C object CMakeFiles/nethack.dir/src/uhitm.c.o
+[ 86%] Building C object CMakeFiles/nethack.dir/src/vault.c.o
+[ 86%] Building C object CMakeFiles/nethack.dir/src/version.c.o
+[ 87%] Building C object CMakeFiles/nethack.dir/src/vision.c.o
+[ 87%] Building C object CMakeFiles/nethack.dir/src/weapon.c.o
+[ 88%] Building C object CMakeFiles/nethack.dir/src/were.c.o
+[ 88%] Building C object CMakeFiles/nethack.dir/src/wield.c.o
+[ 90%] Building C object CMakeFiles/nethack.dir/src/windows.c.o
+[ 90%] Building C object CMakeFiles/nethack.dir/src/wizard.c.o
+[ 91%] Building C object CMakeFiles/nethack.dir/src/worm.c.o
+[ 92%] Building C object CMakeFiles/nethack.dir/src/worn.c.o
+[ 92%] Building C object CMakeFiles/nethack.dir/src/write.c.o
+[ 93%] Building C object CMakeFiles/nethack.dir/src/zap.c.o
+[ 93%] Building C object CMakeFiles/nethack.dir/sys/share/ioctl.c.o
+[ 94%] Building C object CMakeFiles/nethack.dir/sys/share/posixregex.c.o
+[ 94%] Building C object CMakeFiles/nethack.dir/sys/unix/unixmain.c.o
+[ 95%] Building C object CMakeFiles/nethack.dir/sys/unix/unixres.c.o
+[ 95%] Building C object CMakeFiles/nethack.dir/sys/unix/unixunix.c.o
+[ 96%] Building CXX object CMakeFiles/nethack.dir/win/rl/winrl.cc.o
+[ 96%] Building C object CMakeFiles/nethack.dir/win/tty/getline.c.o
+[ 97%] Building C object CMakeFiles/nethack.dir/win/tty/termcap.c.o
+[ 97%] Building C object CMakeFiles/nethack.dir/win/tty/topl.c.o
+[ 98%] Building C object CMakeFiles/nethack.dir/win/tty/wintty.c.o
+[ 98%] Building CXX object CMakeFiles/nethack.dir/src/nle_arena_cpp.cc.o
+[100%] Linking CXX shared library libnethack.so
+[100%] Built target nethack
