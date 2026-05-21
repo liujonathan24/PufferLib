@@ -139,7 +139,8 @@ struct dgn_topology { /* special dungeon levels for speed */
 #define dunlev_reached(x) (dungeons[(x)->dnum].dunlev_ureached)
 
 #include "quest.h"
-E NEARDATA struct q_score quest_status;
+/* quest_status — stage 9' batch C migrated to nle_ctx_t. */
+#define quest_status (*current_nle_ctx->s9c_quest_status_p)
 
 E NEARDATA char pl_character[PL_CSIZ];
 E NEARDATA char pl_race; /* character's race */
@@ -192,11 +193,13 @@ E char lock[];
 E const schar xdir[], ydir[], zdir[];
 
 
-E NEARDATA struct multishot {
+struct multishot {
     int n, i;
     short o;
     boolean s;
-} m_shot;
+};
+/* m_shot — stage 9' batch C migrated to nle_ctx_t. */
+#define m_shot (*current_nle_ctx->s9c_m_shot_p)
 
 /* moves/monstermoves/wailmsg — stage 9' migrated to nle_ctx_t. */
 #define moves        (current_nle_ctx->nle_moves)
@@ -212,7 +215,8 @@ E NEARDATA boolean in_mklev;
 E const int shield_static[];
 
 #include "spell.h"
-E NEARDATA struct spell spl_book[]; /* sized in decl.c */
+/* spl_book — stage 9' batch C migrated to nle_ctx_t. */
+#define spl_book (current_nle_ctx->s9c_spl_book_p)
 
 #include "color.h"
 #ifdef TEXTCOLOR
@@ -259,7 +263,8 @@ E NEARDATA const anything zeroany;   /* init'd and defined in decl.c */
 #define u (*current_nle_ctx->u_ptr)
 /* ubirthday — stage 9' migrated to nle_ctx_t. */
 #define ubirthday (current_nle_ctx->nle_ubirthday)
-E NEARDATA struct u_realtime urealtime;  /* deferred — struct-value, batch C */
+/* urealtime — stage 9' batch C migrated to nle_ctx_t. */
+#define urealtime (*current_nle_ctx->s9c_urealtime_p)
 
 #include "onames.h"
 #ifndef PM_H /* (pm.h has already been included via youprop.h) */
@@ -267,7 +272,8 @@ E NEARDATA struct u_realtime urealtime;  /* deferred — struct-value, batch C *
 #endif
 
 E NEARDATA const struct monst zeromonst; /* for init of new or temp monsters */
-E NEARDATA struct monst youmonst; /* monster details when hero is poly'd */
+/* youmonst — stage 9' batch C migrated to nle_ctx_t. */
+#define youmonst (*current_nle_ctx->s9c_youmonst_p)
 /* mydogs / migrating_mons — stage 9' migrated to nle_ctx_t. */
 #define mydogs         (current_nle_ctx->mydogs_p)
 #define migrating_mons (current_nle_ctx->migrating_mons_p)

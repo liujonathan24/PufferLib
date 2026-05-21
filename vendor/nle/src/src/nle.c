@@ -218,8 +218,25 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         abort();
     }
     /* ubirthday/wailmsg/domove_* — zero is the original init value. */
-    /* spl_book/mvitals/killer/youmonst/m_shot/quest_status/urealtime
-     * deferred to stage 9' batch C (struct-value migration). */
+
+    /* Stage 9' batch C — heap-allocate the per-env struct values that used
+     * to live as file-scope globals in decl.c. calloc'd zero matches the
+     * `= DUMMY` ({0}) initializer at the old definition sites. Spell book
+     * is an array of (MAXSPELL+1) entries. m_shot needs a non-zero
+     * STRANGE_OBJECT for its `.o` field (matches decl.c old initializer). */
+    nle->s9c_m_shot_p       = calloc(1, sizeof(struct multishot));
+    nle->s9c_urealtime_p    = calloc(1, sizeof(struct u_realtime));
+    nle->s9c_quest_status_p = calloc(1, sizeof(struct q_score));
+    nle->s9c_spl_book_p     = calloc(MAXSPELL + 1, sizeof(struct spell));
+    nle->s9c_youmonst_p     = calloc(1, sizeof(struct monst));
+    if (!nle->s9c_m_shot_p || !nle->s9c_urealtime_p
+        || !nle->s9c_quest_status_p || !nle->s9c_spl_book_p
+        || !nle->s9c_youmonst_p) {
+        fprintf(stderr, "init_nle: failed to allocate stage 9' batch C state\n");
+        abort();
+    }
+    nle->s9c_m_shot_p->o = STRANGE_OBJECT;
+    /* mvitals/killer/body-slot-pointers still in dungeon_save (deferred). */
 
     return nle;
 }
@@ -574,16 +591,13 @@ struct nle_dungeon_save {
      * struct-value types with header cascades or worn[] static-init refs.
      * Stays in swap until per-struct heap allocation lands. */
     struct kinfo        killer;
-    struct monst        youmonst;
-    struct u_realtime   urealtime;
     /* body-slot pointers — pinned by worn[] table in worn.c (&uarm etc.) */
     struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu;
     struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
     struct obj         *uamul, *uright, *uleft, *ublindf, *uchain, *uball;
-    struct spell        spl_book[MAXSPELL + 1];
-    struct multishot    m_shot;
     struct mvitals      mvitals[NUMMONS];
-    struct q_score      quest_status;
+    /* youmonst, urealtime, spl_book, m_shot, quest_status migrated direct
+     * to nle_ctx_t (stage 9' batch C). */
     /* migrated direct to nle_ctx_t (stage 9' batches A/B):
      *   invent, uskin, current_wand, thrownobj, kickedobj
      *   migrating_objs, billobjs, mydogs, migrating_mons, apelist
@@ -609,20 +623,18 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->ftrap = ftrap;
     /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     s->tc_gbl_data = tc_gbl_data;
-    /* stage 9' batch C — DEFERRED struct-value swaps. */
+    /* stage 9' batch C — partial migration. youmonst/urealtime/spl_book/
+     * m_shot/quest_status moved direct to nle_ctx_t and no longer need
+     * round-tripping here. Remaining: killer (struct kinfo) and body-slot
+     * pointers (pinned by worn[]) and mvitals[]. */
     s->killer = killer;
-    s->youmonst = youmonst;
-    s->urealtime = urealtime;
     s->uwep = uwep; s->uarm = uarm; s->uswapwep = uswapwep;
     s->uquiver = uquiver; s->uarmu = uarmu;
     s->uarmc = uarmc; s->uarmh = uarmh; s->uarms = uarms;
     s->uarmg = uarmg; s->uarmf = uarmf;
     s->uamul = uamul; s->uright = uright; s->uleft = uleft;
     s->ublindf = ublindf; s->uchain = uchain; s->uball = uball;
-    memcpy(s->spl_book, spl_book, sizeof(s->spl_book));
-    s->m_shot = m_shot;
     memcpy(s->mvitals, mvitals, sizeof(s->mvitals));
-    s->quest_status = quest_status;
     /* invent, uskin, current_wand, thrownobj, kickedobj, migrating_objs,
      * billobjs, mydogs, migrating_mons, apelist migrated direct.
      * ubirthday, moves, monstermoves, wailmsg, domove_* migrated direct. */
@@ -646,20 +658,15 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     ftrap = s->ftrap;
     /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     tc_gbl_data = s->tc_gbl_data;
-    /* stage 9' batch C — DEFERRED struct-value loads. */
+    /* stage 9' batch C — partial migration (see save_to). */
     killer = s->killer;
-    youmonst = s->youmonst;
-    urealtime = s->urealtime;
     uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
     uquiver = s->uquiver; uarmu = s->uarmu;
     uarmc = s->uarmc; uarmh = s->uarmh; uarms = s->uarms;
     uarmg = s->uarmg; uarmf = s->uarmf;
     uamul = s->uamul; uright = s->uright; uleft = s->uleft;
     ublindf = s->ublindf; uchain = s->uchain; uball = s->uball;
-    memcpy(spl_book, s->spl_book, sizeof(s->spl_book));
-    m_shot = s->m_shot;
     memcpy(mvitals, s->mvitals, sizeof(s->mvitals));
-    quest_status = s->quest_status;
     /* Migrated direct (no load needed). */
     /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }

@@ -37,6 +37,10 @@ struct s_level;          /* include/dungeon.h (stage 6') */
 struct stairway;         /* include/dungeon.h (stage 6') */
 struct dest_area;        /* include/dungeon.h (stage 6') */
 struct nhcoord;          /* include/coord.h (stage 6'); typedef'd as `coord` */
+struct multishot;        /* include/decl.h (stage 9' batch C) */
+struct u_realtime;       /* include/you.h (stage 9' batch C) */
+struct q_score;          /* include/quest.h (stage 9' batch C) */
+struct spell;            /* include/spell.h (stage 9' batch C) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -184,6 +188,13 @@ typedef struct nle_globals {
     struct dest_area    *s6_updest_p;         /* macro: updest */
     struct dest_area    *s6_dndest_p;         /* macro: dndest */
     struct nhcoord      *s6_inv_pos_p;        /* macro: inv_pos */
+    /* stage 9' batch C — heap-allocated per-env. Each ctor calloc's in
+     * init_nle; nle_end frees. Replaces the dungeon_save round-trip. */
+    struct multishot    *s9c_m_shot_p;        /* macro: m_shot */
+    struct u_realtime   *s9c_urealtime_p;     /* macro: urealtime */
+    struct q_score      *s9c_quest_status_p;  /* macro: quest_status */
+    struct spell        *s9c_spl_book_p;      /* macro: spl_book (array head) */
+    struct monst        *s9c_youmonst_p;      /* macro: youmonst */
 } nle_ctx_t;
 
 /*

@@ -36,7 +36,7 @@ NEARDATA int in_doagain = 0;
  */
 /* dungeon_topology migrated to nle_ctx_t (stage 6'). Allocated in init_nle. */
 
-NEARDATA struct q_score quest_status = DUMMY;
+/* quest_status — stage 9' batch C migrated to nle_ctx_t. */
 
 NEARDATA int smeq[MAXNROFROOMS + 1] = DUMMY;
 NEARDATA int doorindex = 0;
@@ -90,7 +90,8 @@ const schar zdir[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, -1 };
 
 /* for xname handling of multiple shot missile volleys:
    number of shots, index of current one, validity check, shoot vs throw */
-NEARDATA struct multishot m_shot = { 0, 0, STRANGE_OBJECT, FALSE };
+/* m_shot — stage 9' batch C migrated to nle_ctx_t. Initial value
+ * ({0,0,STRANGE_OBJECT,FALSE}) gets re-set in init_nle. */
 
 /* dungeons[], sp_levchn, upstair, dnstair, upladder, dnladder, sstairs,
  * updest, dndest, inv_pos migrated to nle_ctx_t (stage 6').
@@ -120,7 +121,7 @@ subrooms_init(void)
 {
     subrooms = &rooms[MAXNROFROOMS + 1];
 }
-NEARDATA struct monst youmonst = DUMMY;
+/* youmonst — stage 9' batch C migrated to nle_ctx_t. */
 NEARDATA struct context_info context = DUMMY;
 NEARDATA struct flag flags = DUMMY;
 #ifdef SYSFLAGS
@@ -130,7 +131,7 @@ NEARDATA struct instance_flags iflags = DUMMY;
 /* struct you u migrated to nle_ctx_t (stage 4). Heap-allocated in
  * init_nle, accessed via the `u` macro in decl.h. */
 /* ubirthday migrated direct (stage 9' batch A). */
-NEARDATA struct u_realtime urealtime = DUMMY;  /* deferred (struct-value, batch C). */
+/* urealtime — stage 9' batch C migrated to nle_ctx_t. */
 
 NEARDATA schar lastseentyp[COLNO][ROWNO] = {
     DUMMY
@@ -177,7 +178,7 @@ const int shield_static[SHIELD_COUNT] = {
     S_ss1, S_ss2, S_ss3, S_ss2, S_ss1, S_ss2, S_ss4,
 };
 
-NEARDATA struct spell spl_book[MAXSPELL + 1] = { DUMMY };
+/* spl_book — stage 9' batch C migrated to nle_ctx_t (MAXSPELL+1 entries). */
 
 /* moves/monstermoves/wailmsg migrated direct (stage 9' batch A).
  * Init to 1L,1L,0L deferred to init_nle / c_reset path. */
