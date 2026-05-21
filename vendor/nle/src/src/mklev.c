@@ -148,11 +148,11 @@ boolean is_room;
     croom->hy = hiy;
     croom->rtype = rtype;
     croom->doorct = 0;
-    /* if we're not making a vault, current_nle_ctx->doorindex will still be 0
+    /* if we're not making a vault, doorindex will still be 0
      * if we are, we'll have problems adding niches to the previous room
-     * unless fdoor is at least current_nle_ctx->doorindex
+     * unless fdoor is at least doorindex
      */
-    croom->fdoor = current_nle_ctx->doorindex;
+    croom->fdoor = doorindex;
     croom->irregular = FALSE;
 
     croom->nsubrooms = 0;
@@ -257,7 +257,7 @@ boolean nxcor;
     /* find positions cc and tt for doors in croom and troom
        and direction for a corridor between them */
 
-    if (troom->hx < 0 || croom->hx < 0 || current_nle_ctx->doorindex >= DOORMAX)
+    if (troom->hx < 0 || croom->hx < 0 || doorindex >= DOORMAX)
         return;
     if (troom->lx > croom->hx) {
         dx = 1;
@@ -358,11 +358,11 @@ register struct mkroom *aroom;
     int i;
 
     if (aroom->doorct == 0)
-        aroom->fdoor = current_nle_ctx->doorindex;
+        aroom->fdoor = doorindex;
 
     aroom->doorct++;
 
-    for (tmp = current_nle_ctx->doorindex; tmp > aroom->fdoor; tmp--)
+    for (tmp = doorindex; tmp > aroom->fdoor; tmp--)
         doors[tmp] = doors[tmp - 1];
 
     for (i = 0; i < current_nle_ctx->nroom; i++) {
@@ -376,7 +376,7 @@ register struct mkroom *aroom;
             broom->fdoor++;
     }
 
-    current_nle_ctx->doorindex++;
+    doorindex++;
     doors[aroom->fdoor].x = x;
     doors[aroom->fdoor].y = y;
 }
@@ -491,7 +491,7 @@ int trap_type;
     int dy, xx, yy;
     struct trap *ttmp;
 
-    if (current_nle_ctx->doorindex < DOORMAX) {
+    if (doorindex < DOORMAX) {
         while (vct--) {
             aroom = &rooms[rn2(current_nle_ctx->nroom)];
             if (aroom->rtype != OROOM)
@@ -636,7 +636,7 @@ clear_level_structures()
     rooms[0].hx = -1;
     current_nle_ctx->nsubroom = 0;
     subrooms[0].hx = -1;
-    current_nle_ctx->doorindex = 0;
+    doorindex = 0;
     init_rect();
     init_vault();
     xdnstair = ydnstair = xupstair = yupstair = 0;
@@ -1001,11 +1001,11 @@ mklev()
     if (getbones())
         return;
 
-    current_nle_ctx->in_mklev = TRUE;
+    in_mklev = TRUE;
     makelevel();
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    current_nle_ctx->in_mklev = FALSE;
+    in_mklev = FALSE;
     /* has_morgue gets cleared once morgue is entered; graveyard stays
        set (graveyard might already be set even when has_morgue is clear
        [see fixup_special()], so don't update it unconditionally) */
@@ -1244,7 +1244,7 @@ xchar x, y;
     boolean near_door = bydoor(x, y);
 
     return ((levl[x][y].typ == HWALL || levl[x][y].typ == VWALL)
-            && current_nle_ctx->doorindex < DOORMAX && !near_door);
+            && doorindex < DOORMAX && !near_door);
 }
 
 void
@@ -1252,7 +1252,7 @@ dodoor(x, y, aroom)
 int x, y;
 struct mkroom *aroom;
 {
-    if (current_nle_ctx->doorindex >= DOORMAX) {
+    if (doorindex >= DOORMAX) {
         impossible("DOORMAX exceeded?");
         return;
     }

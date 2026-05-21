@@ -432,9 +432,9 @@ struct obj *corpse;
         /* trick makemon() into allowing monster creation
          * on your location
          */
-        current_nle_ctx->in_mklev = TRUE;
+        in_mklev = TRUE;
         mtmp = makemon(&mons[PM_GHOST], u.ux, u.uy, MM_NONAME);
-        current_nle_ctx->in_mklev = FALSE;
+        in_mklev = FALSE;
         if (!mtmp)
             return;
         mtmp = christen_monst(mtmp, plname);
@@ -442,9 +442,9 @@ struct obj *corpse;
             (void) obj_attach_mid(corpse, mtmp->m_id);
     } else {
         /* give your possessions to the monster you become */
-        current_nle_ctx->in_mklev = TRUE; /* use <u.ux,u.uy> as-is */
+        in_mklev = TRUE; /* use <u.ux,u.uy> as-is */
         mtmp = makemon(&mons[u.ugrave_arise], u.ux, u.uy, NO_MINVENT);
-        current_nle_ctx->in_mklev = FALSE;
+        in_mklev = FALSE;
         if (!mtmp) { /* arise-type might have been genocided */
             drop_upon_death((struct monst *) 0, (struct obj *) 0, u.ux, u.uy);
             u.ugrave_arise = NON_PM; /* in case caller cares */

@@ -147,6 +147,7 @@ add_executable(rlmain "sys/unix/rlmain.cc")
 set_target_properties(rlmain PROPERTIES CXX_STANDARD 11)
 target_link_libraries(rlmain PUBLIC nethackdl)
 target_include_directories(rlmain PUBLIC ${NLE_INC_GEN})
+target_compile_definitions(rlmain PRIVATE NLE_OBJECTS_GLOBAL)
 add_dependencies(rlmain util) # For pm.h.
 
 # pybind11 core python library.

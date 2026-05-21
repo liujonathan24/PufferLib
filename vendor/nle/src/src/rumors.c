@@ -154,7 +154,7 @@ boolean exclude_cookie;
         (void) dlb_fclose(rumors);
         if (count >= 50)
             impossible("Can't find non-cookie rumor?");
-        else if (!current_nle_ctx->in_mklev) /* avoid exercizing wisdom for graffiti */
+        else if (!in_mklev) /* avoid exercizing wisdom for graffiti */
             exercise(A_WIS, (adjtruth > 0));
     } else {
         couldnt_open_file(RUMORFILE);

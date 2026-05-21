@@ -2743,7 +2743,7 @@ struct monst *mtmp;
         return;
     }
     rloc_to(mtmp, mm.x, mm.y);
-    if (!current_nle_ctx->in_mklev && (mtmp->mstrategy & STRAT_APPEARMSG)) {
+    if (!in_mklev && (mtmp->mstrategy & STRAT_APPEARMSG)) {
         mtmp->mstrategy &= ~STRAT_APPEARMSG; /* one chance only */
         if (!couldspot && canspotmon(mtmp))
             pline("%s suddenly %s!", Amonnam(mtmp),

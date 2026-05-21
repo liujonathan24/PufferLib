@@ -21,6 +21,11 @@ char chosen_windowtype[WINTYPELEN];
 
 #ifdef NLE_OBJECTS_GLOBAL
 int bases[MAXOCLASSES];
+/* cluster V build-tool stubs — only used by makedefs/lev_comp linking. */
+NEARDATA int doorindex = 0;
+NEARDATA int in_doagain = 0;
+NEARDATA boolean in_mklev = FALSE;
+NEARDATA coord bhitpos = DUMMY;
 #endif
 /* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
@@ -31,7 +36,7 @@ NEARDATA int nsubroom = 0;
 int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;
 
 
-NEARDATA int in_doagain = 0;
+/* in_doagain — migrated to nle_ctx_t (cluster V). */
 
 /*
  *      The following structure will be initialized at startup time with
@@ -42,7 +47,7 @@ NEARDATA int in_doagain = 0;
 /* quest_status — stage 9' batch C migrated to nle_ctx_t. */
 
 /* smeq — per-env room-equivalence work array, migrated to nle_ctx_t. */
-NEARDATA int doorindex = 0;
+/* doorindex — migrated to nle_ctx_t (cluster V). */
 NEARDATA char *save_cm = 0;
 
 /* killer — stage 9' batch C migrated to nle_ctx_t. */
@@ -101,12 +106,12 @@ const schar zdir[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, -1 };
  * All heap-allocated zero-init in init_nle; equivalent to the previous
  * { 0, 0, { 0, 0 }, 0 } / { 0, ... } / {0,0} static initializers. */
 
-NEARDATA boolean in_mklev = FALSE;
+/* in_mklev — migrated to nle_ctx_t (cluster V). */
 /* weapon picked is merged with wielded one */
 
 /* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */
 
-NEARDATA coord bhitpos = DUMMY;
+/* bhitpos — migrated to nle_ctx_t (cluster V). Allocated in init_nle. */
 /* doors / rooms / subrooms / upstairs_room / dnstairs_room / sstairs_room
  * / ftrap — stage 7' partial migrated to nle_ctx_t (heap, see init_nle).
  * subrooms is initialized to point at rooms[MAXNROFROOMS+1] in init_nle

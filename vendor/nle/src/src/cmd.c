@@ -271,10 +271,10 @@ int xtime;
 
 STATIC_DCL char NDECL(popch);
 
-/* Provide a means to redo the last command.  The flag `current_nle_ctx->in_doagain' is set
+/* Provide a means to redo the last command.  The flag `in_doagain' is set
  * to true while redoing the command.  This flag is tested in commands that
  * require additional input (like `throw' which requires a thing and a
- * direction), and the input prompt is not shown.  Also, while current_nle_ctx->in_doagain is
+ * direction), and the input prompt is not shown.  Also, while in_doagain is
  * TRUE, no keystrokes can be saved into the saveq.
  */
 #define BSIZE 20
@@ -291,7 +291,7 @@ popch()
      */
     if (occupation)
         return '\0';
-    if (current_nle_ctx->in_doagain)
+    if (in_doagain)
         return (char) ((shead != stail) ? saveq[stail++] : '\0');
     else
         return (char) ((phead != ptail) ? pushq[ptail++] : '\0');
@@ -328,7 +328,7 @@ void
 savech(ch)
 char ch;
 {
-    if (!current_nle_ctx->in_doagain) {
+    if (!in_doagain) {
         if (!ch)
             phead = ptail = shead = stail = 0;
         else if (shead < BSIZE)
@@ -4748,11 +4748,11 @@ register char *cmd;
         context.move = FALSE;
         return;
     }
-    if (*cmd == DOAGAIN && !current_nle_ctx->in_doagain && saveq[0]) {
-        current_nle_ctx->in_doagain = TRUE;
+    if (*cmd == DOAGAIN && !in_doagain && saveq[0]) {
+        in_doagain = TRUE;
         stail = 0;
         rhack((char *) 0); /* read and execute command */
-        current_nle_ctx->in_doagain = FALSE;
+        in_doagain = FALSE;
         return;
     }
     /* Special case of *cmd == ' ' handled better below */
@@ -5075,7 +5075,7 @@ const char *s;
     int is_mov;
 
  retry:
-    if (current_nle_ctx->in_doagain || *readchar_queue)
+    if (in_doagain || *readchar_queue)
         dirsym = readchar();
     else
         dirsym = yn_function((s && *s != '^') ? s : "In what direction?",
@@ -5818,7 +5818,7 @@ parse()
     if (foo == Cmd.spkeys[NHKF_ESC]) { /* esc cancels count (TH) */
         clear_nhwindow(WIN_MESSAGE);
         current_nle_ctx->multi = last_multi = 0;
-    } else if (foo == Cmd.spkeys[NHKF_DOAGAIN] || current_nle_ctx->in_doagain) {
+    } else if (foo == Cmd.spkeys[NHKF_DOAGAIN] || in_doagain) {
         current_nle_ctx->multi = last_multi;
     } else {
         last_multi = current_nle_ctx->multi;
@@ -5930,7 +5930,7 @@ readchar()
     if (*readchar_queue)
         sym = *readchar_queue++;
     else
-        sym = current_nle_ctx->in_doagain ? pgetchar() : nh_poskey(&x, &y, &mod);
+        sym = in_doagain ? pgetchar() : nh_poskey(&x, &y, &mod);
 
 #ifdef NR_OF_EOFS
     if (sym == EOF) {

@@ -119,9 +119,9 @@ typedef struct nle_globals {
     /* stage 3f — level-building + input replay state */
     int                 nroom;              /* was decl.c (rooms on current level) */
     int                 nsubroom;           /* was decl.c (subrooms in shop/temple) */
-    int                 doorindex;          /* was decl.c (doors[] write idx) */
-    boolean             in_mklev;           /* was decl.c (inside mklev()) */
-    int                 in_doagain;         /* was decl.c (input replay state) */
+    int                 doorindex_v;        /* macro: doorindex (cluster V) */
+    boolean             in_mklev_v;         /* macro: in_mklev (cluster V) */
+    int                 in_doagain_v;       /* macro: in_doagain (cluster V) */
     /* stage 3g — combat / inventory transient flags */
     boolean             stoned;             /* was decl.c (monster being stoned) */
     boolean             unweapon;           /* was decl.c (player unwielded) */
@@ -136,7 +136,9 @@ typedef struct nle_globals {
     int                 locknum;            /* was decl.c (UNIX simultaneous-user count) */
     long                done_money;         /* was decl.c (cash at death) */
     int                 warn_obj_cnt;       /* was decl.c (warn-mon counter) */
-    /* bhitpos (coord) defer to later — needs coord.h include in nle.h */
+    /* bhitpos — per-env throw/zap impact point. Stored as a pointer so
+     * we can keep coord.h out of nle.h. Allocated in init_nle. */
+    struct nhcoord      *bhitpos_p;
     /* stage 3j — turn loop state (big migration, ~40 callsites) */
     int                 multi;              /* was decl.c (multi-step action counter) */
     /* stage 4 — player state (the big one — ~94 files, hundreds of refs) */

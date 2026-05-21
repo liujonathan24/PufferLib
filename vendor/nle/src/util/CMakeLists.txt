@@ -92,10 +92,12 @@ add_custom_target(util DEPENDS ${MAKEDEFS_HEADERS} recover)
 
 add_executable(tilemap ${NLE_WIN}/share/tilemap.c)
 target_include_directories(tilemap PUBLIC ${NLE_INC} ${NLE_INC_GEN})
+target_compile_definitions(tilemap PRIVATE NLE_OBJECTS_GLOBAL)
 add_dependencies(tilemap util)
 
 add_library(tile OBJECT ${NLE_SRC_GEN}/tile.c)
 target_include_directories(tile PUBLIC ${NLE_INC} ${NLE_INC_GEN})
+target_compile_definitions(tile PRIVATE NLE_OBJECTS_GLOBAL)
 
 # NOTE: util is dependent on these two
 add_dependencies(lev_comp util)

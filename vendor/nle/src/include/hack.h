@@ -170,7 +170,13 @@ typedef struct strbuf {
 #include "decl.h"
 #include "timeout.h"
 
-extern NEARDATA coord bhitpos; /* place where throw or zap hits or stops */
+/* bhitpos — per-env throw/zap hit position. Migrated to nle_ctx_t. */
+#ifdef NLE_OBJECTS_GLOBAL
+extern NEARDATA coord bhitpos;
+#else
+#include "nle.h"
+#define bhitpos (*(coord *) current_nle_ctx->bhitpos_p)
+#endif
 
 /* types of calls to bhit() */
 enum bhit_call_types {

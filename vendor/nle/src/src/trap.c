@@ -5452,7 +5452,7 @@ maybe_finish_sokoban()
 {
     struct trap *t;
 
-    if (Sokoban && !current_nle_ctx->in_mklev) {
+    if (Sokoban && !in_mklev) {
         /* scan all remaining traps, ignoring any created by the hero;
            if this level has no more pits or holes, the current sokoban
            puzzle has been solved */

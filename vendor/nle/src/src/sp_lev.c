@@ -771,7 +771,7 @@ maybe_add_door(x, y, droom)
 int x, y;
 struct mkroom *droom;
 {
-    if (droom->hx >= 0 && current_nle_ctx->doorindex < DOORMAX && inside_room(droom, x, y))
+    if (droom->hx >= 0 && doorindex < DOORMAX && inside_room(droom, x, y))
         add_door(x, y, droom);
 }
 

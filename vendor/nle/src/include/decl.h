@@ -50,7 +50,12 @@ E nhsym warnsyms[WARNCOUNT];
 
 E int x_maze_max, y_maze_max;
 
+/* in_doagain — per-env, migrated to nle_ctx_t (cluster V). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA int in_doagain;
+#else
+#define in_doagain (current_nle_ctx->in_doagain_v)
+#endif
 
 struct dgn_topology { /* special dungeon levels for speed */
     d_level d_oracle_level;
@@ -176,7 +181,12 @@ E const char disclosure_options[];
 
 /* smeq[] — per-env room-equivalence work array migrated to nle_ctx_t. */
 #define smeq (current_nle_ctx->s_smeq_p)
+/* doorindex — per-env, migrated to nle_ctx_t (cluster V). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA int doorindex;
+#else
+#define doorindex (current_nle_ctx->doorindex_v)
+#endif
 E NEARDATA char *save_cm;
 
 struct kinfo {
@@ -218,7 +228,12 @@ struct multishot {
 #define monstermoves (current_nle_ctx->nle_monstermoves)
 #define wailmsg      (current_nle_ctx->nle_wailmsg)
 
+/* in_mklev — per-env, migrated to nle_ctx_t (cluster V). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA boolean in_mklev;
+#else
+#define in_mklev (current_nle_ctx->in_mklev_v)
+#endif
 /* `in_steed_dismounting` migrated to nle_ctx_t (stage 3d) */
 
 /* `has_strong_rngseed` migrated into nle_ctx_t (refactor stage 3a, NLE

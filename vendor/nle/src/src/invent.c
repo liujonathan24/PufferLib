@@ -1653,7 +1653,7 @@ register const char *let, *word;
         cnt = 0;
         cntgiven = FALSE;
         Sprintf(qbuf, "What do you want to %s?", word);
-        if (current_nle_ctx->in_doagain)
+        if (in_doagain)
             ilet = readchar();
         else if (iflags.force_invmenu) {
             /* don't overwrite a possible quitchars */
@@ -1798,12 +1798,12 @@ register const char *let, *word;
         /* verify the chosen object */
         if (!otmp) {
             You("don't have that object.");
-            if (current_nle_ctx->in_doagain)
+            if (in_doagain)
                 return (struct obj *) 0;
             continue;
         } else if (cnt < 0 || otmp->quan < cnt) {
             You("don't have that many!  You have only %ld.", otmp->quan);
-            if (current_nle_ctx->in_doagain)
+            if (in_doagain)
                 return (struct obj *) 0;
             continue;
         }
