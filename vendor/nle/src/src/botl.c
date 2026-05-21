@@ -1011,13 +1011,16 @@ status_finish()
 STATIC_OVL void
 init_blstats()
 {
-    static boolean initalready = FALSE;
+    /* The original `static boolean initalready` tripped under shared-libnethack
+     * vecenv (env 2 saw env 1's TRUE). Moved to per-env on nle_ctx_t so the
+     * once-per-game safety check is preserved across envs. */
     int i, j;
 
-    if (initalready) {
+    if (current_nle_ctx->s_blstats_initalready) {
         impossible("init_blstats called more than once.");
         return;
     }
+    current_nle_ctx->s_blstats_initalready = 1;
     for (i = 0; i <= 1; ++i) {
         for (j = 0; j < MAXBLSTATS; ++j) {
 #ifdef STATUS_HILITES
@@ -1036,7 +1039,7 @@ init_blstats()
 #endif
         }
     }
-    initalready = TRUE;
+    /* initalready already set above (per-env on nle_ctx_t). */
 }
 
 /*

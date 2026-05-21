@@ -974,6 +974,24 @@ register struct trobj *trop;
 {
     struct obj *obj;
     int otyp, i;
+    /* The trobj arrays passed in here (Archeologist[], Monk[], ...) are
+     * file-scope static. ini_inv mutates trop->trquan via --trop->trquan
+     * (and trop->trquan = 1 for weapons). In a single-libnethack vecenv
+     * setup, that mutation persists across envs — env 2 sees env 1's
+     * decremented trquan and ends up with the wrong initial inventory
+     * (zero quantities, wrong-class items, duplicate spellbooks).
+     *
+     * Fix: snapshot onto a stack-local copy and walk that instead. The
+     * buffer lives for the whole function (one stack frame), so trop is
+     * valid until ini_inv returns. */
+    struct trobj _trop_local[24];   /* generous; longest list is ~12 rows */
+    {
+        int n = 0;
+        struct trobj *p = trop;
+        while (p->trclass && n < 23) { _trop_local[n++] = *p; p++; }
+        _trop_local[n] = *p;        /* copy the {0,...} terminator */
+        trop = _trop_local;
+    }
 
     while (trop->trclass) {
         otyp = (int) trop->trotyp;

@@ -283,6 +283,10 @@ typedef struct nle_globals {
     void                *s_blstats_p;
     boolean              s_blinit;
     boolean              s_update_all;
+    /* cluster Z: per-env once-per-game init flags (formerly file-scope
+     * static booleans that tripped in shared-libnethack vecenv when env 2
+     * inherited env 1's TRUE state). */
+    char                 s_blstats_initalready; /* botl.c init_blstats */
     boolean              s_valset[23];        /* MAXBLSTATS */
     void                *s_status_hilites_p;
     /* vision work buffers (vision.c). */
