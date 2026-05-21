@@ -1,7 +1,8 @@
 # NetHack thread-safety refactor — final report
 
-Repo head: `9e431a21` on branch `4.0` (was `6cd3670f`; four heap-
-migration commits were added after the first version of this report).
+Repo head: `dd459f3b` on branch `4.0` (was `6cd3670f`; nine new
+commits added during this session, comprising heap migrations and
+race-fix follow-ups).
 Library under test: `vendor/nle/src/build/libnethack.so`
 rebuilt after every code change. Determinism re-verified against
 `ocean/nethack/golden/golden_seed42_1k.bin` after each rebuild.
@@ -289,6 +290,10 @@ struct nle_dungeon_save {
 ## Final commit list (this refactor session)
 
 ```
+dd459f3b  nle_end: swap_in the env's state before cleanup
+6f94622b  TLS timer_base + serialize the death path
+e76cc552  mons[]: remove NEARDATA so the master monster table is shared
+a2d1e3c9  REFACTOR_REPORT + bench data: linear-scaling happy path
 4a1e8baf  paniclog: drop the fopen/fwrite/fclose under PANICLOG
 66b17fe0  REFACTOR_REPORT: update with heap-migration progress
 9e431a21  Stage 7' partial: heap-migrate rooms/doors/level_info/...
@@ -300,6 +305,40 @@ fe7e9745  Stage 9' batch C: heap-migrate mvitals (struct-tag rename)
 962b40f5  nle.c: skip swap_in/load_from                 (pre-existing)
 ... (12 earlier commits, see REFACTOR_OPTION_B_LOG.md)
 ```
+
+## Race-fix sequence
+
+The 8+ thread bench surfaced three layers of residual shared state.
+Each one was diagnosed via gdb and fixed:
+
+1. **`mons[]` master monster table** (e76cc552). `NEARDATA` made
+   `mons[]` `__thread`, so each OMP thread had its own copy at a
+   different TLS address. Pointer subtraction
+   (`monsndx(ptr) = ptr - mons`) across threads is then UB and
+   manifested as a SIGSEGV in `set_malign`. `mons[]` is read-only
+   in practice, so just dropping `NEARDATA` makes it a single
+   shared table.
+
+2. **`timer_element *timer_base`** in `timeout.c` (6f94622b). A
+   plain process-scope file-static — the bulk-TLS sweep missed it
+   because the type (`timer_element *`) didn't match the
+   conservative regex. Concurrent threads corrupted each other's
+   timer chain → SIGSEGV in `obj_stop_timers`. Marked `__thread`.
+
+3. **Env-death path** (6f94622b). `done_in_by → really_done →
+   display_inventory → tty_end_menu` walks several TTY helpers
+   that retain residual file-scope statics (the condition-text
+   table, menu scratch). Migrating each is the right long-term
+   fix; as an interim, `really_done()` is wrapped in one
+   process-wide `pthread_mutex_t`. Death is rare so contention
+   is negligible.
+
+4. **`nle_end` on the wrong thread** (dd459f3b). Pre-refactor,
+   NetHack state was process-global so `nle_end` could run anywhere.
+   After the TLS migration, calling `nle_end` from a thread that
+   didn't step the env segfaults in `savelev` because the TLS is
+   empty. Fix: `nle_end` now sets `current_nle_ctx = nle` and
+   `nle_swap_in(nle)` before cleanup.
 
 The cheap solution (TLS) gets us part-way. The next mile is
 the heap-per-env work in items 1–4 above — what the user has
