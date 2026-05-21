@@ -64,10 +64,15 @@ struct permonst {
 #endif
 };
 
-/* mons[] is the master list of monster types — semantically read-only,
- * shared across all threads. Marked const so the linker places it in
- * .rodata instead of .data. */
-extern const struct permonst mons[];
+/* mons[] is the master monster table. *Almost* read-only — but
+ * role_init() writes to mons[urole.ldrnum/guardnum/neminum] to set
+ * the quest-leader/guardian/nemesis per-game flags. Those writes
+ * are per-game, so for vecenv (one libnethack across N envs in one
+ * process) this table will need to be per-env. The const-ify attempt
+ * (Cluster J) broke this — role_init crashed when writing to
+ * .data.rel.ro after the dynamic linker made it read-only.
+ * Keeping it non-const for now; per-env migration is the next step. */
+extern struct permonst mons[];
 
 #define VERY_SLOW 3
 #define SLOW_SPEED 9

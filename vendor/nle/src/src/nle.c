@@ -143,6 +143,20 @@ init_nle(FILE *ttyrec, nle_obs *obs)
 {
     nle_ctx_t *nle = calloc(1, sizeof(nle_ctx_t));
 
+    /* Anchor current_nle_ctx to this env BEFORE any macro use. Many of
+     * the inits below (notably the tmt_open(LI, CO, ...) call and any
+     * use of *_init helpers that expand through the macros) deref
+     * current_nle_ctx; if that's still NULL (or stale from another env)
+     * we crash. The pointer must be set first so the macros resolve to
+     * THIS env's fields. */
+    current_nle_ctx = nle;
+
+    /* s8_tcap_p needs to be allocated before LI/CO are read; pre-alloc
+     * and seed it so tmt_open below gets valid dimensions. */
+    nle->s8_tcap_p = calloc(1, sizeof(struct nle_tcap_t));
+    LI = NLE_TERM_LI;
+    CO = NLE_TERM_CO;
+
     nle->ttyrec = ttyrec;
 
 #ifdef NLE_BZ2_TTYRECS
@@ -231,7 +245,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s9c_youmonst_p     = calloc(1, sizeof(struct monst));
     nle->s9c_mvitals_p      = calloc(NUMMONS, sizeof(struct nle_mvitals_t));
     nle->s9c_killer_p       = calloc(1, sizeof(struct kinfo));
-    nle->s8_tcap_p          = calloc(1, sizeof(struct nle_tcap_t));
+    /* s8_tcap_p already calloc'd at top of init_nle (LI/CO needed early). */
     nle->s5_cmd_p           = calloc(1, sizeof(struct cmd));
     nle->s_disco_p          = calloc(NUM_OBJECTS, sizeof(short));
     /* obufs is NUMOBUF * BUFSZ bytes, defined in objnam.c. */
