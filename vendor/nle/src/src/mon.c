@@ -3253,32 +3253,31 @@ struct monst *mon;
     }
 }
 
-static __thread short *animal_list = 0; /* list of PM values for animal monsters */
-static int animal_list_count;
+/* Cluster AF: animal_list / animal_list_count were per-thread __thread
+ * (shared across envs in vecenv). With const mons[], the list is
+ * identical across all envs, so we initialize it process-wide once
+ * (idempotent malloc-leak — never freed) and skip the per-env teardown. */
+static short *animal_list = 0;       /* shared across envs (deterministic, const data) */
+static int    animal_list_count = 0;
 
 void
 mon_animal_list(construct)
 boolean construct;
 {
     if (construct) {
+        if (animal_list) return;       /* already built process-wide */
         short animal_temp[SPECIAL_PM];
         int i, n;
-
-        /* if (animal_list) impossible("animal_list already exists"); */
-
         for (n = 0, i = LOW_PM; i < SPECIAL_PM; i++)
             if (is_animal(&mons[i]))
                 animal_temp[n++] = i;
-        /* if (n == 0) animal_temp[n++] = NON_PM; */
-
         animal_list = (short *) alloc(n * sizeof *animal_list);
         (void) memcpy((genericptr_t) animal_list, (genericptr_t) animal_temp,
                       n * sizeof *animal_list);
         animal_list_count = n;
-    } else { /* release */
-        if (animal_list)
-            free((genericptr_t) animal_list), animal_list = 0;
-        animal_list_count = 0;
+    } else {
+        /* Per-env release intentionally a no-op: the list is shared and
+         * derived from const mons[], so it's safe to leak. */
     }
 }
 

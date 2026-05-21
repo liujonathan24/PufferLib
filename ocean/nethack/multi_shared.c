@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#define NLE_ALLOW_SEEDING
 #include "nleobs.h"
 
 typedef struct nle_ctx nle_ctx_t;
@@ -167,7 +168,13 @@ int main(int argc, char** argv) {
         strncpy(envs[i].settings.options, DEFAULT_OPTIONS, sizeof(envs[i].settings.options) - 1);
         bind_obs(&envs[i]);
 
-        envs[i].ctx = fn_start(&envs[i].obs, NULL, NULL, &envs[i].settings);
+        /* Pass an explicit seed so runs are reproducible. */
+        nle_seeds_init_t seeds;
+        memset(&seeds, 0, sizeof(seeds));
+        seeds.seeds[0] = (unsigned long)(0x12345ULL + i);
+        seeds.seeds[1] = (unsigned long)(0x67890ULL + i);
+        seeds.reseed = 0;
+        envs[i].ctx = fn_start(&envs[i].obs, NULL, &seeds, &envs[i].settings);
         if (!envs[i].ctx) { fprintf(stderr, "nle_start[%d] failed\n", i); return 1; }
         /* Drain welcome screen */
         drain_prompts(&envs[i], fn_step);
