@@ -64,12 +64,10 @@ struct permonst {
 #endif
 };
 
-/* mons[] is the master list of monster types — semantically read-only.
- * NEARDATA was making it __thread, which gave each OMP thread its own
- * copy AND broke `monsndx(ptr) = ptr - mons` when a monster's `data`
- * pointer (set from one thread's mons[]) was later read on another
- * thread. Make it a single shared table. */
-extern struct permonst mons[];
+/* mons[] is the master list of monster types — semantically read-only,
+ * shared across all threads. Marked const so the linker places it in
+ * .rodata instead of .data. */
+extern const struct permonst mons[];
 
 #define VERY_SLOW 3
 #define SLOW_SPEED 9

@@ -101,8 +101,8 @@ void NDECL(monst_init);
  */
 
 #ifndef SPLITMON_2
-/* read-only table; not __thread — see permonst.h comment. */
-struct permonst mons[] = {
+/* read-only table; const + shared across threads (.rodata). */
+const struct permonst mons[] = {
     /*
      * ants
      */
