@@ -27,3 +27,6 @@ idx,sha,short,data,bss,tdata,tbss,total,subject
 25,8f035a62d0281da1e2e9fbfe9f8166d9abaee80e,8f035a62,46292,46016,35074,53992,181374,"Stage 8' completion: heap-migrate tc_gbl_data"
 26,1be6243d61a8be199a4fc90b3661e1f5d6719656,1be6243d,46292,46016,35074,13624,141006,"Stage 7' completion: heap-migrate level (dlevel_t — 40 KB single global)"
 27,f17dd587bd2a511396072134e9c961c2d68dbb12,f17dd587,46292,46016,35074,11496,138878,"Heap-migrate Cmd (struct cmd; 2128 bytes)"
+28,ed0b5b7c876d1b1ccaa0d7075e191a6b06b4edd1,ed0b5b7c,46292,46016,35074,11496,138878,"Globals-vs-commit plot infrastructure (exp_026)"
+34,a75a7581221237ae837c84f8c26a30db6ff58f4d,a75a7581,46292,46016,838,3008,96154,"Cluster F: drop NEARDATA from read-only const tables + finish .objs rename"
+35,49b008ba15f62889322463c573ba28b5ff053d2a,49b008ba,46292,46464,750,2136,95642,"Cluster G: bases; hilites; windowprocs; c_color_names; zeroobj/zeromonst"
