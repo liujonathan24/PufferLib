@@ -693,7 +693,8 @@ enum lev_map_idx {
 struct level_map {
     const char *lev_name;
     enum lev_map_idx lev_idx;
-} level_map[] = { { "air", LM_AIR },
+};
+static const struct level_map level_map[] = { { "air", LM_AIR },
                   { "asmodeus", LM_ASMODEUS },
                   { "astral", LM_ASTRAL },
                   { "baalz", LM_BAALZ },
