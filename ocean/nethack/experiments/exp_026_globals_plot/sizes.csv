@@ -42,3 +42,6 @@ idx,sha,short,data,bss,tdata,tbss,total,subject
 45,cd71fc21f1a1e38523e829d1bc7f091416e61c8e,cd71fc21,5524,12576,750,2136,20986,"Cluster O: heap-migrate compopt (1920 B)"
 46,c69f2680d622b3ba5ba029a8158c2faae1729cd9,c69f2680,4676,12576,750,2136,20138,"Cluster P: tty_procs + rl_procs → const"
 47,b106962b6d78759449c40606b81f4463a88eb60e,b106962b,4292,12576,750,2136,19754,"Cluster Q: heap-migrate urole + urace"
+48,53ad8693cc006c13bb8b27012b0e335e865d9a2c,53ad8693,31812,12576,750,1736,46874,"Cluster V: doorindex/in_doagain/in_mklev/bhitpos → nle_ctx_t"
+49,1e02b4bca9f66091904255ae7015014d808a286e,1e02b4bc,31812,12576,750,1608,46746,"Cluster W: plname/pl_character/pl_race/pl_fruit/tune → nle_ctx_t"
+50,6fc9956d7f35b55f9dbe264bed2395e6e33b30cb,6fc9956d,31812,12576,750,1400,46538,"Cluster X: dogname/catname/horsename/ffruit/save_cm → nle_ctx_t"
