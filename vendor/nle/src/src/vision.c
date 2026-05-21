@@ -1098,11 +1098,7 @@ int row, col;
 /*
  * Variables local to both Algorithms C and D.
  */
-/* Cluster AA: file-scope statics moved per-env to nle_ctx_t. The original
- * file-scope statics broke under shared-libnethack vecenv: if env A yielded
- * mid-view_from (e.g. via a --more-- prompt inside an iflags.status_updates
- * pline), env B's view_from clobbered start_col/step/cs_rows/etc. When env A
- * resumed, left_side/right_side recursed on stale state → infinite loop. */
+/* Cluster AA: file-scope statics moved per-env to nle_ctx_t. */
 #define start_row  (current_nle_ctx->s_vis_start_row)
 #define start_col  (current_nle_ctx->s_vis_start_col)
 #define step       (current_nle_ctx->s_vis_step)
@@ -1111,6 +1107,15 @@ int row, col;
 #define cs_right   (current_nle_ctx->s_vis_cs_right)
 #define vis_func   (current_nle_ctx->s_vis_func)
 #define varg       (current_nle_ctx->s_vis_varg)
+
+/* Cluster AL: per-env vision recursion-depth guard. Legitimate
+ * left_side/right_side recursion is bounded by ROWNO=21. If we exceed
+ * 64 we know we're looping (left_ptrs/right_ptrs corruption from
+ * cross-env state we haven't fully isolated). Bail out gracefully — the
+ * resulting vision frame will be slightly stale for one tick but the
+ * env stays alive and progresses. */
+#define VISION_RECUR_LIMIT 64
+#define vision_recur_depth (current_nle_ctx->s_vision_recur_depth)
 
 /*
  * Both Algorithms C and D use the following macros.
@@ -1744,6 +1749,13 @@ char *limits;       /* points at range limit for current row, or NULL */
     char *row_max = NULL; /* right most */
     int lim_max;          /* right most limit of circle */
 
+    /* Cluster AL: bail on pathological recursion. Depth is reset to 0
+     * at every view_from() entry, so 64 covers ROWNO=21 plus generous
+     * branching. Returning early may leave one tick's vision frame
+     * slightly stale, but keeps the env alive instead of hanging. */
+    if (vision_recur_depth >= VISION_RECUR_LIMIT) return;
+    vision_recur_depth++;
+
     nrow = row + step;
     deeper = good_row(nrow) && (!limits || (*limits >= *(limits + 1)));
     if (!vis_func) {
@@ -1776,7 +1788,15 @@ char *limits;       /* points at range limit for current row, or NULL */
      * change the above assignment so that left and not left_shadow is the
      * variable that gets the shadow.
      */
+    /* Cluster AL: bound the while loop too — corrupted right_ptrs can
+     * cause loc_right to not progress, spinning the loop. COLNO=79 is the
+     * legitimate max; 256 covers it generously. */
+    int _iter = 0;
     while (left <= right_mark) {
+        if (++_iter > 256) {
+            vision_recur_depth--;
+            return;
+        }
         loc_right = right_ptrs[row][left];
         if (loc_right > lim_max)
             loc_right = lim_max;
@@ -2022,6 +2042,10 @@ char *limits;
     char *row_max = NULL; /* right most */
     int lim_min;
 
+    /* Cluster AL: vecenv safety bail (see right_side). */
+    if (vision_recur_depth >= VISION_RECUR_LIMIT) return;
+    vision_recur_depth++;
+
     nrow = row + step;
     deeper = good_row(nrow) && (!limits || (*limits >= *(limits + 1)));
     if (!vis_func) {
@@ -2042,7 +2066,13 @@ char *limits;
     /* This value could be illegal. */
     right_shadow = close_shadow(FROM_LEFT, row, cb_row, cb_col);
 
+    /* Cluster AL: loop iteration cap (see right_side). */
+    int _iter = 0;
     while (right >= left_mark) {
+        if (++_iter > 256) {
+            vision_recur_depth--;
+            return;
+        }
         loc_left = left_ptrs[row][right];
         if (loc_left < lim_min)
             loc_left = lim_min;
@@ -2218,6 +2248,9 @@ genericptr_t arg;
     char *rowp;
     int nrow, left, right, left_row, right_row;
     char *limits;
+
+    /* Cluster AL: reset recursion guard for this view_from call. */
+    vision_recur_depth = 0;
 
     /* Set globals for near_shadow(), far_shadow(), etc. to use. */
     start_col = scol;
@@ -2658,6 +2691,9 @@ genericptr_t arg;
     int left;       /* the left-most visible column */
     int right;      /* the right-most visible column */
     char *limits;   /* range limit for next row */
+
+    /* Cluster AL: reset recursion guard for this view_from call (alg C path). */
+    vision_recur_depth = 0;
 
     /* Set globals for q?_path(), left_side(), and right_side() to use. */
     start_col = scol;

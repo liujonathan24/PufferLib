@@ -332,6 +332,8 @@ typedef struct nle_globals {
     int                  s_pline_in_pline;
     int                  s_inspoteffects;
     int                  s_artifact_nesting;
+    /* cluster AL: vision recursion depth guard. */
+    int                  s_vision_recur_depth;
     /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */

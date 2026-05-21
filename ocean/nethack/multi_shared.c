@@ -132,7 +132,7 @@ static void on_alrm(int sig) {
 }
 int main(int argc, char** argv) {
     signal(SIGALRM, on_alrm);
-    alarm(20);
+    alarm(15);
     int num_envs    = (argc >= 2) ? atoi(argv[1]) : 4;
     long steps_per_env = (argc >= 3) ? atol(argv[2]) : 5000;
     const char* policy = (argc >= 4) ? argv[3] : "random";
@@ -171,8 +171,11 @@ int main(int argc, char** argv) {
         /* Pass an explicit seed so runs are reproducible. */
         nle_seeds_init_t seeds;
         memset(&seeds, 0, sizeof(seeds));
-        seeds.seeds[0] = (unsigned long)(0x12345ULL + i);
-        seeds.seeds[1] = (unsigned long)(0x67890ULL + i);
+        /* For debugging: env 37 in N=128 hangs at t=811. Test in
+         * isolation by passing the same seed env 37 would get. */
+        int seed_i = (getenv("FORCE_SEED_OFFSET")) ? atoi(getenv("FORCE_SEED_OFFSET")) : i;
+        seeds.seeds[0] = (unsigned long)(0x12345ULL + seed_i);
+        seeds.seeds[1] = (unsigned long)(0x67890ULL + seed_i);
         seeds.reseed = 0;
         envs[i].ctx = fn_start(&envs[i].obs, NULL, &seeds, &envs[i].settings);
         if (!envs[i].ctx) { fprintf(stderr, "nle_start[%d] failed\n", i); return 1; }
