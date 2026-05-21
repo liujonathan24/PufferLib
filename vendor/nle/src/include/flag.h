@@ -469,7 +469,9 @@ struct instance_flags {
 
 extern NEARDATA struct flag flags;
 #ifdef SYSFLAGS
-extern NEARDATA struct sysflag sysflags;
+/* sysflags — migrated to nle_ctx_t (per-env). No `.sysflags`
+ * struct-field collisions. */
+#define sysflags (*current_nle_ctx->sysflags_ptr)
 #endif
 /* iflags — instance flags. Migrated to nle_ctx_t (per-env). No
  * `.iflags` struct-field collisions in headers or src/. */

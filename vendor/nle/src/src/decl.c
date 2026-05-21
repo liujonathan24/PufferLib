@@ -125,7 +125,7 @@ subrooms_init(void)
 /* context — migrated to nle_ctx_t (per-game state). */
 NEARDATA struct flag flags = DUMMY;
 #ifdef SYSFLAGS
-NEARDATA struct sysflag sysflags = DUMMY;
+/* sysflags — migrated to nle_ctx_t.sysflags_ptr. */
 #endif
 /* iflags — migrated to nle_ctx_t.iflags_ptr (per-env, heap). */
 /* struct you u migrated to nle_ctx_t (stage 4). Heap-allocated in
