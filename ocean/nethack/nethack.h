@@ -284,73 +284,64 @@ typedef struct Nethack {
 } Nethack;
 
 // ---------------------------------------------------------------------------
-// dlopen-per-instance: copy libnethack.so into a memfd, dlopen that fd
+// Shared libnethack: ONE process-wide dlopen on first env init. All envs
+// share the same library code and use per-env nle_ctx_t* for state. The
+// migration in vendor/nle/src/* moved every per-game global into
+// nle_ctx_t, so a single shared library now supports N envs natively.
+// (Previously each env had its own memfd+dlopen copy as a workaround.)
 // ---------------------------------------------------------------------------
+static void*               g_libnethack_handle = NULL;
+static nle_start_fn        g_fn_start = NULL;
+static nle_step_fn         g_fn_step  = NULL;
+static nle_end_fn          g_fn_end   = NULL;
+static nle_fr_snapshot_fn  g_fn_fr_snapshot = NULL;
+static nle_fr_restore_fn   g_fn_fr_restore  = NULL;
+static nle_fr_destroy_fn   g_fn_fr_destroy  = NULL;
+
 static int nethack_load_lib(Nethack* env) {
     PROF_INIT_IF_NEEDED();
     PROF_START(reload);
-    const char* libpath = getenv("NETHACK_LIBPATH");
-    if (libpath == NULL) libpath = "./vendor/nle/lib/libnethack.so";
-
-    int src = open(libpath, O_RDONLY);
-    if (src < 0) {
-        fprintf(stderr, "nethack: cannot open libnethack at %s: %s\n",
-                libpath, strerror(errno));
-        return -1;
-    }
-    int dst = nethack_memfd_create("libnethack-copy", 0);
-    if (dst < 0) {
-        close(src);
-        fprintf(stderr, "nethack: memfd_create failed: %s\n", strerror(errno));
-        return -1;
-    }
-    char buf[65536];
-    ssize_t n;
-    while ((n = read(src, buf, sizeof(buf))) > 0) {
-        char* p = buf;
-        while (n > 0) {
-            ssize_t w = write(dst, p, n);
-            if (w < 0) {
-                close(src); close(dst);
-                fprintf(stderr, "nethack: write to memfd failed: %s\n", strerror(errno));
-                return -1;
-            }
-            p += w; n -= w;
+    if (!g_libnethack_handle) {
+        const char* libpath = getenv("NETHACK_LIBPATH");
+        if (libpath == NULL) libpath = "./vendor/nle/lib/libnethack.so";
+        // Process-wide single dlopen. RTLD_GLOBAL not needed; symbols are
+        // resolved through the saved handle. No memfd/copy hack: globals
+        // are now per-env via nle_ctx_t.
+        void* h = dlopen(libpath, RTLD_NOW | RTLD_LOCAL);
+        if (h == NULL) {
+            fprintf(stderr, "nethack: dlopen failed: %s\n", dlerror());
+            return -1;
         }
+        g_libnethack_handle = h;
+        g_fn_start = (nle_start_fn)dlsym(h, "nle_start");
+        g_fn_step  = (nle_step_fn) dlsym(h, "nle_step");
+        g_fn_end   = (nle_end_fn)  dlsym(h, "nle_end");
+        if (!g_fn_start || !g_fn_step || !g_fn_end) {
+            fprintf(stderr, "nethack: dlsym missing symbols: %s\n", dlerror());
+            dlclose(h);
+            g_libnethack_handle = NULL;
+            return -1;
+        }
+        g_fn_fr_snapshot = (nle_fr_snapshot_fn) dlsym(h, "nle_fr_snapshot");
+        g_fn_fr_restore  = (nle_fr_restore_fn)  dlsym(h, "nle_fr_restore");
+        g_fn_fr_destroy  = (nle_fr_destroy_fn)  dlsym(h, "nle_fr_destroy");
     }
-    close(src);
-
-    char fdpath[64];
-    snprintf(fdpath, sizeof(fdpath), "/proc/self/fd/%d", dst);
-    // RTLD_LOCAL so each env's copy stays isolated.
-    void* h = dlopen(fdpath, RTLD_NOW | RTLD_LOCAL);
-    if (h == NULL) {
-        close(dst);
-        fprintf(stderr, "nethack: dlopen failed: %s\n", dlerror());
-        return -1;
-    }
-    env->dl_fd = dst;
-    env->dl_handle = h;
-    env->fn_start = (nle_start_fn)dlsym(h, "nle_start");
-    env->fn_step  = (nle_step_fn) dlsym(h, "nle_step");
-    env->fn_end   = (nle_end_fn)  dlsym(h, "nle_end");
-    if (!env->fn_start || !env->fn_step || !env->fn_end) {
-        fprintf(stderr, "nethack: dlsym missing symbols: %s\n", dlerror());
-        dlclose(h);
-        close(dst);
-        return -1;
-    }
-    // Optional fast-reset extension. NULL on the prebuilt unpatched .so.
-    env->fn_fr_snapshot = (nle_fr_snapshot_fn) dlsym(h, "nle_fr_snapshot");
-    env->fn_fr_restore  = (nle_fr_restore_fn)  dlsym(h, "nle_fr_restore");
-    env->fn_fr_destroy  = (nle_fr_destroy_fn)  dlsym(h, "nle_fr_destroy");
+    env->dl_handle = g_libnethack_handle;
+    env->dl_fd     = 0;
+    env->fn_start  = g_fn_start;
+    env->fn_step   = g_fn_step;
+    env->fn_end    = g_fn_end;
+    env->fn_fr_snapshot = g_fn_fr_snapshot;
+    env->fn_fr_restore  = g_fn_fr_restore;
+    env->fn_fr_destroy  = g_fn_fr_destroy;
     PROF_END(reload, PROF_RESET_RELOAD);
     return 0;
 }
 
 static void nethack_unload_lib(Nethack* env) {
-    if (env->dl_handle) { dlclose(env->dl_handle); env->dl_handle = NULL; }
-    if (env->dl_fd > 0) { close(env->dl_fd);       env->dl_fd = 0; }
+    // No per-env dlclose; the library handle is process-wide.
+    env->dl_handle = NULL;
+    env->dl_fd = 0;
     env->fn_start = NULL; env->fn_step = NULL; env->fn_end = NULL;
 }
 
