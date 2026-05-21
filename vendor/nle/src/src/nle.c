@@ -236,6 +236,14 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s_disco_p          = calloc(NUM_OBJECTS, sizeof(short));
     /* obufs is NUMOBUF * BUFSZ bytes, defined in objnam.c. */
     nle->s_obufs_p          = calloc(12 * 256, sizeof(char));
+    /* tty_status is 2 * MAXBLSTATS * sizeof(struct tty_status_fields).
+     * sizeof is opaque here — over-allocate (4096 is plenty for ~1840 B). */
+    nle->s_tty_status_p     = calloc(4096, 1);
+    nle->s_context_p        = calloc(1, sizeof(struct context_info));
+    {
+        extern struct nle_rndmonst_state *rndmonst_state_alloc(void);
+        nle->s_rndmonst_state_p = rndmonst_state_alloc();
+    }
     nle->s7_level_p         = calloc(1, sizeof(dlevel_t));
     nle->s7_rooms_p         = calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
     nle->s7_doors_p         = calloc(DOORMAX, sizeof(coord));
@@ -249,7 +257,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         || !nle->s9c_quest_status_p || !nle->s9c_spl_book_p
         || !nle->s9c_youmonst_p || !nle->s9c_mvitals_p
         || !nle->s9c_killer_p || !nle->s8_tcap_p || !nle->s5_cmd_p
-        || !nle->s_disco_p || !nle->s_obufs_p
+        || !nle->s_disco_p || !nle->s_obufs_p || !nle->s_tty_status_p
+        || !nle->s_context_p || !nle->s_rndmonst_state_p
         || !nle->s7_level_p || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
         || !nle->s7_lastseentyp_p) {

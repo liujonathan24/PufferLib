@@ -3663,10 +3663,14 @@ extern __thread boolean status_activefields[MAXBLSTATS];
 STATIC_DCL int FDECL(condcolor, (long, unsigned long *));
 #endif
 STATIC_DCL int FDECL(condattr, (long, unsigned long *));
-static __thread unsigned long *tty_colormasks;
-static __thread long tty_condition_bits;
-static __thread struct tty_status_fields tty_status[2][MAXBLSTATS]; /* 2: NOW,BEFORE */
-static __thread int hpbar_percent, hpbar_color;
+/* These four were TLS as a thread-safety interim. Migrated to
+ * nle_ctx_t (per-env). */
+#define tty_colormasks      (current_nle_ctx->s_tty_colormasks)
+#define tty_condition_bits  (current_nle_ctx->s_tty_condition_bits)
+#define tty_status          ((struct tty_status_fields (*)[MAXBLSTATS]) \
+                             current_nle_ctx->s_tty_status_p)
+#define hpbar_percent       (current_nle_ctx->s_hpbar_percent)
+#define hpbar_color         (current_nle_ctx->s_hpbar_color)
 static struct condition_t {
     long mask;
     const char *text[3]; /* 3: potential display vals, progressively shorter */

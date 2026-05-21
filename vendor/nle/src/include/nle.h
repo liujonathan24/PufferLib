@@ -49,6 +49,8 @@ struct linfo;            /* include/dungeon.h (stage 7' partial) */
 struct trap;             /* include/trap.h   (stage 7' partial) */
 struct nle_dlevel;       /* include/rm.h     (stage 7' completion) */
 struct cmd;              /* include/flag.h   (Cmd migration) */
+struct context_info;     /* include/context.h (context migration) */
+struct nle_rndmonst_state; /* makemon.c (rndmonst_state migration) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -229,6 +231,14 @@ typedef struct nle_globals {
      * inside the .c file that owns the global). */
     short               *s_disco_p;           /* o_init.c disco[NUM_OBJECTS] */
     char                *s_obufs_p;           /* objnam.c obufs[NUMOBUF][BUFSZ] */
+    char                 s_prevmsg[256];      /* pline.c prevmsg[BUFSZ=256] */
+    void                *s_tty_status_p;      /* wintty.c tty_status[2][MAXBLSTATS] */
+    unsigned long       *s_tty_colormasks;    /* wintty.c tty_colormasks */
+    long                 s_tty_condition_bits; /* wintty.c tty_condition_bits */
+    int                  s_hpbar_percent;     /* wintty.c hpbar_percent */
+    int                  s_hpbar_color;       /* wintty.c hpbar_color */
+    struct context_info *s_context_p;         /* macro: context */
+    struct nle_rndmonst_state *s_rndmonst_state_p; /* makemon.c rndmonst_state */
 } nle_ctx_t;
 
 /*

@@ -13,7 +13,8 @@
 
 /* TLS — per-thread message state. */
 static __thread unsigned pline_flags = 0;
-static __thread char prevmsg[BUFSZ];
+/* prevmsg — per-env message-repeat suppression buffer. */
+#define prevmsg (current_nle_ctx->s_prevmsg)
 
 static void FDECL(putmesg, (const char *));
 static char *FDECL(You_buf, (int));

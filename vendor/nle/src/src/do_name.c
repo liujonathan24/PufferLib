@@ -2094,7 +2094,7 @@ roguename()
                   : "Glenn Wichman";
 }
 
-static NEARDATA const char *const hcolors[] = {
+static const char *const hcolors[] = {
     "ultraviolet", "infrared", "bluish-orange", "reddish-green", "dark white",
     "light black", "sky blue-pink", "salty", "sweet", "sour", "bitter",
     "striped", "spiral", "swirly", "plaid", "checkered", "argyle", "paisley",
@@ -2124,7 +2124,7 @@ rndcolor()
                                            : c_obj_colors[k];
 }
 
-static NEARDATA const char *const hliquids[] = {
+static const char *const hliquids[] = {
     "yoghurt", "oobleck", "clotted blood", "diluted water", "purified water",
     "instant coffee", "tea", "herbal infusion", "liquid rainbow",
     "creamy foam", "mulled wine", "bouillon", "nectar", "grog", "flubber",

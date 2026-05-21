@@ -472,7 +472,7 @@ int *dy, *xx, *yy;
 }
 
 /* there should be one of these per trap, in the same order as trap.h */
-static NEARDATA const char *trap_engravings[TRAPNUM] = {
+static const char *trap_engravings[TRAPNUM] = {
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0,
@@ -596,10 +596,10 @@ clear_level_structures()
              * These used to be '#if MICROPORT_BUG',
              * with use of memset(0) for '#if !MICROPORT_BUG' below,
              * but memset is not appropriate for initializing pointers,
-             * so do these level.objects[][] and level.monsters[][]
+             * so do these level.objs[][] and level.monsters[][]
              * initializations unconditionally.
              */
-            level.objects[x][y] = (struct obj *) 0;
+            level.objs[x][y] = (struct obj *) 0;
             level.monsters[x][y] = (struct monst *) 0;
         }
     }

@@ -144,6 +144,7 @@ struct context_info {
     struct novel_tracking novel;
 };
 
-extern NEARDATA struct context_info context;
+/* context — per-game state migrated to nle_ctx_t. */
+#define context (*current_nle_ctx->s_context_p)
 
 #endif /* CONTEXT_H */

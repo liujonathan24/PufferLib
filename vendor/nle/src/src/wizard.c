@@ -27,7 +27,7 @@ STATIC_DCL unsigned long FDECL(strategy, (struct monst *));
    only four lawful candidates, so lawful summoners tended to summon more
    (trying to get lawful or neutral but obtaining chaotic instead) than
    their chaotic counterparts */
-static NEARDATA const int nasties[] = {
+static const int nasties[] = {
     /* neutral */
     PM_COCKATRICE, PM_ETTIN, PM_STALKER, PM_MINOTAUR,
     PM_OWLBEAR, PM_PURPLE_WORM, PM_XAN, PM_UMBER_HULK,

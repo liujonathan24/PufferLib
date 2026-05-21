@@ -1512,10 +1512,21 @@ register struct permonst *ptr;
     return alshift;
 }
 
-static NEARDATA struct {
+/* rndmonst_state — per-env random-monster choice cache. Migrated to
+ * nle_ctx_t. Initial value (choice_count = -1) re-applied in init_nle. */
+struct nle_rndmonst_state {
     int choice_count;
     char mchoices[SPECIAL_PM]; /* value range is 0..127 */
-} rndmonst_state = { -1, { 0 } };
+};
+#define rndmonst_state (*current_nle_ctx->s_rndmonst_state_p)
+/* Allocator used by init_nle (nle.c doesn't include this file). */
+struct nle_rndmonst_state *
+rndmonst_state_alloc(void)
+{
+    struct nle_rndmonst_state *p = calloc(1, sizeof(*p));
+    if (p) p->choice_count = -1;
+    return p;
+}
 
 /* select a random monster type */
 struct permonst *
@@ -2155,7 +2166,7 @@ register struct monst *mtmp;
 
     if (OBJ_AT(mx, my)) {
         ap_type = M_AP_OBJECT;
-        appear = level.objects[mx][my]->otyp;
+        appear = level.objs[mx][my]->otyp;
     } else if (IS_DOOR(typ) || IS_WALL(typ) || typ == SDOOR || typ == SCORR) {
         ap_type = M_AP_FURNITURE;
         /*

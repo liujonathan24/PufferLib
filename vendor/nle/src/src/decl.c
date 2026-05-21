@@ -119,7 +119,7 @@ subrooms_init(void)
      * directly. Kept so the existing call-site doesn't break. */
 }
 /* youmonst — stage 9' batch C migrated to nle_ctx_t. */
-NEARDATA struct context_info context = DUMMY;
+/* context — migrated to nle_ctx_t (per-game state). */
 NEARDATA struct flag flags = DUMMY;
 #ifdef SYSFLAGS
 NEARDATA struct sysflag sysflags = DUMMY;
