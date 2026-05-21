@@ -467,6 +467,9 @@ struct instance_flags {
 #endif
 #define preload_tiles wc_preload_tiles
 
+/* flags — collision-prone (struct field name in many places like
+ * `lev->flags`, `efp->flags`). Stays as a TLS NEARDATA global for
+ * now; the swap blob still routes it through nle_ctx_t.flags_ptr. */
 extern NEARDATA struct flag flags;
 #ifdef SYSFLAGS
 /* sysflags — migrated to nle_ctx_t (per-env). No `.sysflags`
