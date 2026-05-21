@@ -545,9 +545,12 @@ STATIC_VAR struct istat_s initblstats[MAXBLSTATS] = {
 #undef INIT_BLSTAT
 #undef INIT_THRESH
 
-struct istat_s blstats[2][MAXBLSTATS];
-static boolean blinit = FALSE, update_all = FALSE;
-static boolean valset[MAXBLSTATS];
+/* blstats / blinit / update_all / valset / status_hilites — per-env
+ * bottom-line state migrated to nle_ctx_t. */
+#define blstats ((struct istat_s (*)[MAXBLSTATS]) current_nle_ctx->s_blstats_p)
+#define blinit       (current_nle_ctx->s_blinit)
+#define update_all   (current_nle_ctx->s_update_all)
+#define valset       (current_nle_ctx->s_valset)
 #ifdef STATUS_HILITES
 static __thread long bl_hilite_moves = 0L;
 #endif
@@ -1404,7 +1407,8 @@ int idx;
 /* Core status hiliting support */
 /****************************************************************************/
 
-struct hilite_s status_hilites[MAXBLSTATS];
+/* status_hilites — per-env status hilite table migrated to nle_ctx_t. */
+#define status_hilites ((struct hilite_s *) current_nle_ctx->s_status_hilites_p)
 
 static struct fieldid_t {
     const char *fieldname;

@@ -260,6 +260,30 @@ typedef struct nle_globals {
     int                 *s_bases_p;
     /* per-env terminal color escapes (tty/termcap.c hilites[CLR_MAX]). */
     char               **s_hilites_p;
+    /* display buffer (display.c gbuf_entry[ROWNO][COLNO]) + bookkeeping. */
+    void                *s_gbuf_p;            /* malloc'd ROWNO*COLNO*sizeof(gbuf_entry) */
+    char                 s_gbuf_start[21];    /* ROWNO=21 */
+    char                 s_gbuf_stop[21];
+    /* bottom-line stats (botl.c blstats[2][MAXBLSTATS]) + flags. */
+    void                *s_blstats_p;
+    boolean              s_blinit;
+    boolean              s_update_all;
+    boolean              s_valset[23];        /* MAXBLSTATS */
+    void                *s_status_hilites_p;
+    /* vision work buffers (vision.c). */
+    void                *s_could_see_p;
+    void                *s_viz_clear_p;
+    void                *s_left_ptrs_p;
+    void                *s_right_ptrs_p;
+    char                *s_cs_rows0[21];
+    char                *s_cs_rows1[21];
+    char                 s_cs_rmin0[21];
+    char                 s_cs_rmax0[21];
+    char                 s_cs_rmin1[21];
+    char                 s_cs_rmax1[21];
+    char                *s_viz_clear_rows[21];
+    /* special-level position map (sp_lev.c). */
+    void                *s_SpLev_Map_p;
 } nle_ctx_t;
 
 /*

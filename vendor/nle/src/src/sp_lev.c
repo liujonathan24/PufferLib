@@ -193,7 +193,8 @@ extern struct engr *head_engr;
 extern int min_rx, max_rx, min_ry, max_ry; /* from mkmap.c */
 
 /* positions touched by level elements explicitly defined in the des-file */
-static char SpLev_Map[COLNO][ROWNO];
+/* SpLev_Map — per-env special-level positions migrated to nle_ctx_t. */
+#define SpLev_Map ((char (*)[ROWNO]) current_nle_ctx->s_SpLev_Map_p)
 
 static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
 static NEARDATA xchar xstart, ystart;

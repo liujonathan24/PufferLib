@@ -255,6 +255,19 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s_bases_p       = calloc(MAXOCLASSES, sizeof(int));
     /* CLR_MAX is 16 in the standard build. */
     nle->s_hilites_p     = calloc(16, sizeof(char *));
+    /* Per-env work buffers from various src files. sizes are opaque
+     * here (the struct types are defined in display.h / botl.h /
+     * vision.h, which we deliberately don't pull into nle.h to keep
+     * the util-build include cascade small). Bound generously by
+     * counting bytes. ROWNO=21, COLNO=80, MAXBLSTATS=23. */
+    nle->s_gbuf_p           = calloc(ROWNO * COLNO, 64);   /* gbuf_entry */
+    nle->s_blstats_p        = calloc(2 * 23, 256);          /* struct istat_s */
+    nle->s_status_hilites_p = calloc(23, 256);              /* struct hilite_s */
+    nle->s_could_see_p      = calloc(2 * ROWNO * COLNO, 1);
+    nle->s_viz_clear_p      = calloc(ROWNO * COLNO, 1);
+    nle->s_left_ptrs_p      = calloc(ROWNO * COLNO, 1);
+    nle->s_right_ptrs_p     = calloc(ROWNO * COLNO, 1);
+    nle->s_SpLev_Map_p      = calloc(COLNO * ROWNO, 1);
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                NUM_OBJECTS * sizeof(struct objclass));

@@ -83,16 +83,20 @@ char *viz_rmin, *viz_rmax; /* current vision cs bounds */
 
 /*------ local variables ------*/
 
-static char could_see[2][ROWNO][COLNO]; /* vision work space */
-static char *cs_rows0[ROWNO], *cs_rows1[ROWNO];
-static char cs_rmin0[ROWNO], cs_rmax0[ROWNO];
-static char cs_rmin1[ROWNO], cs_rmax1[ROWNO];
-
-static char viz_clear[ROWNO][COLNO]; /* vision clear/blocked map */
-static char *viz_clear_rows[ROWNO];
-
-static char left_ptrs[ROWNO][COLNO]; /* LOS algorithm helpers */
-static char right_ptrs[ROWNO][COLNO];
+/* All five 2D vision work-buffers migrated to nle_ctx_t. cs_rows0/1
+ * are arrays of pointers — they get populated in vision_init() to point
+ * into could_see; we just move them with the rest. */
+#define could_see ((char (*)[ROWNO][COLNO]) current_nle_ctx->s_could_see_p)
+#define viz_clear ((char (*)[COLNO]) current_nle_ctx->s_viz_clear_p)
+#define left_ptrs ((char (*)[COLNO]) current_nle_ctx->s_left_ptrs_p)
+#define right_ptrs ((char (*)[COLNO]) current_nle_ctx->s_right_ptrs_p)
+#define cs_rows0       (current_nle_ctx->s_cs_rows0)
+#define cs_rows1       (current_nle_ctx->s_cs_rows1)
+#define cs_rmin0       (current_nle_ctx->s_cs_rmin0)
+#define cs_rmax0       (current_nle_ctx->s_cs_rmax0)
+#define cs_rmin1       (current_nle_ctx->s_cs_rmin1)
+#define cs_rmax1       (current_nle_ctx->s_cs_rmax1)
+#define viz_clear_rows (current_nle_ctx->s_viz_clear_rows)
 
 /* Forward declarations. */
 STATIC_DCL void FDECL(fill_point, (int, int));

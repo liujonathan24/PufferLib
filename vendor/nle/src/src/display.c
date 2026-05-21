@@ -1469,9 +1469,11 @@ typedef struct {
     int glyph;
 } gbuf_entry;
 
-static gbuf_entry gbuf[ROWNO][COLNO];
-static char gbuf_start[ROWNO];
-static char gbuf_stop[ROWNO];
+/* gbuf — per-env display buffer migrated to nle_ctx_t.
+ * ROWNO*COLNO entries; macro casts the flat allocation to a 2D pointer. */
+#define gbuf       ((gbuf_entry (*)[COLNO]) current_nle_ctx->s_gbuf_p)
+#define gbuf_start (current_nle_ctx->s_gbuf_start)
+#define gbuf_stop  (current_nle_ctx->s_gbuf_stop)
 
 /* FIXME: This is a dirty hack, because newsym() doesn't distinguish
  * between object piles and single objects, it doesn't mark the location
