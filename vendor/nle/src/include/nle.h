@@ -41,6 +41,7 @@ struct multishot;        /* include/decl.h (stage 9' batch C) */
 struct u_realtime;       /* include/you.h (stage 9' batch C) */
 struct q_score;          /* include/quest.h (stage 9' batch C) */
 struct spell;            /* include/spell.h (stage 9' batch C) */
+struct nle_mvitals_t;    /* include/decl.h (stage 9' batch C) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -195,6 +196,7 @@ typedef struct nle_globals {
     struct q_score      *s9c_quest_status_p;  /* macro: quest_status */
     struct spell        *s9c_spl_book_p;      /* macro: spl_book (array head) */
     struct monst        *s9c_youmonst_p;      /* macro: youmonst */
+    struct nle_mvitals_t *s9c_mvitals_p;      /* macro: mvitals (array head) */
 } nle_ctx_t;
 
 /*

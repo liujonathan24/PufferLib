@@ -197,7 +197,7 @@ NEARDATA char catname[PL_PSIZ] = DUMMY;
 NEARDATA char horsename[PL_PSIZ] = DUMMY;
 char preferred_pet; /* '\0', 'c', 'd', 'n' (none) */
 /* mydogs, migrating_mons, apelist migrated direct (stage 9' batch B). */
-NEARDATA struct mvitals mvitals[NUMMONS];  /* deferred — needs NUMMONS (batch C). */
+/* mvitals — stage 9' batch C migrated to nle_ctx_t (heap, NUMMONS entries). */
 /* domove_attempting, domove_succeeded migrated direct (stage 9' batch A). */
 
 NEARDATA struct c_color_names c_color_names = {

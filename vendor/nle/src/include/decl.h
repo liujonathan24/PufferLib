@@ -278,11 +278,16 @@ E NEARDATA const struct monst zeromonst; /* for init of new or temp monsters */
 #define mydogs         (current_nle_ctx->mydogs_p)
 #define migrating_mons (current_nle_ctx->migrating_mons_p)
 
-E NEARDATA struct mvitals {
+/* The struct tag was 'mvitals' upstream — renamed to nle_mvitals_t to
+ * free the `mvitals` token for the macro below (preprocessor would
+ * otherwise rewrite the tag too). */
+struct nle_mvitals_t {
     uchar born;
     uchar died;
     uchar mvflags;
-} mvitals[NUMMONS];
+};
+/* mvitals — stage 9' batch C migrated to nle_ctx_t (array of NUMMONS). */
+#define mvitals (current_nle_ctx->s9c_mvitals_p)
 
 /* domove_attempting / domove_succeeded — stage 9' migrated to nle_ctx_t. */
 #define domove_attempting (current_nle_ctx->nle_domove_attempting)

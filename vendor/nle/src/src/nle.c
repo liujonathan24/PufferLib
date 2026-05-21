@@ -229,9 +229,10 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s9c_quest_status_p = calloc(1, sizeof(struct q_score));
     nle->s9c_spl_book_p     = calloc(MAXSPELL + 1, sizeof(struct spell));
     nle->s9c_youmonst_p     = calloc(1, sizeof(struct monst));
+    nle->s9c_mvitals_p      = calloc(NUMMONS, sizeof(struct nle_mvitals_t));
     if (!nle->s9c_m_shot_p || !nle->s9c_urealtime_p
         || !nle->s9c_quest_status_p || !nle->s9c_spl_book_p
-        || !nle->s9c_youmonst_p) {
+        || !nle->s9c_youmonst_p || !nle->s9c_mvitals_p) {
         fprintf(stderr, "init_nle: failed to allocate stage 9' batch C state\n");
         abort();
     }
@@ -595,7 +596,7 @@ struct nle_dungeon_save {
     struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu;
     struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
     struct obj         *uamul, *uright, *uleft, *ublindf, *uchain, *uball;
-    struct mvitals      mvitals[NUMMONS];
+    /* mvitals migrated direct to nle_ctx_t (stage 9' batch C). */
     /* youmonst, urealtime, spl_book, m_shot, quest_status migrated direct
      * to nle_ctx_t (stage 9' batch C). */
     /* migrated direct to nle_ctx_t (stage 9' batches A/B):
@@ -634,7 +635,6 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     s->uarmg = uarmg; s->uarmf = uarmf;
     s->uamul = uamul; s->uright = uright; s->uleft = uleft;
     s->ublindf = ublindf; s->uchain = uchain; s->uball = uball;
-    memcpy(s->mvitals, mvitals, sizeof(s->mvitals));
     /* invent, uskin, current_wand, thrownobj, kickedobj, migrating_objs,
      * billobjs, mydogs, migrating_mons, apelist migrated direct.
      * ubirthday, moves, monstermoves, wailmsg, domove_* migrated direct. */
@@ -666,7 +666,6 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     uarmg = s->uarmg; uarmf = s->uarmf;
     uamul = s->uamul; uright = s->uright; uleft = s->uleft;
     ublindf = s->ublindf; uchain = s->uchain; uball = s->uball;
-    memcpy(mvitals, s->mvitals, sizeof(s->mvitals));
     /* Migrated direct (no load needed). */
     /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
