@@ -294,6 +294,7 @@ typedef struct nle_globals {
      * table. Baseline is const in options.c; init_nle calloc's a
      * mutable slot, options.c seeds it from baseline at game init. */
     void                *s_boolopt_p;
+    void                *s_compopt_p;
 } nle_ctx_t;
 
 /*

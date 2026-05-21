@@ -274,8 +274,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s_wheads_p         = calloc(32, sizeof(void *));
     nle->s_wtails_p         = calloc(32, sizeof(void *));
     nle->s_wgrowtime_p      = calloc(32, sizeof(long));
-    /* boolopt baseline is 2088 B. Generous alloc bound. */
+    /* boolopt baseline is 2088 B; compopt is 1920 B. Generous alloc bounds. */
     nle->s_boolopt_p        = calloc(1, 4096);
+    nle->s_compopt_p        = calloc(1, 4096);
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                NUM_OBJECTS * sizeof(struct objclass));

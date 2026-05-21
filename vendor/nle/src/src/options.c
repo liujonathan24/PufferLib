@@ -279,7 +279,7 @@ static const struct Bool_Opt boolopt_baseline[] = {
 
 /* compound options, for option_help() and external programs like Amiga
  * frontend */
-static struct Comp_Opt {
+struct Comp_Opt {
     const char *name, *descr;
     int size; /* for frontends and such allocating space --
                * usually allowed size of data in game, but
@@ -287,7 +287,11 @@ static struct Comp_Opt {
                * typing when game maintains information in
                * a different format */
     int optflags;
-} compopt[] = {
+};
+/* Per-env compound-options table. compopt[k].optflags gets toggled
+ * per game (see line ~6842, options.c). Baseline lives in .rodata;
+ * options.c init copies it into the per-env heap slot. */
+static const struct Comp_Opt compopt_baseline[] = {
     { "align", "your starting alignment (lawful, neutral, or chaotic)", 8,
       DISP_IN_GAME },
     { "align_message", "message window alignment", 20, DISP_IN_GAME }, /*WC*/
@@ -475,6 +479,10 @@ static struct Comp_Opt {
 #endif
     { (char *) 0, (char *) 0, 0, 0 }
 };
+#define COMPOPT_COUNT (sizeof(compopt_baseline) / sizeof(compopt_baseline[0]))
+
+/* Per-env compopt — macro to the heap slot; see init below. */
+#define compopt ((struct Comp_Opt *) current_nle_ctx->s_compopt_p)
 
 #ifdef OPTION_LISTS_ONLY
 #undef static
@@ -719,9 +727,9 @@ initoptions_init()
 #endif
     int i;
 
-    /* Seed the per-env boolopt[] from the const baseline. The addr
-     * patcher below then fills in per-env pointers. */
+    /* Seed the per-env boolopt[] / compopt[] from their const baselines. */
     memcpy(boolopt, boolopt_baseline, sizeof(boolopt_baseline));
+    memcpy(compopt, compopt_baseline, sizeof(compopt_baseline));
 
     /* set up the command parsing */
     reset_commands(TRUE); /* init */
