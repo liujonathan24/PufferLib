@@ -589,7 +589,11 @@ const struct Role roles[] = {
 /* The player's role, created at runtime from initial
  * choices.  This may be munged in role_init().
  */
-struct Role urole = {
+/* urole — per-env role description, set per-game from roles[]
+ * baseline. Migrated to nle_ctx_t. The baseline form (`Undefined`)
+ * isn't needed at runtime since role_init() overwrites; just allocate
+ * zero-init storage in init_nle. */
+static const struct Role urole_baseline = {
     { "Undefined", 0 },
     { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
       { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
@@ -729,7 +733,7 @@ const struct Race races[] = {
 /* The player's race, created at runtime from initial
  * choices.  This may be munged in role_init().
  */
-struct Race urace = {
+static const struct Race urace_baseline = {
     "something",
     "undefined",
     "something",

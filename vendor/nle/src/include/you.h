@@ -169,7 +169,8 @@ struct Role {
 };
 
 extern const struct Role roles[]; /* table of available roles */
-extern struct Role urole;
+/* urole — per-env role description migrated to nle_ctx_t. */
+#define urole (*(struct Role *) current_nle_ctx->s_urole_p)
 #define Role_if(X) (urole.malenum == (X))
 #define Role_switch (urole.malenum)
 
@@ -221,7 +222,8 @@ struct Race {
 };
 
 extern const struct Race races[]; /* Table of available races */
-extern struct Race urace;
+/* urace — per-env race description migrated to nle_ctx_t. */
+#define urace (*(struct Race *) current_nle_ctx->s_urace_p)
 #define Race_if(X) (urace.malenum == (X))
 #define Race_switch (urace.malenum)
 

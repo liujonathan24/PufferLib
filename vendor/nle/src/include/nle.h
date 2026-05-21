@@ -295,6 +295,9 @@ typedef struct nle_globals {
      * mutable slot, options.c seeds it from baseline at game init. */
     void                *s_boolopt_p;
     void                *s_compopt_p;
+    /* per-env role/race description (role.c urole/urace). */
+    void                *s_urole_p;
+    void                *s_urace_p;
 } nle_ctx_t;
 
 /*

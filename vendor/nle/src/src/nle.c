@@ -277,6 +277,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* boolopt baseline is 2088 B; compopt is 1920 B. Generous alloc bounds. */
     nle->s_boolopt_p        = calloc(1, 4096);
     nle->s_compopt_p        = calloc(1, 4096);
+    /* urole / urace (struct Role / struct Race in you.h). Sizes opaque. */
+    nle->s_urole_p          = calloc(1, 512);
+    nle->s_urace_p          = calloc(1, 512);
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                NUM_OBJECTS * sizeof(struct objclass));
