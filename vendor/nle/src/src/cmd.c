@@ -3373,7 +3373,7 @@ int nle_noop() {
 }
 
 /* ordered by command name */
-struct ext_func_tab extcmdlist[] = {
+const struct ext_func_tab extcmdlist[] = {
     { '#', "#", "perform an extended command",
             doextcmd, IFBURIED | GENERALCMD },
     { M('?'), "?", "list all extended commands",

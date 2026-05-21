@@ -470,7 +470,7 @@ static struct Comp_Opt {
 
 extern char configfile[]; /* for messages */
 
-extern struct symparse loadsyms[];
+extern const struct symparse loadsyms[];
 static boolean need_redraw; /* for doset() */
 
 #if defined(TOS) && defined(TEXTCOLOR)
@@ -6338,7 +6338,7 @@ char *buf;
 {
     size_t len = strlen(buf);
     const char *p = index(buf, ':'), *q = index(buf, '=');
-    struct symparse *sp = loadsyms;
+    const struct symparse *sp = loadsyms;
 
     if (!p || (q && q < p))
         p = q;
