@@ -225,6 +225,10 @@ typedef struct nle_globals {
     struct nle_dlevel   *s7_level_p;          /* macro: level */
     /* Cmd — command bindings (struct cmd in flag.h). */
     struct cmd          *s5_cmd_p;            /* macro: Cmd */
+    /* small file-local-static migrations (each defined as a macro
+     * inside the .c file that owns the global). */
+    short               *s_disco_p;           /* o_init.c disco[NUM_OBJECTS] */
+    char                *s_obufs_p;           /* objnam.c obufs[NUMOBUF][BUFSZ] */
 } nle_ctx_t;
 
 /*

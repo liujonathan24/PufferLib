@@ -13,7 +13,8 @@ STATIC_DCL void NDECL(shuffle_all);
 STATIC_DCL boolean FDECL(interesting_to_discover, (int));
 STATIC_DCL char *FDECL(oclass_to_name, (CHAR_P, char *));
 
-static NEARDATA short disco[NUM_OBJECTS] = DUMMY;
+/* disco[] — per-env object discovery list. Migrated to nle_ctx_t. */
+#define disco (current_nle_ctx->s_disco_p)
 
 #ifdef USE_TILES
 STATIC_DCL void NDECL(shuffle_tiles);

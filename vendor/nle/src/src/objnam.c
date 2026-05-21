@@ -78,8 +78,9 @@ register const char *pref;
     return s;
 }
 
-/* manage a pool of BUFSZ buffers, so callers don't have to */
-static char NEARDATA obufs[NUMOBUF][BUFSZ];
+/* manage a pool of BUFSZ buffers, so callers don't have to.
+ * obufs migrated to nle_ctx_t (per-env heap, NUMOBUF*BUFSZ bytes). */
+#define obufs ((char (*)[BUFSZ]) current_nle_ctx->s_obufs_p)
 static __thread int obufidx = 0;
 
 STATIC_OVL char *
@@ -2752,7 +2753,8 @@ struct o_range {
 };
 
 /* wishable subranges of objects */
-STATIC_OVL NEARDATA const struct o_range o_ranges[] = {
+/* read-only table: not __thread, just rodata. */
+STATIC_OVL const struct o_range o_ranges[] = {
     { "bag", TOOL_CLASS, SACK, BAG_OF_TRICKS },
     { "lamp", TOOL_CLASS, OIL_LAMP, MAGIC_LAMP },
     { "candle", TOOL_CLASS, TALLOW_CANDLE, WAX_CANDLE },
@@ -3725,7 +3727,7 @@ struct obj *no_wish;
             del_engr_at(x, y);
             pline("A %s.", (lev->typ == POOL) ? "pool" : "moat");
             /* Must manually make kelp! */
-            water_damage_chain(level.objects[x][y], TRUE);
+            water_damage_chain(level.objs[x][y], TRUE);
             madeterrain = TRUE;
 
         /* also matches "molten lava" */

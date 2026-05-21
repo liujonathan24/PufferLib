@@ -594,10 +594,12 @@ struct levelflags {
 typedef struct nle_dlevel {
     struct rm locations[COLNO][ROWNO];
 #ifndef MICROPORT_BUG
-    struct obj *objects[COLNO][ROWNO];
+    /* Field renamed from `objects` to `objs` to free the `objects`
+     * token for the global-object-table macro. */
+    struct obj *objs[COLNO][ROWNO];
     struct monst *monsters[COLNO][ROWNO];
 #else
-    struct obj *objects[1][ROWNO];
+    struct obj *objs[1][ROWNO];
     char *yuk1[COLNO - 1][ROWNO];
     struct monst *monsters[1][ROWNO];
     char *yuk2[COLNO - 1][ROWNO];
@@ -637,7 +639,7 @@ typedef struct nle_dlevel {
 #define trap_to_defsym(t) (S_arrow_trap + (t) -1)
 #define defsym_to_trap(d) ((d) -S_arrow_trap + 1)
 
-#define OBJ_AT(x, y) (level.objects[x][y] != (struct obj *) 0)
+#define OBJ_AT(x, y) (level.objs[x][y] != (struct obj *) 0)
 /*
  * Macros for encapsulation of level.monsters references.
  */
