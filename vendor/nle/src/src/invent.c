@@ -40,7 +40,9 @@ STATIC_DCL void FDECL(menu_identify, (int));
 STATIC_DCL boolean FDECL(tool_in_use, (struct obj *));
 STATIC_DCL char FDECL(obj_to_let, (struct obj *));
 
-static __thread int lastinvnr = 51; /* 0 ... 51 (never saved&restored) */
+/* Cluster AJ: per-env (was __thread). Inventory menu position. Init to 51
+ * in init_nle to preserve original semantics; calloc'd 0 is harmless too. */
+#define lastinvnr (current_nle_ctx->s_lastinvnr)
 
 /* wizards can wish for venom, which will become an invisible inventory
  * item without this.  putting it in inv_order would mean venom would

@@ -15,7 +15,8 @@ STATIC_OVL void NDECL(placebc_core);
 STATIC_OVL void NDECL(unplacebc_core);
 STATIC_DCL boolean FDECL(check_restriction, (int));
 
-static __thread int bcrestriction = 0;
+/* Cluster AJ: per-env (was __thread). Ball/chain placement restriction. */
+#define bcrestriction (current_nle_ctx->s_bcrestriction)
 #ifdef BREADCRUMBS
 static struct breadcrumbs bcpbreadcrumbs = {0}, bcubreadcrumbs = {0};
 #endif

@@ -2122,7 +2122,8 @@ int dropflag; /* 0==don't drop, 1==drop all, 2==drop weapon */
         clear_bypasses(); /* reset upon final exit */
 }
 
-static __thread int mkot_trap_warn_count = 0;
+/* Cluster AJ: per-env (was __thread). Trap warning counter. */
+#define mkot_trap_warn_count (current_nle_ctx->s_mkot_trap_warn_count)
 
 STATIC_OVL int
 count_surround_traps(x, y)

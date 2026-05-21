@@ -12,9 +12,11 @@
  * structure eventually.
  */
 
-static NhRegion **regions;
-static __thread int n_regions = 0;
-static __thread int max_regions = 0;
+/* Cluster AI: per-env region storage. Was process-global + __thread —
+ * env A's gas clouds leaked into env B's effect-of-being-in-cloud check. */
+#define regions     (*(NhRegion ***)&current_nle_ctx->s_regions)
+#define n_regions   (current_nle_ctx->s_n_regions)
+#define max_regions (current_nle_ctx->s_max_regions)
 
 #define NO_CALLBACK (-1)
 

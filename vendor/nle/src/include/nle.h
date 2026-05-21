@@ -315,6 +315,19 @@ typedef struct nle_globals {
      * sees A's leftover strings (now potentially dangling). */
     char                *s_dfr_pre_msg;
     char                *s_dfr_post_msg;
+    /* cluster AI: region.c per-env region table (gas clouds, force-fields).
+     * Was process-global (regions) + __thread (n/max). Cross-env contamination
+     * was severe — env A's gas cloud could be applied to env B's monsters. */
+    void                *s_regions;       /* NhRegion ** */
+    int                  s_n_regions;
+    int                  s_max_regions;
+    /* cluster AJ: assorted small __thread to per-env. */
+    unsigned             s_pline_flags;
+    int                  s_polearm_range_min;
+    int                  s_polearm_range_max;
+    int                  s_lastinvnr;       /* invent.c menu nrf */
+    int                  s_bcrestriction;   /* ball/chain */
+    int                  s_mkot_trap_warn_count;
     /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */

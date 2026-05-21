@@ -12,7 +12,8 @@
                               * result will then be truncated to BUFSZ-1 */
 
 /* TLS — per-thread message state. */
-static __thread unsigned pline_flags = 0;
+/* Cluster AJ: per-env (was __thread). pline modifier bitfield. */
+#define pline_flags (current_nle_ctx->s_pline_flags)
 /* prevmsg — per-env message-repeat suppression buffer. */
 #define prevmsg (current_nle_ctx->s_prevmsg)
 

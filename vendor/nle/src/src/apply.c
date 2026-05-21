@@ -2950,8 +2950,9 @@ int min_range, max_range;
     return TRUE;
 }
 
-static __thread int polearm_range_min = -1;
-static __thread int polearm_range_max = -1;
+/* Cluster AJ: per-env (was __thread). Polearm targeting bounds. */
+#define polearm_range_min (current_nle_ctx->s_polearm_range_min)
+#define polearm_range_max (current_nle_ctx->s_polearm_range_max)
 
 STATIC_OVL boolean
 get_valid_polearm_position(x, y)
