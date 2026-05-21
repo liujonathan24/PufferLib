@@ -2147,7 +2147,10 @@ void
 spoteffects(pick)
 boolean pick;
 {
-    static int inspoteffects = 0;
+    /* Cluster AK: inspoteffects was a process-wide recursion guard
+     * (function-local static). Under vecenv env A's increment leaked
+     * into env B, making env B skip legitimate spot effects. */
+    #define inspoteffects (current_nle_ctx->s_inspoteffects)
     static coord spotloc;
     static int spotterrain;
     static struct trap *spottrap = (struct trap *) 0;

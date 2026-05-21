@@ -2058,7 +2058,8 @@ void
 retouch_equipment(dropflag)
 int dropflag; /* 0==don't drop, 1==drop all, 2==drop weapon */
 {
-    static int nesting = 0; /* recursion control */
+    /* Cluster AK: per-env recursion guard. */
+    #define nesting (current_nle_ctx->s_artifact_nesting)
     struct obj *obj;
     boolean dropit, had_gloves = (uarmg != 0);
     int had_rings = (!!uleft + !!uright);

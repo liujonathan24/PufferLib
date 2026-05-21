@@ -328,6 +328,10 @@ typedef struct nle_globals {
     int                  s_lastinvnr;       /* invent.c menu nrf */
     int                  s_bcrestriction;   /* ball/chain */
     int                  s_mkot_trap_warn_count;
+    /* cluster AK: function-local static recursion guards (pline.c, hack.c). */
+    int                  s_pline_in_pline;
+    int                  s_inspoteffects;
+    int                  s_artifact_nesting;
     /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */

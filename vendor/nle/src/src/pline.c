@@ -125,7 +125,10 @@ pline
 VA_DECL(const char *, line)
 #endif /* USE_STDARG | USE_VARARG */
 {       /* start of vpline() or of nested block in USE_OLDARG's pline() */
-    static int in_pline = 0;
+    /* Cluster AK: was process-shared function-local static — env A would
+     * leak in_pline=1 across yields into env B's pline, suppressing
+     * legitimate output. Per-env now. */
+    #define in_pline (current_nle_ctx->s_pline_in_pline)
     char pbuf[BIGBUFSZ]; /* will get chopped down to BUFSZ-1 if longer */
     int ln;
     int msgtyp;
