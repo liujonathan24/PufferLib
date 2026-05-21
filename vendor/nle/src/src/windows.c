@@ -47,7 +47,7 @@ extern struct window_procs Gnome_procs;
 extern struct window_procs mswin_procs;
 #endif
 #ifdef RL_GRAPHICS
-extern struct window_procs rl_procs;
+extern const struct window_procs rl_procs;
 #endif
 #ifdef WINCHAIN
 extern struct window_procs chainin_procs;

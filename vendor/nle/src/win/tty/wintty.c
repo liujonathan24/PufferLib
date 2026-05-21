@@ -75,8 +75,8 @@ extern short glyph2tile[];
 
 extern char mapped_menu_cmds[]; /* from options.c */
 
-/* Interface definition, for windows.c */
-struct window_procs tty_procs = {
+/* Interface definition, for windows.c — read-only fn-ptr table. */
+const struct window_procs tty_procs = {
     "tty",
     (0
 #ifdef MSDOS

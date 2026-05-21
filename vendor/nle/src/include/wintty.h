@@ -91,7 +91,7 @@ struct tty_status_fields {
 #endif
 #define NHW_BASE 6
 
-extern struct window_procs tty_procs;
+extern const struct window_procs tty_procs;
 
 /* port specific variable declarations.
  * Stage 10' — these used to be globals in wintty.c/getline.c.
