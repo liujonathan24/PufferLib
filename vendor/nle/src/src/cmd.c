@@ -31,7 +31,7 @@
 STATIC_VAR boolean alt_esc = FALSE;
 #endif
 
-NEARDATA struct cmd Cmd = { 0 }; /* flag.h */
+/* Cmd — migrated to nle_ctx_t (per-env). */
 
 extern const char *hu_stat[];  /* hunger status from eat.c */
 extern const char *enc_stat[]; /* encumbrance status from botl.c */

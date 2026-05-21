@@ -616,6 +616,7 @@ struct cmd {
     char spkeys[NUM_NHKF];
 };
 
-extern NEARDATA struct cmd Cmd;
+/* Cmd — migrated to nle_ctx_t (per-env command bindings). */
+#define Cmd (*current_nle_ctx->s5_cmd_p)
 
 #endif /* FLAG_H */
