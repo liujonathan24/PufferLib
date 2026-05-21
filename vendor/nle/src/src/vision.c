@@ -1110,12 +1110,11 @@ int row, col;
 
 /* Cluster AL: per-env vision recursion-depth guard. Legitimate
  * left_side/right_side recursion is bounded by ROWNO=21. If we exceed
- * 64 we know we're looping (left_ptrs/right_ptrs corruption from
- * cross-env state we haven't fully isolated). Bail out gracefully — the
- * resulting vision frame will be slightly stale for one tick but the
- * env stays alive and progresses. */
+ * 64 we know we're looping. The volatile cast prevents the compiler
+ * from optimizing the guard away based on dataflow analysis of the
+ * recursive call chain. */
 #define VISION_RECUR_LIMIT 64
-#define vision_recur_depth (current_nle_ctx->s_vision_recur_depth)
+#define vision_recur_depth (*(volatile int *)&current_nle_ctx->s_vision_recur_depth)
 
 /*
  * Both Algorithms C and D use the following macros.
