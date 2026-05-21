@@ -79,10 +79,15 @@ STATIC_DCL int FDECL(dump_select_menu, (winid, int, MENU_ITEM_P **));
 STATIC_DCL void FDECL(dump_putstr, (winid, int, const char *));
 #endif /* DUMPLOG */
 
+/* windowprocs is a table of function pointers set ONCE at init time
+ * (windows.c:263 — `windowprocs = *winchoices[i].procs;`) and read
+ * thereafter. Dropping NEARDATA makes it a single process-shared
+ * symbol. Init runs inside `omp critical(nle_init)` so the one-time
+ * write isn't racy. */
 #ifdef HANGUPHANDLING
 volatile
 #endif
-    NEARDATA struct window_procs windowprocs;
+    struct window_procs windowprocs;
 
 #ifdef WINCHAIN
 #define CHAINR(x) , x

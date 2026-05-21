@@ -256,6 +256,10 @@ typedef struct nle_globals {
     int                  s_mbuf_idx;
     /* per-env room-equivalence work array (decl.c smeq[]). */
     int                 *s_smeq_p;            /* size MAXNROFROOMS+1 */
+    /* per-env object-class base-index table (decl.c bases[MAXOCLASSES]). */
+    int                 *s_bases_p;
+    /* per-env terminal color escapes (tty/termcap.c hilites[CLR_MAX]). */
+    char               **s_hilites_p;
 } nle_ctx_t;
 
 /*

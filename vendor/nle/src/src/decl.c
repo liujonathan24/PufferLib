@@ -19,7 +19,10 @@ char *catmore = 0; /* default pager */
 #endif
 char chosen_windowtype[WINTYPELEN];
 
-NEARDATA int bases[MAXOCLASSES] = DUMMY;
+#ifdef NLE_OBJECTS_GLOBAL
+int bases[MAXOCLASSES];
+#endif
+/* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
 NEARDATA int nroom = 0;
 NEARDATA int nsubroom = 0;
@@ -181,10 +184,12 @@ const int shield_static[SHIELD_COUNT] = {
 /* migrating_objs, billobjs migrated direct (stage 9' batch B). */
 
 /* used to zero all elements of a struct obj and a struct monst */
-NEARDATA const struct obj zeroobj = DUMMY;
-NEARDATA const struct monst zeromonst = DUMMY;
+/* zeroobj / zeromonst — read-only sentinels (DUMMY = {0}). Dropped
+ * NEARDATA so they live as a single shared symbol. */
+const struct obj zeroobj = DUMMY;
+const struct monst zeromonst = DUMMY;
 /* used to zero out union any; initializer deliberately omitted */
-NEARDATA const anything zeroany;
+const anything zeroany;
 
 /* originally from dog.c */
 NEARDATA char dogname[PL_PSIZ] = DUMMY;
@@ -195,7 +200,8 @@ char preferred_pet; /* '\0', 'c', 'd', 'n' (none) */
 /* mvitals — stage 9' batch C migrated to nle_ctx_t (heap, NUMMONS entries). */
 /* domove_attempting, domove_succeeded migrated direct (stage 9' batch A). */
 
-NEARDATA struct c_color_names c_color_names = {
+/* c_color_names — read-only color-name table; drop NEARDATA. */
+const struct c_color_names c_color_names = {
     "black",  "amber", "golden", "light blue", "red",   "green",
     "silver", "blue",  "purple", "white",      "orange"
 };

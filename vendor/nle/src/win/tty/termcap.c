@@ -46,13 +46,8 @@ STATIC_OVL char PC = '\0';
 STATIC_VAR char tbuf[512];
 #endif /*TERMLIB*/
 
-#ifdef TEXTCOLOR
-#ifdef TOS
-const char *hilites[CLR_MAX]; /* terminal escapes for the various colors */
-#else /* TOS */
-char NEARDATA *hilites[CLR_MAX]; /* terminal escapes for the various colors */
-#endif /* TOS */
-#endif /* TEXTCOLOR */
+/* hilites — per-env color-escape table migrated to nle_ctx_t. */
+#define hilites (current_nle_ctx->s_hilites_p)
 
 static __thread char *KS = (char *) 0, *KE = (char *) 0; /* keypad sequences */
 static char nullstr[] = "";

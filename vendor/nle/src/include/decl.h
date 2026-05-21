@@ -34,7 +34,13 @@ E char SAVEP[];
 #define WINTYPELEN 16
 E char chosen_windowtype[WINTYPELEN];
 
-E NEARDATA int bases[MAXOCLASSES];
+#ifdef NLE_OBJECTS_GLOBAL
+/* Build-tool view: regular writable global (matches objects[]). */
+E int bases[MAXOCLASSES];
+#else
+/* bases — per-env object-class base-index table migrated to nle_ctx_t. */
+#define bases (current_nle_ctx->s_bases_p)
+#endif
 
 E NEARDATA int nroom;
 E NEARDATA int nsubroom;
@@ -255,10 +261,10 @@ E NEARDATA struct obj *uball;
 #define migrating_objs (current_nle_ctx->migrating_objs_p)
 #define billobjs       (current_nle_ctx->billobjs_p)
 
-E NEARDATA const struct obj zeroobj; /* for init; also, &zeroobj is used
+E const struct obj zeroobj; /* for init; also, &zeroobj is used
                                       * as special value */
 
-E NEARDATA const anything zeroany;   /* init'd and defined in decl.c */
+E const anything zeroany;   /* init'd and defined in decl.c */
 
 #include "you.h"
 /* Player state migrated to nle_ctx_t (stage 4 — was 'struct you u' here).
@@ -277,7 +283,7 @@ E NEARDATA const anything zeroany;   /* init'd and defined in decl.c */
 #include "pm.h"
 #endif
 
-E NEARDATA const struct monst zeromonst; /* for init of new or temp monsters */
+E const struct monst zeromonst; /* for init of new or temp monsters */
 /* youmonst — stage 9' batch C migrated to nle_ctx_t. */
 #define youmonst (*current_nle_ctx->s9c_youmonst_p)
 /* mydogs / migrating_mons — stage 9' migrated to nle_ctx_t. */
@@ -301,11 +307,13 @@ struct nle_mvitals_t {
 #define DOMOVE_WALK         0x00000001
 #define DOMOVE_RUSH         0x00000002
 
-E NEARDATA struct c_color_names {
+/* c_color_names — read-only color-name table; non-TLS, shared. */
+struct c_color_names {
     const char *const c_black, *const c_amber, *const c_golden,
         *const c_light_blue, *const c_red, *const c_green, *const c_silver,
         *const c_blue, *const c_purple, *const c_white, *const c_orange;
-} c_color_names;
+};
+E const struct c_color_names c_color_names;
 #define NH_BLACK c_color_names.c_black
 #define NH_AMBER c_color_names.c_amber
 #define NH_GOLDEN c_color_names.c_golden
