@@ -606,10 +606,6 @@ nle_ctx_t *
 nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
           nle_settings *settings_p)
 {
-    /* Set CO and LI to control ttyrec output size. */
-    CO = NLE_TERM_CO;
-    LI = NLE_TERM_LI;
-
     nle_ctx_t *nle = init_nle(ttyrec, obs);
     nle->settings = *settings_p;
     nle->seeds_init = seed_init;
@@ -619,6 +615,11 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
         make_fcontext(nle->stack.sptr, nle->stack.ssize, mainloop);
 
     current_nle_ctx = nle;
+    /* CO/LI macros expand through current_nle_ctx->s8_tcap_p; must
+     * come AFTER current_nle_ctx is set. (Used to be before init_nle
+     * back when CO/LI were plain globals.) */
+    CO = NLE_TERM_CO;
+    LI = NLE_TERM_LI;
     nle_swap_in(nle);
     fcontext_transfer_t t = jump_fcontext(nle->generatorcontext, NULL);
     nle->generatorcontext = t.ctx;
