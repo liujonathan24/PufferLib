@@ -31,6 +31,13 @@ NEARDATA char pl_character[PL_CSIZ] = DUMMY;
 NEARDATA char pl_race = '\0';
 NEARDATA char pl_fruit[PL_FSIZ] = DUMMY;
 NEARDATA char tune[6] = DUMMY;
+/* cluster X build-tool stubs. */
+NEARDATA char dogname[PL_PSIZ] = DUMMY;
+NEARDATA char catname[PL_PSIZ] = DUMMY;
+NEARDATA char horsename[PL_PSIZ] = DUMMY;
+NEARDATA char *save_cm = 0;
+struct fruit;
+NEARDATA struct fruit *ffruit = (struct fruit *) 0;
 #endif
 /* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
@@ -53,12 +60,12 @@ int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;
 
 /* smeq — per-env room-equivalence work array, migrated to nle_ctx_t. */
 /* doorindex — migrated to nle_ctx_t (cluster V). */
-NEARDATA char *save_cm = 0;
+/* save_cm — migrated to nle_ctx_t (cluster X). */
 
 /* killer — stage 9' batch C migrated to nle_ctx_t. */
 const char *nomovemsg = 0;
 /* plname/pl_character/pl_race/pl_fruit/tune — migrated to nle_ctx_t (cluster W). */
-NEARDATA struct fruit *ffruit = (struct fruit *) 0;
+/* ffruit — migrated to nle_ctx_t (cluster X). */
 
 const char *occtxt = DUMMY;
 const char quitchars[] = " \r\n\033";
@@ -196,9 +203,7 @@ const struct monst zeromonst = DUMMY;
 const anything zeroany;
 
 /* originally from dog.c */
-NEARDATA char dogname[PL_PSIZ] = DUMMY;
-NEARDATA char catname[PL_PSIZ] = DUMMY;
-NEARDATA char horsename[PL_PSIZ] = DUMMY;
+/* dogname/catname/horsename — migrated to nle_ctx_t (cluster X). */
 char preferred_pet; /* '\0', 'c', 'd', 'n' (none) */
 /* mydogs, migrating_mons, apelist migrated direct (stage 9' batch B). */
 /* mvitals — stage 9' batch C migrated to nle_ctx_t (heap, NUMMONS entries). */

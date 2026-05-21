@@ -167,7 +167,12 @@ E NEARDATA char tune[6];
 #define tune         (current_nle_ctx->tune_v)
 #endif
 
+/* ffruit — per-env fruit list head, migrated to nle_ctx_t (cluster X). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA struct fruit *ffruit;
+#else
+#define ffruit (current_nle_ctx->ffruit_v)
+#endif
 
 #define MAXLINFO (MAXDUNGEON * MAXLEVEL)
 /* level_info — stage 7' partial migrated to nle_ctx_t. */
@@ -195,7 +200,12 @@ E NEARDATA int doorindex;
 #else
 #define doorindex (current_nle_ctx->doorindex_v)
 #endif
+/* save_cm — per-env, migrated to nle_ctx_t (cluster X). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char *save_cm;
+#else
+#define save_cm (current_nle_ctx->save_cm_v)
+#endif
 
 struct kinfo {
     struct kinfo *next; /* chain of delayed killers */
@@ -217,9 +227,17 @@ E NEARDATA char plname[PL_NSIZ];
 #else
 #define plname (current_nle_ctx->plname_v)
 #endif
+/* dogname/catname/horsename — per-env pet names, migrated to nle_ctx_t
+ * (cluster X). */
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char dogname[];
 E NEARDATA char catname[];
 E NEARDATA char horsename[];
+#else
+#define dogname   (current_nle_ctx->dogname_v)
+#define catname   (current_nle_ctx->catname_v)
+#define horsename (current_nle_ctx->horsename_v)
+#endif
 E char preferred_pet;
 E const char *occtxt; /* defined when occupation != NULL */
 E const char *nomovemsg;

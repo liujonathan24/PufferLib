@@ -146,6 +146,12 @@ typedef struct nle_globals {
     char                 pl_race_v;
     char                 pl_fruit_v[32];      /* PL_FSIZ */
     char                 tune_v[6];
+    /* cluster X — pet name buffers and a couple of pointers. */
+    char                 dogname_v[63];       /* PL_PSIZ */
+    char                 catname_v[63];
+    char                 horsename_v[63];
+    struct fruit        *ffruit_v;
+    char                *save_cm_v;
     /* stage 3j — turn loop state (big migration, ~40 callsites) */
     int                 multi;              /* was decl.c (multi-step action counter) */
     /* stage 4 — player state (the big one — ~94 files, hundreds of refs) */
