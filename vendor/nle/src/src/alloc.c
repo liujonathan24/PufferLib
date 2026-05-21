@@ -37,7 +37,9 @@ extern void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2);
 
 /* Arena: 512 MB of address space, lazily backed by physical pages on first
  * touch. Bump-allocated. Aligned 16 bytes per allocation. */
-#define NLE_ARENA_SIZE ((size_t) 64 * 1024 * 1024)
+/* Bumped from 64 MB → 1 GB to accommodate large vecenv N (~128+). Mmap
+ * is lazy so unused pages cost nothing; only touched pages cost RAM. */
+#define NLE_ARENA_SIZE ((size_t) 1024 * 1024 * 1024)
 #define NLE_ARENA_ALIGN 16
 
 /* Exported so nle_fast_reset.c can snapshot the live portion. */

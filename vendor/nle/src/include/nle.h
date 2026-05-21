@@ -305,6 +305,11 @@ typedef struct nle_globals {
      * holds the globals → "extract_nexthere: object lost" panic. */
     void                *s_timer_base;            /* timer_element * */
     unsigned long        s_timer_id;
+    /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
+     * if env A yields mid-recalc, env B overwrites these. (viz_array
+     * itself already moved to nle_ctx_t->vision_array in stage 8'.) */
+    char                *s_viz_rmin;
+    char                *s_viz_rmax;
     boolean              s_valset[23];        /* MAXBLSTATS */
     void                *s_status_hilites_p;
     /* vision work buffers (vision.c). */

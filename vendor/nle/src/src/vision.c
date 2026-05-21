@@ -72,14 +72,10 @@ char circle_start[] = {
 
 /*------ global variables ------*/
 
-#if 0 /* (moved to decl.c) */
-/* True if we need to run a full vision recalculation. */
-boolean vision_full_recalc = 0;
-
-/* Pointers to the current vision array. */
-char    **viz_array;
-#endif
-char *viz_rmin, *viz_rmax; /* current vision cs bounds */
+/* viz_array is already a per-env macro in vision.h (stage 8'). Migrate
+ * viz_rmin/viz_rmax similarly. cluster AD. */
+#define viz_rmin  (current_nle_ctx->s_viz_rmin)
+#define viz_rmax  (current_nle_ctx->s_viz_rmax)
 
 /*------ local variables ------*/
 
