@@ -882,10 +882,16 @@ const char *string UNUSED;
 /* genl backward compat stuff                                               */
 /****************************************************************************/
 
-const char *status_fieldnm[MAXBLSTATS];
-const char *status_fieldfmt[MAXBLSTATS];
-char *status_vals[MAXBLSTATS];
-boolean status_activefields[MAXBLSTATS];
+/* These four arrays are touched on every status update and on every
+ * env-death tty walk. They were process-global, which races between
+ * threads stepping different envs concurrently. status_vals also
+ * holds malloc'd pointers per env, so two envs would overwrite each
+ * other's allocations. TLS each, per-thread isolation matches the
+ * NEARDATA pattern used elsewhere in the refactor. */
+__thread const char *status_fieldnm[MAXBLSTATS];
+__thread const char *status_fieldfmt[MAXBLSTATS];
+__thread char *status_vals[MAXBLSTATS];
+__thread boolean status_activefields[MAXBLSTATS];
 
 void
 genl_status_init()
