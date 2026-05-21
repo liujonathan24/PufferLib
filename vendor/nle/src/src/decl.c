@@ -78,7 +78,7 @@ const char *alllevels = "levels.*";
 const char *allbones = "bones*.*";
 #endif
 
-struct linfo level_info[MAXLINFO];
+/* level_info — stage 7' partial migrated to nle_ctx_t (MAXLINFO entries). */
 
 /* struct sinfo program_state migrated to nle_ctx_t (refactor stage 3b). */
 
@@ -104,22 +104,20 @@ NEARDATA boolean in_mklev = FALSE;
 /* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */
 
 NEARDATA coord bhitpos = DUMMY;
-NEARDATA coord doors[DOORMAX] = { DUMMY };
+/* doors / rooms / subrooms / upstairs_room / dnstairs_room / sstairs_room
+ * / ftrap — stage 7' partial migrated to nle_ctx_t (heap, see init_nle).
+ * subrooms is initialized to point at rooms[MAXNROFROOMS+1] in init_nle
+ * directly (no longer needs the per-startup subrooms_init() shim). */
+NEARDATA dlevel_t level; /* level map — stage 7' deferred: macro pattern
+                            is blocked by the `level` token also being a
+                            struct field name in context.h, so the
+                            symbol-rename approach is the next step. */
 
-NEARDATA struct mkroom rooms[(MAXNROFROOMS + 1) * 2] = { DUMMY };
-/* `&rooms[MAXNROFROOMS+1]` is no longer constant under __thread. Init
- * deferred to subrooms_init() (called from init_nle). */
-NEARDATA struct mkroom *subrooms;
-NEARDATA struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
-
-NEARDATA dlevel_t level; /* level map */
-NEARDATA struct trap *ftrap = (struct trap *) 0;
-
-/* Stage 5 Option-A: patch subrooms once at startup. Called from init_nle. */
 void
 subrooms_init(void)
 {
-    subrooms = &rooms[MAXNROFROOMS + 1];
+    /* no-op retained: init_nle now points subrooms at rooms[MAXNROFROOMS+1]
+     * directly. Kept so the existing call-site doesn't break. */
 }
 /* youmonst — stage 9' batch C migrated to nle_ctx_t. */
 NEARDATA struct context_info context = DUMMY;
@@ -133,9 +131,7 @@ NEARDATA struct instance_flags iflags = DUMMY;
 /* ubirthday migrated direct (stage 9' batch A). */
 /* urealtime — stage 9' batch C migrated to nle_ctx_t. */
 
-NEARDATA schar lastseentyp[COLNO][ROWNO] = {
-    DUMMY
-}; /* last seen/touched dungeon typ */
+/* lastseentyp — stage 7' partial migrated to nle_ctx_t. */
 
 /* Body-slot pointers deferred to stage 9' batch C
  * (worn[] table in worn.c has &uarm etc. — static-init needs rewrite). */

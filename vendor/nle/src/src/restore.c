@@ -1071,7 +1071,11 @@ boolean ghostly;
     restcemetery(fd, &level.bonesinfo);
     rest_levl(fd,
               (boolean) ((sfrestinfo.sfi1 & SFI1_RLECOMP) == SFI1_RLECOMP));
-    mread(fd, (genericptr_t) lastseentyp, sizeof(lastseentyp));
+    /* sizeof(lastseentyp) used to give COLNO*ROWNO*sizeof(schar) when
+     * lastseentyp was an array global; after stage 7' it is a macro
+     * resolving to a `schar *` whose sizeof is pointer-sized. Use the
+     * literal byte count. */
+    mread(fd, (genericptr_t) lastseentyp, COLNO * ROWNO * sizeof(schar));
     mread(fd, (genericptr_t) &omoves, sizeof(omoves));
     elapsed = monstermoves - omoves;
     mread(fd, (genericptr_t) &upstair, sizeof(stairway));
@@ -1082,7 +1086,8 @@ boolean ghostly;
     mread(fd, (genericptr_t) &updest, sizeof(dest_area));
     mread(fd, (genericptr_t) &dndest, sizeof(dest_area));
     mread(fd, (genericptr_t) &level.flags, sizeof(level.flags));
-    mread(fd, (genericptr_t) doors, sizeof(doors));
+    /* stage 7': `doors` is now a `coord *` macro, not an array. */
+    mread(fd, (genericptr_t) doors, DOORMAX * sizeof(coord));
     rest_rooms(fd); /* No joke :-) */
     if (current_nle_ctx->nroom)
         current_nle_ctx->doorindex = rooms[current_nle_ctx->nroom - 1].fdoor + rooms[current_nle_ctx->nroom - 1].doorct;

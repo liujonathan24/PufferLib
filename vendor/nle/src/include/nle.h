@@ -43,6 +43,9 @@ struct q_score;          /* include/quest.h (stage 9' batch C) */
 struct spell;            /* include/spell.h (stage 9' batch C) */
 struct nle_mvitals_t;    /* include/decl.h (stage 9' batch C) */
 struct kinfo;            /* include/decl.h (stage 9' batch C) */
+struct mkroom;           /* include/mkroom.h (stage 7' partial) */
+struct linfo;            /* include/dungeon.h (stage 7' partial) */
+struct trap;             /* include/trap.h   (stage 7' partial) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -199,6 +202,18 @@ typedef struct nle_globals {
     struct monst        *s9c_youmonst_p;      /* macro: youmonst */
     struct nle_mvitals_t *s9c_mvitals_p;      /* macro: mvitals (array head) */
     struct kinfo        *s9c_killer_p;        /* macro: killer */
+    /* stage 7' partial — easy items from the current-level swap bundle
+     * that don't have the `level` token-collision problem. All heap-
+     * allocated in init_nle. */
+    struct mkroom       *s7_rooms_p;          /* macro: rooms; size (MAXNROFROOMS+1)*2 */
+    struct nhcoord      *s7_doors_p;          /* macro: doors; size DOORMAX */
+    struct linfo        *s7_level_info_p;     /* macro: level_info; size MAXLINFO */
+    schar               *s7_lastseentyp_p;    /* macro: lastseentyp; size COLNO*ROWNO */
+    struct mkroom       *s7_subrooms;         /* macro: subrooms (just a pointer) */
+    struct mkroom       *s7_upstairs_room;    /* macro: upstairs_room */
+    struct mkroom       *s7_dnstairs_room;    /* macro: dnstairs_room */
+    struct mkroom       *s7_sstairs_room;     /* macro: sstairs_room */
+    struct trap         *s7_ftrap;            /* macro: ftrap */
 } nle_ctx_t;
 
 /*

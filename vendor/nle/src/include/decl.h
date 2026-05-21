@@ -151,7 +151,8 @@ E NEARDATA struct fruit *ffruit;
 E NEARDATA char tune[6];
 
 #define MAXLINFO (MAXDUNGEON * MAXLEVEL)
-E struct linfo level_info[MAXLINFO];
+/* level_info — stage 7' partial migrated to nle_ctx_t. */
+#define level_info (current_nle_ctx->s7_level_info_p)
 
 /* `struct sinfo program_state` moved to nle_ctx_t (refactor stage 3b).
  * Definition of struct sinfo is now in nle.h. Callers use

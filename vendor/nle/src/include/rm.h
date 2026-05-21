@@ -608,7 +608,12 @@ typedef struct {
     struct levelflags flags;
 } dlevel_t;
 
-extern NEARDATA schar lastseentyp[COLNO][ROWNO]; /* last seen/touched dungeon typ */
+/* lastseentyp — stage 7' partial migrated to nle_ctx_t (flat array of
+ * COLNO*ROWNO schars). The macro returns a `schar *`, and indexing as
+ * lastseentyp[x][y] no longer works; callsites that used the [x][y]
+ * form are NOT yet migrated — only the 2D layout was here, so we
+ * preserve it with a typed pointer-to-array macro. */
+#define lastseentyp ((schar (*)[ROWNO]) current_nle_ctx->s7_lastseentyp_p)
 
 extern NEARDATA dlevel_t level; /* structure describing the current level */
 
