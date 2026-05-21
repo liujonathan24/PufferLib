@@ -310,6 +310,11 @@ typedef struct nle_globals {
      * vision_recalc → impossible objects on the wrong levels →
      * eventual cascade in left_ptrs causing infinite recursion. */
     void                *s_light_base;            /* light_source * */
+    /* cluster AH: deferred-goto messages (do.c). Were __thread;
+     * env A schedules level change with messages, env B's deferred_goto
+     * sees A's leftover strings (now potentially dangling). */
+    char                *s_dfr_pre_msg;
+    char                *s_dfr_post_msg;
     /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */

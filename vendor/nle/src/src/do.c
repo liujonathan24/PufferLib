@@ -1711,8 +1711,11 @@ final_level()
     gain_guardian_angel();
 }
 
-static __thread char *dfr_pre_msg = 0,  /* pline() before level change */
-            *dfr_post_msg = 0; /* pline() after level change */
+/* Cluster AH: per-env (was __thread). Affects level-change pline() between
+ * the schedule_goto() and deferred_goto() calls; env A's strings would
+ * leak into env B's level change. */
+#define dfr_pre_msg  (current_nle_ctx->s_dfr_pre_msg)
+#define dfr_post_msg (current_nle_ctx->s_dfr_post_msg)
 
 /* change levels at the end of this turn, after monsters finish moving */
 void
