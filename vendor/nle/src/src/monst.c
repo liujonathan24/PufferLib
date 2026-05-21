@@ -101,7 +101,8 @@ void NDECL(monst_init);
  */
 
 #ifndef SPLITMON_2
-NEARDATA struct permonst mons[] = {
+/* read-only table; not __thread — see permonst.h comment. */
+struct permonst mons[] = {
     /*
      * ants
      */
