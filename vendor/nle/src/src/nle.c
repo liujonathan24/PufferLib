@@ -806,6 +806,15 @@ nle_step(nle_ctx_t *nle, nle_obs *obs)
 void
 nle_end(nle_ctx_t *nle)
 {
+    /* nle_end may run on a thread that didn't step this env. The TLS
+     * NetHack globals on the calling thread are empty / stale. Anchor
+     * current_nle_ctx and swap the env's state into TLS so the
+     * freedynamicdata / savelev cleanup walk sees this env's level,
+     * flags, etc. Without this, calling nle_end from the main thread
+     * (as the bench does) segfaults in savelev on a non-OMP-worker
+     * thread. */
+    current_nle_ctx = nle;
+    nle_swap_in(nle);
     if (!nle->done) {
         /* Reset without closing nethack. Need free memory, etc.
          * this is what nh_terminate in end.c does. I hope it's enough. */
