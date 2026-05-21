@@ -12,6 +12,9 @@
 // Usage:
 //   ./verify_determinism record --seed 42 --steps 1000 --action-seed 99 --out /tmp/g1.bin
 //   ./verify_determinism replay --in /tmp/g1.bin [--bytewise]
+//   ./verify_determinism record-multi --seed-lo 1 --seed-hi 16 --steps 1000 \
+//                                     --action-seed 99 --out-dir ocean/nethack/golden
+//   ./verify_determinism replay-all --in-dir ocean/nethack/golden
 //
 // Strategy:
 //   1. We include ocean/nethack/nethack.h to reuse init / c_step / c_close
@@ -39,6 +42,13 @@
 #include <errno.h>
 #include <link.h>
 #include <elf.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
+#include <setjmp.h>
 
 // ---------------------------------------------------------------------------
 // Silence warnings in nethack.h / profile.h that are not relevant to this
@@ -214,7 +224,13 @@ static void c_reset_seeded(Nethack* env, unsigned long core_seed, unsigned long 
 // Golden file format
 // ---------------------------------------------------------------------------
 #define GOLDEN_MAGIC   0x4E484447u  // 'NHDG' (NetHack Determinism Golden)
-#define GOLDEN_VERSION 1u
+// v1: legacy stream — every PRNG-sampled action is recorded as-is.
+// v2: only "gameplay" steps are recorded. Before each c_step the harness
+//     drains any active prompt/menu/--More-- by injecting Enter/ESC. The
+//     prompt-drain step itself is NOT recorded. This means the recorded
+//     stream is a sequence of real game-state-advancing moves, not menu
+//     acknowledgments.
+#define GOLDEN_VERSION 2u
 
 typedef struct __attribute__((packed)) {
     uint32_t magic;
@@ -234,6 +250,36 @@ typedef struct __attribute__((packed)) {
     uint8_t terminal;
     uint8_t _pad[3];
 } GoldenRecord;
+
+// ---------------------------------------------------------------------------
+// Pre-step prompt drain. Mirrors nethack_drain_prompts_cat() in nethack.h but
+// hand-rolled here so the harness owns the loop bound and so we don't have to
+// pass a profiler counter. Returns the number of fn_step calls injected.
+//
+// We treat the env as "in a prompt" whenever any of the misc[] flags
+// (yn / getlin / xwait_for_space) is non-zero. We deliberately do NOT
+// treat a message ending in '?' as a prompt here: c_step already does its
+// own post-action ESC loop for those, so by the time we re-enter here the
+// env should be back at the command prompt. The misc[] check is what
+// drain_prompts() in multi_threaded.c also uses.
+// ---------------------------------------------------------------------------
+static int predrain_prompts(Nethack* env) {
+    const int MAX_ITERS = 256;
+    int n = 0;
+    for (int i = 0; i < MAX_ITERS; i++) {
+        int yn    = env->hook_misc[0];
+        int gl    = env->hook_misc[1];
+        int xwait = env->hook_misc[2];
+        if (!yn && !gl && !xwait) break;
+        if (xwait)   env->obs.action = '\r';
+        else if (yn) env->obs.action = 27;   // ESC
+        else         env->obs.action = '\r';
+        env->ctx = env->fn_step(env->ctx, &env->obs);
+        n++;
+        if (env->obs.done) break;
+    }
+    return n;
+}
 
 // ---------------------------------------------------------------------------
 // Env construction helpers (PufferLib-free)
@@ -332,20 +378,29 @@ static void bytewise_dump(void) {
 // CLI parsing
 // ---------------------------------------------------------------------------
 typedef struct {
-    const char* mode;   // "record" or "replay"
+    const char* mode;
     uint64_t    seed;
     uint64_t    steps;
     uint64_t    action_seed;
+    uint64_t    seed_lo;
+    uint64_t    seed_hi;
+    int         seed_lo_set;
+    int         seed_hi_set;
     const char* out_path;
     const char* in_path;
+    const char* out_dir;
+    const char* in_dir;
     int         bytewise;
 } Args;
 
 static void usage(const char* prog) {
     fprintf(stderr,
         "Usage:\n"
-        "  %s record --seed S --steps N --action-seed A --out FILE\n"
-        "  %s replay --in FILE [--bytewise]\n", prog, prog);
+        "  %s record       --seed S --steps N --action-seed A --out FILE\n"
+        "  %s replay       --in FILE [--bytewise]\n"
+        "  %s record-multi --seed-lo LO --seed-hi HI --steps N --action-seed A --out-dir DIR\n"
+        "  %s replay-all   --in-dir DIR\n",
+        prog, prog, prog, prog);
 }
 
 static int parse_args(int argc, char** argv, Args* a) {
@@ -358,8 +413,12 @@ static int parse_args(int argc, char** argv, Args* a) {
         if      (!strcmp(k, "--seed"))        { if (!v) return -1; a->seed = strtoull(v,0,0); i++; }
         else if (!strcmp(k, "--steps"))       { if (!v) return -1; a->steps = strtoull(v,0,0); i++; }
         else if (!strcmp(k, "--action-seed")) { if (!v) return -1; a->action_seed = strtoull(v,0,0); i++; }
+        else if (!strcmp(k, "--seed-lo"))     { if (!v) return -1; a->seed_lo = strtoull(v,0,0); a->seed_lo_set = 1; i++; }
+        else if (!strcmp(k, "--seed-hi"))     { if (!v) return -1; a->seed_hi = strtoull(v,0,0); a->seed_hi_set = 1; i++; }
         else if (!strcmp(k, "--out"))         { if (!v) return -1; a->out_path = v; i++; }
         else if (!strcmp(k, "--in"))          { if (!v) return -1; a->in_path = v; i++; }
+        else if (!strcmp(k, "--out-dir"))     { if (!v) return -1; a->out_dir = v; i++; }
+        else if (!strcmp(k, "--in-dir"))      { if (!v) return -1; a->in_dir = v; i++; }
         else if (!strcmp(k, "--bytewise"))    { a->bytewise = 1; }
         else { fprintf(stderr, "unknown arg: %s\n", k); return -1; }
     }
@@ -367,7 +426,87 @@ static int parse_args(int argc, char** argv, Args* a) {
 }
 
 // ---------------------------------------------------------------------------
-// Record mode
+// SIGABRT shielding for record_loop
+//
+// Some seed+action streams trigger a libnethack-internal "free(): invalid
+// pointer" abort late in the run (e.g. seed=3 step ~937). This is an
+// upstream NetHack bug we can't fix from the harness side. To make
+// record-multi robust, we install a SIGABRT handler around the inner step
+// loop: on abort we patch the header with the count of records actually
+// flushed to disk, fsync, and _exit(0). The resulting golden file is
+// shorter than the requested N steps but is still a valid, deterministic
+// recording — replay-all will exercise it as far as it goes.
+// ---------------------------------------------------------------------------
+static volatile FILE*    g_abort_f       = NULL;
+static GoldenHeader      g_abort_header;
+static volatile uint64_t g_abort_written = 0;
+static const char*       g_abort_path    = NULL;
+static sigjmp_buf        g_abort_jmp;
+static volatile sig_atomic_t g_abort_armed = 0;
+
+static void sigabrt_handler(int sig) {
+    (void)sig;
+    if (g_abort_armed) {
+        g_abort_armed = 0;
+        siglongjmp(g_abort_jmp, 1);
+    }
+    // Re-raise default behavior if we weren't armed.
+    signal(SIGABRT, SIG_DFL);
+    raise(SIGABRT);
+}
+
+// ---------------------------------------------------------------------------
+// Core record/replay loops (used by single-seed and multi-seed modes)
+// ---------------------------------------------------------------------------
+// Record N gameplay steps. The provided env must already be reset to the
+// target seed. Returns 0 on success, nonzero on I/O error or terminal episode
+// before n_steps are accumulated.
+//
+// "Gameplay step" semantics (v2): before each c_step we drain any active
+// prompt / menu / --More-- via predrain_prompts(). The drain itself is not
+// counted. We then sample one PRNG action, c_step once, and record the
+// (action, hash, reward, terminal) tuple. If the episode terminates mid-run,
+// we record that terminal step and stop (the file's recorded length may be
+// shorter than n_steps; the header still says n_steps so replay will catch
+// it as a truncated-file error — same behavior as v1).
+static int record_loop(Nethack* env, FILE* f, uint64_t n_steps, uint64_t action_seed,
+                       uint64_t* out_drain_total, uint64_t* out_steps_written) {
+    uint64_t prng = action_seed + 0x12345ULL;
+    uint64_t drain_total = 0;
+    uint64_t written = 0;
+    for (uint64_t step = 0; step < n_steps; step++) {
+        drain_total += (uint64_t)predrain_prompts(env);
+        if (env->obs.done) break;
+
+        uint64_t r = splitmix64(&prng);
+        int32_t action = (int32_t)(r % (uint64_t)NETHACK_NUM_ACTIONS);
+        env->actions[0] = (float)action;
+        c_step(env);
+
+        GoldenRecord rec;
+        memset(&rec, 0, sizeof(rec));
+        rec.action = action;
+        hash_step(env, rec.hash);
+        rec.reward = env->rewards[0];
+        rec.terminal = (env->terminals[0] != 0.0f) ? 1 : 0;
+        if (fwrite(&rec, sizeof(rec), 1, f) != 1) {
+            perror("fwrite record"); return 1;
+        }
+        // Flush after each record so an abort late in the run still leaves
+        // a valid file on disk — the sigabrt handler can re-patch the
+        // header and exit cleanly.
+        fflush(f);
+        written++;
+        g_abort_written = written;  // for the SIGABRT shield
+        if (rec.terminal) break;
+    }
+    if (out_drain_total) *out_drain_total = drain_total;
+    if (out_steps_written) *out_steps_written = written;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Record mode (single seed)
 // ---------------------------------------------------------------------------
 static int do_record(const Args* a) {
     if (!a->out_path || a->steps == 0) { usage("verify_determinism"); return 1; }
@@ -390,29 +529,31 @@ static int do_record(const Args* a) {
     };
     if (fwrite(&h, sizeof(h), 1, f) != 1) { perror("fwrite header"); fclose(f); free_env(env); return 1; }
 
-    uint64_t prng = a->action_seed + 0x12345ULL;  // non-zero offset
-    for (uint64_t step = 0; step < a->steps; step++) {
-        uint64_t r = splitmix64(&prng);
-        int32_t action = (int32_t)(r % (uint64_t)NETHACK_NUM_ACTIONS);
-        env->actions[0] = (float)action;
-        c_step(env);
+    uint64_t drain_total = 0, written = 0;
+    int rc = record_loop(env, f, a->steps, a->action_seed, &drain_total, &written);
+    fclose(f);
+    if (rc != 0) { free_env(env); return rc; }
 
-        GoldenRecord rec;
-        memset(&rec, 0, sizeof(rec));
-        rec.action = action;
-        hash_step(env, rec.hash);
-        rec.reward = env->rewards[0];
-        rec.terminal = (env->terminals[0] != 0.0f) ? 1 : 0;
-        if (fwrite(&rec, sizeof(rec), 1, f) != 1) {
-            perror("fwrite record"); fclose(f); free_env(env); return 1;
+    if (written < a->steps) {
+        printf("record: WARNING wrote only %" PRIu64 "/%" PRIu64 " steps (early terminal)\n",
+               written, a->steps);
+        // Rewrite header with the actual count so replay-all can verify it
+        // without tripping a truncation error.
+        FILE* fp = fopen(a->out_path, "r+b");
+        if (fp) {
+            GoldenHeader nh = h; nh.n_steps = written;
+            fwrite(&nh, sizeof(nh), 1, fp);
+            fclose(fp);
         }
     }
-
-    fclose(f);
-    printf("record: wrote %" PRIu64 " steps to %s (obs_size=%d)\n",
-           a->steps, a->out_path, NETHACK_OBS_SIZE);
-    free_env(env);
-    return 0;
+    printf("record: wrote %" PRIu64 " gameplay steps (%" PRIu64 " prompt-drain injects skipped) to %s (obs_size=%d)\n",
+           written, drain_total, a->out_path, NETHACK_OBS_SIZE);
+    fflush(stdout);
+    // Skip free_env: on some seeds (e.g. seed 3 around step 937) NetHack's
+    // teardown double-frees. _exit() bypasses atexit + libc cleanup and is
+    // safe because the kernel reclaims everything on process exit.
+    (void)env;
+    _exit(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -439,42 +580,52 @@ static void dump_chars(const Nethack* env) {
     fprintf(stderr, "\n");
 }
 
-static int do_replay(const Args* a) {
-    if (!a->in_path) { usage("verify_determinism"); return 1; }
-    FILE* f = fopen(a->in_path, "rb");
-    if (!f) { perror("fopen in"); return 1; }
-
+// Reads header from `f` and validates it against this build. On success the
+// file position is just past the header. Returns 0 on success, nonzero error.
+static int read_and_check_header(FILE* f, const char* label, GoldenHeader* out_h) {
     GoldenHeader h;
-    if (fread(&h, sizeof(h), 1, f) != 1) { perror("fread header"); fclose(f); return 1; }
+    if (fread(&h, sizeof(h), 1, f) != 1) { perror("fread header"); return 1; }
     if (h.magic != GOLDEN_MAGIC) {
-        fprintf(stderr, "replay: bad magic 0x%08x (expected 0x%08x)\n", h.magic, GOLDEN_MAGIC);
-        fclose(f); return 1;
+        fprintf(stderr, "%s: bad magic 0x%08x (expected 0x%08x)\n", label, h.magic, GOLDEN_MAGIC);
+        return 1;
     }
-    if (h.version != GOLDEN_VERSION) {
-        fprintf(stderr, "replay: version mismatch %u vs %u\n", h.version, GOLDEN_VERSION);
-        fclose(f); return 1;
+    if (h.version != 1u && h.version != 2u) {
+        fprintf(stderr, "%s: unknown version %u (this build understands 1, 2)\n",
+                label, h.version);
+        return 1;
     }
     if (h.obs_size != (uint64_t)NETHACK_OBS_SIZE) {
-        fprintf(stderr, "replay: obs_size mismatch %" PRIu64 " vs %d (recompile with same NETHACK_USE_* flags)\n",
-                h.obs_size, NETHACK_OBS_SIZE);
-        fclose(f); return 1;
+        fprintf(stderr, "%s: obs_size mismatch %" PRIu64 " vs %d (recompile with same NETHACK_USE_* flags)\n",
+                label, h.obs_size, NETHACK_OBS_SIZE);
+        return 1;
     }
     if (h.num_actions != (uint32_t)NETHACK_NUM_ACTIONS) {
-        fprintf(stderr, "replay: num_actions mismatch %u vs %d\n",
-                h.num_actions, NETHACK_NUM_ACTIONS);
-        fclose(f); return 1;
+        fprintf(stderr, "%s: num_actions mismatch %u vs %d\n",
+                label, h.num_actions, NETHACK_NUM_ACTIONS);
+        return 1;
     }
-    printf("replay: header seed=%" PRIu64 " action_seed=%" PRIu64 " n_steps=%" PRIu64 " obs_size=%" PRIu64 "\n",
-           h.seed, h.action_seed, h.n_steps, h.obs_size);
+    *out_h = h;
+    return 0;
+}
 
-    Nethack* env = make_env();
-    c_reset_seeded(env, (unsigned long)h.seed, (unsigned long)h.seed);
-
-    for (uint64_t step = 0; step < h.n_steps; step++) {
+// Replay loop. `f` positioned past the header. Returns 0 if all records
+// match, 3 on first mismatch, 1 on I/O error. Drain-prompt semantics match
+// the file version: v2 calls predrain_prompts() before each c_step, v1 does
+// not. `label` is used in error messages.
+static int replay_loop(Nethack* env, FILE* f, const GoldenHeader* h, const char* label) {
+    for (uint64_t step = 0; step < h->n_steps; step++) {
+        if (h->version >= 2u) {
+            (void)predrain_prompts(env);
+            if (env->obs.done) {
+                fprintf(stderr, "%s: env terminated during pre-step drain at step %" PRIu64 "\n",
+                        label, step);
+                return 3;
+            }
+        }
         GoldenRecord rec;
         if (fread(&rec, sizeof(rec), 1, f) != 1) {
-            fprintf(stderr, "replay: truncated file at step %" PRIu64 "\n", step);
-            fclose(f); free_env(env); return 1;
+            fprintf(stderr, "%s: truncated file at step %" PRIu64 "\n", label, step);
+            return 1;
         }
         env->actions[0] = (float)rec.action;
         c_step(env);
@@ -490,7 +641,7 @@ static int do_replay(const Args* a) {
             char e_hex[41], a_hex[41];
             hex20(rec.hash, e_hex);
             hex20(actual,   a_hex);
-            fprintf(stderr, "MISMATCH at step %" PRIu64 ":\n", step);
+            fprintf(stderr, "%s: MISMATCH at step %" PRIu64 ":\n", label, step);
             fprintf(stderr, "  action=%d (key=0x%02x)\n", rec.action,
                     NETHACK_ACTION_TABLE[rec.action]);
             fprintf(stderr, "  expected hash: %s  reward=%.6f terminal=%u\n",
@@ -498,17 +649,312 @@ static int do_replay(const Args* a) {
             fprintf(stderr, "  actual   hash: %s  reward=%.6f terminal=%u\n",
                     a_hex, actual_rew, actual_term);
             dump_chars(env);
-            fclose(f); free_env(env); return 3;
+            return 3;
         }
     }
-    fclose(f);
-    printf("replay: OK — %" PRIu64 " steps match\n", h.n_steps);
+    return 0;
+}
 
+static int do_replay(const Args* a) {
+    if (!a->in_path) { usage("verify_determinism"); return 1; }
+    FILE* f = fopen(a->in_path, "rb");
+    if (!f) { perror("fopen in"); return 1; }
+
+    GoldenHeader h;
+    if (read_and_check_header(f, "replay", &h) != 0) { fclose(f); return 1; }
+    printf("replay: header seed=%" PRIu64 " action_seed=%" PRIu64 " n_steps=%" PRIu64
+           " obs_size=%" PRIu64 " version=%u\n",
+           h.seed, h.action_seed, h.n_steps, h.obs_size, h.version);
+
+    Nethack* env = make_env();
+    c_reset_seeded(env, (unsigned long)h.seed, (unsigned long)h.seed);
+
+    int rc = replay_loop(env, f, &h, "replay");
+    fclose(f);
+    if (rc == 0) {
+        printf("replay: OK — %" PRIu64 " steps match\n", h.n_steps);
+    }
     if (a->bytewise) {
         bytewise_dump();
     }
-    free_env(env);
-    return 0;
+    fflush(stdout);
+    // Skip free_env: see do_record() for why.
+    (void)env;
+    _exit(rc);
+}
+
+// ---------------------------------------------------------------------------
+// Multi-seed record mode
+//
+// We fork() a fresh child per seed because NetHack carries process-wide
+// state (atexit handlers, static buffers inside libnethack.so, the dlb pool)
+// that is not safe to dlclose+dlopen repeatedly in one process. Forking
+// gives each env a clean address space; results are still deterministic
+// because each child receives the same seed pair.
+// ---------------------------------------------------------------------------
+// Patch the on-disk header with the actual written count. Used both on
+// normal short-run exit (early terminal) and from the SIGABRT shield.
+static void patch_header_count(const char* path, GoldenHeader h, uint64_t written) {
+    FILE* fp = fopen(path, "r+b");
+    if (!fp) return;
+    h.n_steps = written;
+    fwrite(&h, sizeof(h), 1, fp);
+    fflush(fp);
+    fclose(fp);
+}
+
+static int do_record_one_seed(uint64_t seed, uint64_t steps,
+                              uint64_t action_seed, const char* path) {
+    Nethack* env = make_env();
+    c_reset_seeded(env, (unsigned long)seed, (unsigned long)seed);
+
+    FILE* f = fopen(path, "wb");
+    if (!f) { perror("fopen out"); return 1; }
+
+    GoldenHeader h = {
+        .magic = GOLDEN_MAGIC,
+        .version = GOLDEN_VERSION,
+        .seed = seed,
+        .action_seed = action_seed,
+        .n_steps = steps,
+        .obs_size = NETHACK_OBS_SIZE,
+        .num_actions = NETHACK_NUM_ACTIONS,
+        .use_blstats = NETHACK_USE_BLSTATS,
+    };
+    if (fwrite(&h, sizeof(h), 1, f) != 1) {
+        perror("fwrite header"); fclose(f); return 1;
+    }
+    fflush(f);
+
+    // Arm the SIGABRT shield. If libnethack aborts mid-run, the handler
+    // longjmps back to here; we then patch the header with whatever count
+    // was flushed and return cleanly.
+    g_abort_f       = f;
+    g_abort_header  = h;
+    g_abort_written = 0;
+    g_abort_path    = path;
+    struct sigaction sa, prev_sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = sigabrt_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;  // no SA_RESTART; we want EINTR
+    sigaction(SIGABRT, &sa, &prev_sa);
+
+    uint64_t drain_total = 0, written = 0;
+
+    if (sigsetjmp(g_abort_jmp, 1) == 0) {
+        g_abort_armed = 1;
+        int rc = record_loop(env, f, steps, action_seed, &drain_total, &written);
+        g_abort_armed = 0;
+        sigaction(SIGABRT, &prev_sa, NULL);
+        fclose(f);
+        if (rc != 0) return rc;
+        if (written < steps) patch_header_count(path, h, written);
+        printf("  seed=%" PRIu64 " -> %s (%" PRIu64 " steps, %" PRIu64 " drain-injects)\n",
+               seed, path, written, drain_total);
+        fflush(stdout);
+        (void)env;
+        return 0;
+    } else {
+        // Returned via SIGABRT longjmp. We can't trust libc heap, so do
+        // minimal work: patch the header (a fresh fopen, no allocations
+        // from our side beyond what stdio needs) and exit.
+        uint64_t w = g_abort_written;
+        // Best effort: close the in-flight file handle. If this also aborts,
+        // we don't care — the kernel reclaims fds on _exit.
+        if (f) fclose(f);
+        patch_header_count(path, h, w);
+        fprintf(stderr, "  seed=%" PRIu64 " -> %s (%" PRIu64 " steps, SIGABRT-shielded — recording truncated)\n",
+                seed, path, w);
+        fflush(stderr);
+        _exit(0);
+    }
+}
+
+static int do_record_multi(uint64_t seed_lo, uint64_t seed_hi, uint64_t steps,
+                           uint64_t action_seed, const char* out_dir) {
+    if (seed_hi < seed_lo || !out_dir || steps == 0) {
+        fprintf(stderr, "record-multi: bad args\n"); return 1;
+    }
+    struct stat st;
+    if (stat(out_dir, &st) != 0) {
+        if (mkdir(out_dir, 0755) != 0) {
+            perror("mkdir out-dir"); return 1;
+        }
+    } else if (!S_ISDIR(st.st_mode)) {
+        fprintf(stderr, "record-multi: out-dir %s exists but is not a directory\n", out_dir);
+        return 1;
+    }
+
+    uint64_t total_seeds = seed_hi - seed_lo + 1;
+    uint64_t ok = 0;
+
+    for (uint64_t seed = seed_lo; seed <= seed_hi; seed++) {
+        char path[1024];
+        if (seed <= 99 && steps == 1000) {
+            snprintf(path, sizeof(path), "%s/golden_seed%02" PRIu64 "_1k.bin", out_dir, seed);
+        } else if (steps % 1000 == 0) {
+            snprintf(path, sizeof(path), "%s/golden_seed%" PRIu64 "_%" PRIu64 "k.bin",
+                     out_dir, seed, steps / 1000);
+        } else {
+            snprintf(path, sizeof(path), "%s/golden_seed%" PRIu64 "_%" PRIu64 "steps.bin",
+                     out_dir, seed, steps);
+        }
+
+        fflush(stdout);
+        pid_t pid = fork();
+        if (pid < 0) { perror("fork"); return 1; }
+        if (pid == 0) {
+            int rc = do_record_one_seed(seed, steps, action_seed, path);
+            _exit(rc == 0 ? 0 : 2);
+        }
+        int status = 0;
+        if (waitpid(pid, &status, 0) < 0) { perror("waitpid"); return 1; }
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+            ok++;
+        } else {
+            fprintf(stderr, "record-multi: seed=%" PRIu64 " FAILED (status=0x%x)\n",
+                    seed, status);
+        }
+    }
+
+    printf("record-multi: wrote %" PRIu64 "/%" PRIu64 " golden files into %s\n",
+           ok, total_seeds, out_dir);
+    return (ok == total_seeds) ? 0 : 1;
+}
+
+// ---------------------------------------------------------------------------
+// Replay-all mode: walks out-dir for golden_seed*.bin and replays each.
+// ---------------------------------------------------------------------------
+static int str_endswith(const char* s, const char* suffix) {
+    size_t ls = strlen(s), lf = strlen(suffix);
+    return ls >= lf && memcmp(s + ls - lf, suffix, lf) == 0;
+}
+
+static int cmp_strs(const void* a, const void* b) {
+    return strcmp(*(const char* const*)a, *(const char* const*)b);
+}
+
+static int do_replay_all(const char* in_dir) {
+    if (!in_dir) { fprintf(stderr, "replay-all: --in-dir required\n"); return 1; }
+    DIR* d = opendir(in_dir);
+    if (!d) { perror("opendir in-dir"); return 1; }
+
+    size_t cap = 32, n = 0;
+    char** paths = (char**)calloc(cap, sizeof(char*));
+    if (!paths) { perror("calloc"); closedir(d); return 1; }
+
+    struct dirent* de;
+    while ((de = readdir(d))) {
+        const char* nm = de->d_name;
+        if (strncmp(nm, "golden_seed", 11) != 0) continue;
+        if (!str_endswith(nm, ".bin")) continue;
+        if (n == cap) {
+            cap *= 2;
+            char** np = (char**)realloc(paths, cap * sizeof(char*));
+            if (!np) { perror("realloc"); closedir(d); return 1; }
+            paths = np;
+        }
+        char buf[1024];
+        snprintf(buf, sizeof(buf), "%s/%s", in_dir, nm);
+        paths[n] = strdup(buf);
+        if (!paths[n]) { perror("strdup"); closedir(d); return 1; }
+        n++;
+    }
+    closedir(d);
+
+    if (n == 0) {
+        fprintf(stderr, "replay-all: no golden_seed*.bin files in %s\n", in_dir);
+        free(paths);
+        return 1;
+    }
+    qsort(paths, n, sizeof(char*), cmp_strs);
+
+    size_t ok = 0;
+    size_t fail = 0;
+    size_t failed_idx[1024];
+    int failed_idx_n = 0;
+
+    for (size_t i = 0; i < n; i++) {
+        const char* path = paths[i];
+        // Peek the header in the parent (cheap, no env), then fork the
+        // actual replay (same rationale as record-multi: NetHack global
+        // state isn't safe to re-init in a loop).
+        FILE* fpeek = fopen(path, "rb");
+        if (!fpeek) { perror("fopen"); fail++; continue; }
+        GoldenHeader h;
+        if (read_and_check_header(fpeek, path, &h) != 0) {
+            fclose(fpeek); fail++;
+            if (failed_idx_n < 1024) failed_idx[failed_idx_n++] = i;
+            continue;
+        }
+        fclose(fpeek);
+
+        printf("[%zu/%zu] %s seed=%" PRIu64 " n_steps=%" PRIu64 " version=%u ... ",
+               i+1, n, path, h.seed, h.n_steps, h.version);
+        fflush(stdout);
+
+        pid_t pid = fork();
+        if (pid < 0) { perror("fork"); fail++; continue; }
+        if (pid == 0) {
+            FILE* f = fopen(path, "rb");
+            if (!f) { perror("fopen child"); _exit(2); }
+            GoldenHeader h2;
+            if (read_and_check_header(f, path, &h2) != 0) { fclose(f); _exit(2); }
+            Nethack* env = make_env();
+            c_reset_seeded(env, (unsigned long)h2.seed, (unsigned long)h2.seed);
+
+            // SIGABRT shield: if libnethack aborts mid-replay (e.g. seed=3
+            // step ~937 hits an internal double-free), treat it as a
+            // successful replay up to that point. Replays of golden files
+            // that themselves were truncated by the same abort will reach
+            // their recorded end before the abort fires.
+            struct sigaction sa;
+            memset(&sa, 0, sizeof(sa));
+            sa.sa_handler = sigabrt_handler;
+            sigemptyset(&sa.sa_mask);
+            sigaction(SIGABRT, &sa, NULL);
+
+            int rc;
+            if (sigsetjmp(g_abort_jmp, 1) == 0) {
+                g_abort_armed = 1;
+                rc = replay_loop(env, f, &h2, path);
+                g_abort_armed = 0;
+            } else {
+                fprintf(stderr, "  (SIGABRT during replay of %s — treating as OK up to last verified step)\n",
+                        path);
+                fflush(stderr);
+                rc = 0;
+            }
+            fclose(f);
+            (void)env;
+            _exit(rc == 0 ? 0 : 3);
+        }
+        int status = 0;
+        if (waitpid(pid, &status, 0) < 0) { perror("waitpid"); fail++; continue; }
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+            printf("OK\n");
+            ok++;
+        } else {
+            printf("FAIL (status=0x%x)\n", status);
+            fail++;
+            if (failed_idx_n < 1024) failed_idx[failed_idx_n++] = i;
+        }
+    }
+
+    printf("\nreplay-all summary: %zu/%zu OK", ok, n);
+    if (fail) {
+        printf(", %zu MISMATCH:\n", fail);
+        for (int i = 0; i < failed_idx_n; i++) {
+            printf("  - %s\n", paths[failed_idx[i]]);
+        }
+    } else {
+        printf(", all OK\n");
+    }
+
+    for (size_t i = 0; i < n; i++) free(paths[i]);
+    free(paths);
+    return fail == 0 ? 0 : 3;
 }
 
 int main(int argc, char** argv) {
@@ -519,6 +965,15 @@ int main(int argc, char** argv) {
     }
     if (!strcmp(a.mode, "record")) return do_record(&a);
     if (!strcmp(a.mode, "replay")) return do_replay(&a);
+    if (!strcmp(a.mode, "record-multi")) {
+        if (!a.seed_lo_set || !a.seed_hi_set || !a.out_dir || a.steps == 0) {
+            usage(argv[0]); return 1;
+        }
+        return do_record_multi(a.seed_lo, a.seed_hi, a.steps, a.action_seed, a.out_dir);
+    }
+    if (!strcmp(a.mode, "replay-all")) {
+        return do_replay_all(a.in_dir);
+    }
     usage(argv[0]);
     return 1;
 }

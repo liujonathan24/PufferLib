@@ -27,12 +27,16 @@ file(MAKE_DIRECTORY ${NLE_INC_GEN} ${NLE_SRC_GEN})
 add_executable(makedefs ${MAKEDEFS_SRC})
 target_include_directories(makedefs PRIVATE ${NLE_INC} ${NLE_INC_GEN} ${nle_SOURCE_DIR}/third_party/deboost.context/include
                                             ${NLE_UTIL_GEN})
+# Build-tool view of objects[]/obj_descr[] — extern writable arrays
+# rather than nle_ctx_t-redirected macros (no runtime ctx here).
+target_compile_definitions(makedefs PRIVATE NLE_OBJECTS_GLOBAL)
 add_executable(dgn_comp ${DGN_COMP_SRC})
 target_include_directories(dgn_comp PRIVATE ${NLE_INC} ${NLE_INC_GEN} ${nle_SOURCE_DIR}/third_party/deboost.context/include
                                             ${NLE_UTIL_GEN})
 add_executable(lev_comp ${LEV_COMP_SRC})
 target_include_directories(lev_comp PRIVATE ${NLE_INC} ${NLE_INC_GEN} ${nle_SOURCE_DIR}/third_party/deboost.context/include
                                             ${NLE_UTIL_GEN})
+target_compile_definitions(lev_comp PRIVATE NLE_OBJECTS_GLOBAL)
 add_executable(dlb ${DLB_SRC})
 target_include_directories(dlb PRIVATE ${NLE_INC} ${NLE_INC_GEN} ${nle_SOURCE_DIR}/third_party/deboost.context/include
                                        ${NLE_UTIL_GEN})

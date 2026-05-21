@@ -4,22 +4,59 @@ Canonical seeded trajectories of the current (dlopen-based, pre-refactor)
 NetHack env. The refactored env must produce byte-identical hash streams
 for the same inputs.
 
-## File: `golden_seed42_1k.bin`
+## Multi-seed corpus (`golden_seed01_1k.bin` ... `golden_seed16_1k.bin`)
 
-- seed: 42
+Sixteen seeds (1..16), 1000 gameplay steps each, recorded with the
+`record-multi` mode of `verify_determinism`. Captured against
+`vendor/nle/src/build/libnethack.so` (NLE 0.9.1).
+
+- seed: NN (1..16)
 - action_seed: 99
-- n_steps: 1000
-- obs_size: 1767 (compiled with `NETHACK_USE_BLSTATS=1` + default chars)
-- captured: 2026-05-20 against `vendor/nle/src/build/libnethack.so` (NLE 0.9.1)
+- requested n_steps: 1000 (actual recorded count is stored in the header)
+- obs_size: 1767 (`NETHACK_USE_BLSTATS=1` + default chars)
+- format version: 2 (gameplay-only steps; menu/--More--/yn prompts are
+  drained between recorded steps so each record corresponds to a real
+  game-state-advancing move, not a prompt acknowledgment)
 
-Replay:
+Replay everything:
+
 ```
-./verify_determinism replay --in ocean/nethack/golden/golden_seed42_1k.bin
+./ocean/nethack/verify_determinism_all.sh
 ```
 
-## Why only 1000 steps?
+or directly:
 
-Current env is bit-deterministic for the first ~1480 steps and then
+```
+./verify_determinism replay-all --in-dir ocean/nethack/golden
+```
+
+### Truncated seeds (3, 7, 16)
+
+Three of the sixteen seeds trigger an internal libnethack abort
+(`free(): invalid pointer`) at some step late in the run. This is an
+upstream NetHack bug we can't fix from the harness side. The recorder
+installs a `SIGABRT` shield: on abort, it patches the file header with
+the actual count flushed to disk and exits cleanly. The truncated files
+are still valid, deterministic recordings — they exercise determinism
+up to the point of the abort.
+
+| seed | recorded steps |
+| ---- | -------------- |
+| 3    | 936            |
+| 7    | 640            |
+| 16   | 380            |
+
+All other seeds record the full 1000 steps.
+
+## Legacy: `golden_seed42_1k.bin`
+
+The original single-seed golden (format version 1, seed=42, n_steps=1000)
+has been removed in favor of the multi-seed corpus above. Format v1 files
+are still readable by the harness for backward compatibility.
+
+## Why ~1000 steps?
+
+The current env is bit-deterministic for the first ~1480 steps and then
 diverges across runs even with identical NLE seeds. Root cause:
 NetHack sets `hackpid = getpid()` and `urealtime.start_timing = getnow()`
 from system sources that are not covered by `nle_seeds_init_t`. The

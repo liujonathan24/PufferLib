@@ -52,6 +52,8 @@ struct cmd;              /* include/flag.h   (Cmd migration) */
 struct context_info;     /* include/context.h (context migration) */
 struct nle_rndmonst_state; /* makemon.c (rndmonst_state migration) */
 struct artifact;         /* include/artifact.h (artilist migration) */
+struct objclass;         /* include/objclass.h (objects migration) */
+struct objdescr;         /* include/objclass.h (obj_descr migration) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -241,6 +243,8 @@ typedef struct nle_globals {
     struct context_info *s_context_p;         /* macro: context */
     struct nle_rndmonst_state *s_rndmonst_state_p; /* makemon.c rndmonst_state */
     struct artifact     *s_artilist_p;        /* artifact.c artilist[] */
+    struct objclass     *s9o_objects_p;       /* macro: objects (NUM_OBJECTS entries) */
+    struct objdescr     *s9o_obj_descr_p;     /* macro: obj_descr (NUM_OBJECTS entries) */
 } nle_ctx_t;
 
 /*

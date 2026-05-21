@@ -246,6 +246,14 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         extern void nle_artilist_init(struct artifact **);
         nle_artilist_init(&nle->s_artilist_p);
     }
+    nle->s9o_objects_p   = malloc(NUM_OBJECTS * sizeof(struct objclass));
+    nle->s9o_obj_descr_p = malloc(NUM_OBJECTS * sizeof(struct objdescr));
+    if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
+        memcpy(nle->s9o_objects_p, objects_baseline,
+               NUM_OBJECTS * sizeof(struct objclass));
+        memcpy(nle->s9o_obj_descr_p, obj_descr_baseline,
+               NUM_OBJECTS * sizeof(struct objdescr));
+    }
     nle->s7_level_p         = calloc(1, sizeof(dlevel_t));
     nle->s7_rooms_p         = calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
     nle->s7_doors_p         = calloc(DOORMAX, sizeof(coord));
@@ -261,7 +269,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         || !nle->s9c_killer_p || !nle->s8_tcap_p || !nle->s5_cmd_p
         || !nle->s_disco_p || !nle->s_obufs_p || !nle->s_tty_status_p
         || !nle->s_context_p || !nle->s_rndmonst_state_p
-        || !nle->s_artilist_p
+        || !nle->s_artilist_p || !nle->s9o_objects_p
+        || !nle->s9o_obj_descr_p
         || !nle->s7_level_p || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
         || !nle->s7_lastseentyp_p) {
