@@ -47,7 +47,7 @@ static const int nasties[] = {
        they're summoners so would aggravate excessive summoning) */
 };
 
-static NEARDATA const unsigned wizapp[] = {
+static const unsigned wizapp[] = {
     PM_HUMAN,      PM_WATER_DEMON,  PM_VAMPIRE,       PM_RED_DRAGON,
     PM_TROLL,      PM_UMBER_HULK,   PM_XORN,          PM_XAN,
     PM_COCKATRICE, PM_FLOATING_EYE, PM_GUARDIAN_NAGA, PM_TRAPPER,

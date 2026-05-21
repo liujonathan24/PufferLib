@@ -75,7 +75,7 @@ const char *msg;
     coord cc;
     boolean revived = FALSE;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp2) {
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp2) {
         otmp2 = otmp->nexthere;
         if (otmp->otyp == CORPSE
             && (is_rider(&mons[otmp->corpsenm])
@@ -113,7 +113,7 @@ moverock()
     sx = u.ux + u.dx, sy = u.uy + u.dy; /* boulder starting position */
     while ((otmp = sobj_at(BOULDER, sx, sy)) != 0) {
         /* make sure that this boulder is visible as the top object */
-        if (otmp != level.objects[sx][sy])
+        if (otmp != level.objs[sx][sy])
             movobj(otmp, sx, sy);
 
         rx = u.ux + 2 * u.dx; /* boulder destination position */
@@ -550,7 +550,7 @@ register xchar ox, oy;
     newsym(ox, oy);
 }
 
-static NEARDATA const char fell_on_sink[] = "fell onto a sink";
+static const char fell_on_sink[] = "fell onto a sink";
 
 STATIC_OVL void
 dosinkfall()
@@ -583,7 +583,7 @@ dosinkfall()
         losehp(Maybe_Half_Phys(dmg), fell_on_sink, NO_KILLER_PREFIX);
         exercise(A_DEX, FALSE);
         selftouch("Falling, you");
-        for (obj = level.objects[u.ux][u.uy]; obj; obj = obj->nexthere)
+        for (obj = level.objs[u.ux][u.uy]; obj; obj = obj->nexthere)
             if (obj->oclass == WEAPON_CLASS || is_weptool(obj)) {
                 You("fell on %s.", doname(obj));
                 losehp(Maybe_Half_Phys(rnd(3)), fell_on_sink,

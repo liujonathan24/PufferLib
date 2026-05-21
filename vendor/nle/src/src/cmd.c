@@ -2613,7 +2613,7 @@ attributes_enlightenment(unused_mode, final)
 int unused_mode UNUSED;
 int final;
 {
-    static NEARDATA const char if_surroundings_permitted[] =
+    static const char if_surroundings_permitted[] =
         " if surroundings permitted";
     int ltmp, armpro;
     char buf[BUFSZ];
@@ -3203,7 +3203,7 @@ int msgflag;          /* for variant message phrasing */
             if (is_pool(u.ux, u.uy))
                 Sprintf(bp, " in the %s", waterbody_name(u.ux, u.uy));
         } else if (hides_under(youmonst.data)) {
-            struct obj *o = level.objects[u.ux][u.uy];
+            struct obj *o = level.objs[u.ux][u.uy];
 
             if (o)
                 Sprintf(bp, " underneath %s", ansimpleoname(o));
@@ -5320,7 +5320,7 @@ const char *
 directionname(dir)
 int dir;
 {
-    static NEARDATA const char *const dirnames[] = {
+    static const char *const dirnames[] = {
         "west",      "northwest", "north",     "northeast", "east",
         "southeast", "south",     "southwest", "down",      "up",
     };
@@ -5541,7 +5541,7 @@ boolean doit;
 #endif
 
     if (OBJ_AT(u.ux, u.uy)) {
-        struct obj *otmp = level.objects[u.ux][u.uy];
+        struct obj *otmp = level.objs[u.ux][u.uy];
 
         Sprintf(buf, "Pick up %s", otmp->nexthere ? "items" : doname(otmp));
         add_herecmd_menuitem(win, dopickup, buf);
@@ -5643,7 +5643,7 @@ int x, y, mod;
                 cmd[0] = cmd_from_func(dodown);
                 return cmd;
             } else if (OBJ_AT(u.ux, u.uy)) {
-                cmd[0] = cmd_from_func(Is_container(level.objects[u.ux][u.uy])
+                cmd[0] = cmd_from_func(Is_container(level.objs[u.ux][u.uy])
                                        ? doloot : dopickup);
                 return cmd;
             } else {

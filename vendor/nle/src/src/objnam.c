@@ -2660,7 +2660,7 @@ const char *u_str;      /* from user, so might be variant spelling */
 const char *o_str;      /* from objects[], so is in canonical form */
 boolean retry_inverted; /* optional extra "of" handling */
 {
-    static NEARDATA const char detect_SP[] = "detect ",
+    static const char detect_SP[] = "detect ",
                                SP_detection[] = " detection";
     char *p, buf[BUFSZ];
 

@@ -882,7 +882,7 @@ register struct monst *mtmp;
         return 0;
 
     /* Eats topmost metal object if it is there */
-    for (otmp = level.objects[mtmp->mx][mtmp->my]; otmp;
+    for (otmp = level.objs[mtmp->mx][mtmp->my]; otmp;
          otmp = otmp->nexthere) {
         /* Don't eat indigestible/choking/inappropriate objects */
         if ((mtmp->data == &mons[PM_RUST_MONSTER] && !is_rustprone(otmp))
@@ -978,7 +978,7 @@ struct monst *mtmp;
     /* eat organic objects, including cloth and wood, if present;
        engulf others, except huge rocks and metal attached to player
        [despite comment at top, doesn't assume that eater is a g.cube] */
-    for (otmp = level.objects[mtmp->mx][mtmp->my]; otmp; otmp = otmp2) {
+    for (otmp = level.objs[mtmp->mx][mtmp->my]; otmp; otmp = otmp2) {
         otmp2 = otmp->nexthere;
 
         /* touch sensitive items */
@@ -1130,7 +1130,7 @@ register const char *str;
     if (mtmp->isshk && inhishop(mtmp))
         return FALSE;
 
-    for (otmp = level.objects[mtmp->mx][mtmp->my]; otmp; otmp = otmp2) {
+    for (otmp = level.objs[mtmp->mx][mtmp->my]; otmp; otmp = otmp2) {
         otmp2 = otmp->nexthere;
         /* Nymphs take everything.  Most monsters don't pick up corpses. */
         if (!str ? searches_for_item(mtmp, otmp)
@@ -3212,7 +3212,7 @@ struct monst *mtmp;
     } else if (mtmp->data->mlet == S_EEL) {
         undetected = (is_pool(x, y) && !Is_waterlevel(&u.uz));
     } else if (hides_under(mtmp->data) && OBJ_AT(x, y)) {
-        struct obj *otmp = level.objects[x][y];
+        struct obj *otmp = level.objs[x][y];
 
         /* most monsters won't hide under cockatrice corpse */
         if (otmp->nexthere || otmp->otyp != CORPSE

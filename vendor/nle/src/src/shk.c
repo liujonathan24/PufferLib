@@ -205,7 +205,7 @@ struct monst *mtmp;
         /* items on shop floor revert to ordinary objects */
         for (sx = sroom->lx; sx <= sroom->hx; sx++)
             for (sy = sroom->ly; sy <= sroom->hy; sy++)
-                for (otmp = level.objects[sx][sy]; otmp;
+                for (otmp = level.objs[sx][sy]; otmp;
                      otmp = otmp->nexthere)
                     otmp->no_charge = 0;
 
@@ -3728,7 +3728,7 @@ boolean catchup; /* current_nle_ctx->restoring a level */
 #define horiz(i) ((i % 3) - 1)
 #define vert(i) ((i / 3) - 1)
     k = 0; /* number of adjacent shop spots */
-    if (level.objects[x][y] && !IS_ROOM(levl[x][y].typ)) {
+    if (level.objs[x][y] && !IS_ROOM(levl[x][y].typ)) {
         for (i = 0; i < 9; i++) {
             ix = x + horiz(i);
             iy = y + vert(i);
@@ -3764,7 +3764,7 @@ boolean catchup; /* current_nle_ctx->restoring a level */
             unplacebc(); /* pick 'em up */
             placebc();   /* put 'em down */
         }
-        while ((otmp = level.objects[x][y]) != 0)
+        while ((otmp = level.objs[x][y]) != 0)
             /* Don't mess w/ boulders -- just merge into wall */
             if (otmp->otyp == BOULDER || otmp->otyp == ROCK) {
                 obj_extract_self(otmp);
@@ -3772,7 +3772,7 @@ boolean catchup; /* current_nle_ctx->restoring a level */
             } else {
                 int trylimit = 50;
 
-                /* otmp must be moved otherwise level.objects[x][y] will
+                /* otmp must be moved otherwise level.objs[x][y] will
                    never become Null and while-loop won't terminate */
                 do {
                     i = rn2(9);
@@ -4286,7 +4286,7 @@ register xchar x, y;
     if (!(shkp = shop_keeper(*in_rooms(x, y, SHOPBASE))) || !inhishop(shkp))
         return (struct obj *) 0;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
         if (otmp->oclass != COIN_CLASS)
             break;
     /* note: otmp might have ->no_charge set, but that's ok */

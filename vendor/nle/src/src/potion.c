@@ -9,7 +9,7 @@
 boolean notonhead = FALSE;
 
 static NEARDATA int nothing, unkn;
-static NEARDATA const char beverages[] = { POTION_CLASS, 0 };
+static const char beverages[] = { POTION_CLASS, 0 };
 
 STATIC_DCL long FDECL(itimeout, (long));
 STATIC_DCL long FDECL(itimeout_incr, (long, int));

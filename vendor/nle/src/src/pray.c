@@ -338,7 +338,7 @@ int trouble;
     int i;
     struct obj *otmp = 0;
     const char *what = (const char *) 0;
-    static NEARDATA const char leftglow[] = "Your left ring softly glows",
+    static const char leftglow[] = "Your left ring softly glows",
                                rightglow[] = "Your right ring softly glows";
 
     switch (trouble) {
@@ -1149,7 +1149,7 @@ aligntyp g_align;
             break;
         }
         case 5: {
-            static NEARDATA const char msg[] =
+            static const char msg[] =
                 "\"and thus I grant thee the gift of %s!\"";
 
             godvoice(u.ualign.type,
@@ -1239,7 +1239,7 @@ boolean bless_water;
     register long changed = 0;
     boolean other = FALSE, bc_known = !(Blind || Hallucination);
 
-    for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
+    for (otmp = level.objs[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
         /* turn water into (un)holy water */
         if (otmp->otyp == POT_WATER
             && (bless_water ? !otmp->blessed : !otmp->cursed)) {
@@ -1327,7 +1327,7 @@ register struct obj *otmp;
 int
 dosacrifice()
 {
-    static NEARDATA const char cloud_of_smoke[] =
+    static const char cloud_of_smoke[] =
         "A cloud of %s smoke surrounds you...";
     register struct obj *otmp;
     int value = 0, pm;
@@ -2263,7 +2263,7 @@ int dx, dy;
     int nx, ny;
     long count = 0L;
 
-    for (otmp = level.objects[u.ux + dx][u.uy + dy]; otmp;
+    for (otmp = level.objs[u.ux + dx][u.uy + dy]; otmp;
          otmp = otmp->nexthere) {
         if (otmp->otyp == BOULDER)
             count += otmp->quan;

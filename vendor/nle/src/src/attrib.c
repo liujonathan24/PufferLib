@@ -531,7 +531,7 @@ exerper()
 
 /* exercise/abuse text (must be in attribute order, not botl order);
    phrased as "You must have been [][0]." or "You haven't been [][1]." */
-static NEARDATA const char *const exertext[A_MAX][2] = {
+static const char *const exertext[A_MAX][2] = {
     { "exercising diligently", "exercising properly" },           /* Str */
     { 0, 0 },                                                     /* Int */
     { "very observant", "paying attention" },                     /* Wis */
@@ -841,7 +841,7 @@ int propidx; /* special cases can have negative values */
      * Restrict the source of the attributes just to debug mode for now
      */
     if (wizard) {
-        static NEARDATA const char because_of[] = " because of %s";
+        static const char because_of[] = " because of %s";
 
         if (propidx >= 0) {
             char *p;

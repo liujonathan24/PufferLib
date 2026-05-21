@@ -435,7 +435,7 @@ freehand()
             || (!bimanual(uwep) && (!uarms || !uarms->cursed)));
 }
 
-static NEARDATA const char styluses[] = { ALL_CLASSES, ALLOW_NONE,
+static const char styluses[] = { ALL_CLASSES, ALLOW_NONE,
                                           TOOL_CLASS,  WEAPON_CLASS,
                                           WAND_CLASS,  GEM_CLASS,
                                           RING_CLASS,  0 };

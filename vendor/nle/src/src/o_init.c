@@ -495,7 +495,7 @@ char *buf;
 int
 doclassdisco()
 {
-    static NEARDATA const char
+    static const char
         prompt[] = "View discoveries for which sort of objects?",
         havent_discovered_any[] = "haven't discovered any %s yet.",
         unique_items[] = "unique items",

@@ -11,7 +11,7 @@
      || (uarmf && uarmf->otyp == KICKING_BOOTS))
 
 static NEARDATA struct rm *maploc, nowhere;
-static NEARDATA const char *gate_str;
+static const char *gate_str;
 
 /* kickedobj (decl.c) tracks a kicked object until placed or destroyed */
 
@@ -468,7 +468,7 @@ char *kickobjnam;
 
     *kickobjnam = '\0';
     /* if a pile, the "top" object gets kicked */
-    kickedobj = level.objects[x][y];
+    kickedobj = level.objs[x][y];
     if (kickedobj) {
         /* kick object; if doing is fatal, done() will clean up kickedobj */
         Strcpy(kickobjnam, killer_xname(kickedobj)); /* matters iff res==0 */
@@ -656,7 +656,7 @@ xchar x, y;
             kickedobj = splitobj(kickedobj, 1L);
         } else {
             if (rn2(20)) {
-                static NEARDATA const char *const flyingcoinmsg[] = {
+                static const char *const flyingcoinmsg[] = {
                     "scatter the coins", "knock coins all over the place",
                     "send coins flying in all directions",
                 };
@@ -1419,7 +1419,7 @@ xchar dlev;          /* if !0 send to dlev near player */
 
     isrock = (missile && missile->otyp == ROCK);
     oct = dct = 0L;
-    for (obj = level.objects[x][y]; obj; obj = obj2) {
+    for (obj = level.objs[x][y]; obj; obj = obj2) {
         obj2 = obj->nexthere;
         if (obj == missile)
             continue;
@@ -1529,7 +1529,7 @@ boolean shop_floor_obj;
     unpaid = is_unpaid(otmp);
 
     if (OBJ_AT(x, y)) {
-        for (obj = level.objects[x][y]; obj; obj = obj->nexthere)
+        for (obj = level.objs[x][y]; obj; obj = obj->nexthere)
             if (obj != otmp)
                 n += obj->quan;
         if (n)

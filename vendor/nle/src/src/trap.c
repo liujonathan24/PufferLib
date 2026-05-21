@@ -144,7 +144,7 @@ const char *ostr;
 int type;
 int ef_flags;
 {
-    static NEARDATA const char
+    static const char
         *const action[] = { "smoulder", "rust", "rot", "corrode" },
         *const msg[] = { "burnt", "rusted", "rotten", "corroded" },
         *const bythe[] = { "heat", "oxidation", "decay", "corrosion" };
@@ -4201,7 +4201,7 @@ struct trap *ttmp;
 }
 
 /* getobj will filter down to cans of grease and known potions of oil */
-static NEARDATA const char oil[] = { ALL_CLASSES, TOOL_CLASS, POTION_CLASS,
+static const char oil[] = { ALL_CLASSES, TOOL_CLASS, POTION_CLASS,
                                      0 };
 
 /* it may not make much sense to use grease on floor boards, but so what? */
@@ -4407,7 +4407,7 @@ boolean force;
     here = (x == u.ux && y == u.uy); /* !u.dx && !u.dy */
 
     if (here) /* are there are one or more containers here? */
-        for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+        for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
             if (Is_box(otmp)) {
                 if (++boxcnt > 1)
                     break;
@@ -4500,7 +4500,7 @@ boolean force;
         } /* end if */
 
         if (boxcnt) {
-            for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+            for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
                 if (Is_box(otmp)) {
                     (void) safe_qbuf(qbuf, "There is ",
                                      " here.  Check it for traps?", otmp,
@@ -4878,7 +4878,7 @@ boolean disarm;
                                  && uball->ox == u.ux && uball->oy == u.uy)))
                 unpunish();
 
-            for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp2) {
+            for (otmp = level.objs[u.ux][u.uy]; otmp; otmp = otmp2) {
                 otmp2 = otmp->nexthere;
                 if (costly)
                     loss += stolen_value(otmp, otmp->ox, otmp->oy,

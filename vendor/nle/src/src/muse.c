@@ -1361,7 +1361,7 @@ struct obj *obj;                     /* 2nd arg to fhitm/fhito */
             int hitanything = 0;
             register struct obj *next_obj;
 
-            for (otmp = level.objects[bhitpos.x][bhitpos.y]; otmp;
+            for (otmp = level.objs[bhitpos.x][bhitpos.y]; otmp;
                  otmp = next_obj) {
                 /* Fix for polymorph bug, Tim Wright */
                 next_obj = otmp->nexthere;

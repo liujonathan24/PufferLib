@@ -1434,7 +1434,7 @@ movebubbles()
                         if (OBJ_AT(x, y)) {
                             struct obj *olist = (struct obj *) 0, *otmp;
 
-                            while ((otmp = level.objects[x][y]) != 0) {
+                            while ((otmp = level.objs[x][y]) != 0) {
                                 remove_object(otmp);
                                 otmp->ox = otmp->oy = 0;
                                 otmp->nexthere = olist;

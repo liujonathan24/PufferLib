@@ -1163,7 +1163,7 @@ int x, y;
 {
     struct obj *otmp, *otmp2;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp2) {
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp2) {
         if (otmp == uball)
             unpunish();
         /* after unpunish(), or might get deallocated chain */
@@ -1207,7 +1207,7 @@ int x, y;
 {
     register struct obj *otmp;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
         if (otmp->otyp == otyp)
             break;
 
@@ -1331,7 +1331,7 @@ int x, y;
 {
     register struct obj *otmp;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
         if (obj == otmp)
             return TRUE;
     return FALSE;
@@ -1341,7 +1341,7 @@ struct obj *
 g_at(x, y)
 register int x, y;
 {
-    register struct obj *obj = level.objects[x][y];
+    register struct obj *obj = level.objs[x][y];
 
     while (obj) {
         if (obj->oclass == COIN_CLASS)
@@ -1919,7 +1919,7 @@ struct obj *obj;
                    safeq_xprn_ctx.dot, 0L, 0L);
 }
 
-static NEARDATA const char removeables[] = { ARMOR_CLASS, WEAPON_CLASS,
+static const char removeables[] = { ARMOR_CLASS, WEAPON_CLASS,
                                              RING_CLASS,  AMULET_CLASS,
                                              TOOL_CLASS,  0 };
 
@@ -3438,7 +3438,7 @@ boolean picked_some;
         There("is %s here.",
               an(defsyms[trap_to_defsym(trap->ttyp)].explanation));
 
-    otmp = level.objects[u.ux][u.uy];
+    otmp = level.objs[u.ux][u.uy];
     dfeature = dfeature_at(u.ux, u.uy, fbuf2);
     if (dfeature && !strcmp(dfeature, "pool of water") && Underwater)
         dfeature = 0;
@@ -3607,7 +3607,7 @@ struct obj *obj;
 {
     struct obj *otmp;
 
-    for (otmp = level.objects[obj->ox][obj->oy]; otmp; otmp = otmp->nexthere)
+    for (otmp = level.objs[obj->ox][obj->oy]; otmp; otmp = otmp->nexthere)
         if (otmp != obj && merged(&obj, &otmp))
             break;
     return;

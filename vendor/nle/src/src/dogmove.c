@@ -120,7 +120,7 @@ struct monst *mon;
     return (struct obj *) 0; /* don't drop anything */
 }
 
-static NEARDATA const char nofetch[] = { BALL_CLASS, CHAIN_CLASS, ROCK_CLASS,
+static const char nofetch[] = { BALL_CLASS, CHAIN_CLASS, ROCK_CLASS,
                                          0 };
 
 STATIC_VAR xchar gtyp, gx, gy; /* type and position of dog's current goal */
@@ -133,7 +133,7 @@ int x, y;
 {
     struct obj *otmp;
 
-    for (otmp = level.objects[x][y]; otmp; otmp = otmp->nexthere)
+    for (otmp = level.objs[x][y]; otmp; otmp = otmp->nexthere)
         if (otmp->cursed)
             return TRUE;
     return FALSE;
@@ -429,7 +429,7 @@ int udist;
                 edog->droptime = monstermoves;
             }
     } else {
-        if ((obj = level.objects[omx][omy]) != 0
+        if ((obj = level.objs[omx][omy]) != 0
             && !index(nofetch, obj->oclass)
 #ifdef MAIL
             && obj->otyp != SCR_MAIL
@@ -1077,7 +1077,7 @@ int after; /* this is extra fast monster movement */
         /* dog eschews cursed objects, but likes dog food */
         /* (minion isn't interested; `cursemsg' stays FALSE) */
         if (has_edog)
-            for (obj = level.objects[nx][ny]; obj; obj = obj->nexthere) {
+            for (obj = level.objs[nx][ny]; obj; obj = obj->nexthere) {
                 if (obj->cursed) {
                     cursemsg[i] = TRUE;
                 } else if ((otyp = dogfood(mtmp, obj)) < MANFOOD

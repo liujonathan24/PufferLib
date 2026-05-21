@@ -6,16 +6,16 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-static NEARDATA const char see_yourself[] = "see yourself";
-static NEARDATA const char unknown_type[] = "Unknown type of %s (%d)";
-static NEARDATA const char c_armor[] = "armor", c_suit[] = "suit",
+static const char see_yourself[] = "see yourself";
+static const char unknown_type[] = "Unknown type of %s (%d)";
+static const char c_armor[] = "armor", c_suit[] = "suit",
                            c_shirt[] = "shirt", c_cloak[] = "cloak",
                            c_gloves[] = "gloves", c_boots[] = "boots",
                            c_helmet[] = "helmet", c_shield[] = "shield",
                            c_weapon[] = "weapon", c_sword[] = "sword",
                            c_axe[] = "axe", c_that_[] = "that";
 
-static NEARDATA const long takeoff_order[] = {
+static const long takeoff_order[] = {
     WORN_BLINDF, W_WEP,      WORN_SHIELD, WORN_GLOVES, LEFT_RING,
     RIGHT_RING,  WORN_CLOAK, WORN_HELMET, WORN_AMUL,   WORN_ARMOR,
     WORN_SHIRT,  WORN_BOOTS, W_SWAPWEP,   W_QUIVER,    0L
@@ -1392,10 +1392,10 @@ struct obj *stolenobj; /* no message if stolenobj is already being doffing */
 
 /* both 'clothes' and 'accessories' now include both armor and accessories;
    TOOL_CLASS is for eyewear, FOOD_CLASS is for MEAT_RING */
-static NEARDATA const char clothes[] = {
+static const char clothes[] = {
     ARMOR_CLASS, RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, 0
 };
-static NEARDATA const char accessories[] = {
+static const char accessories[] = {
     RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, ARMOR_CLASS, 0
 };
 STATIC_VAR NEARDATA int Narmorpieces, Naccessories;
@@ -2792,7 +2792,7 @@ struct obj *obj;
 const char *verb; /* "dip" or "grease", or null to avoid messages */
 boolean only_if_known_cursed; /* ignore covering unless known to be cursed */
 {
-    static NEARDATA const char need_to_take_off_outer_armor[] =
+    static const char need_to_take_off_outer_armor[] =
         "need to take off %s to %s %s.";
     char buf[BUFSZ];
     boolean anycovering = !only_if_known_cursed; /* more comprehensible... */

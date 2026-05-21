@@ -292,7 +292,7 @@ NH_panictrace_gdb()
 /*
  * The order of these needs to match the macros in hack.h.
  */
-static NEARDATA const char *deaths[] = {
+static const char *deaths[] = {
     /* the array of death */
     "died", "choked", "poisoned", "starvation", "drowning", "burning",
     "dissolving under the heat and pressure", "crushed", "turned to stone",
@@ -300,7 +300,7 @@ static NEARDATA const char *deaths[] = {
     "escaped", "ascended"
 };
 
-static NEARDATA const char *ends[] = {
+static const char *ends[] = {
     /* "when you %s" */
     "died", "choked", "were poisoned",
     "starved", "drowned", "burned",

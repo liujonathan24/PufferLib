@@ -1853,7 +1853,7 @@ int which;
 winid where;
 boolean preselect;
 {
-    static NEARDATA const char RS_menu_let[] = {
+    static const char RS_menu_let[] = {
         '=',  /* name */
         '?',  /* role */
         '/',  /* race */

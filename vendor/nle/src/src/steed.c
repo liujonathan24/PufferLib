@@ -6,7 +6,7 @@
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
 /* Monsters that might be ridden */
-static NEARDATA const char steeds[] = { S_QUADRUPED, S_UNICORN, S_ANGEL,
+static const char steeds[] = { S_QUADRUPED, S_UNICORN, S_ANGEL,
                                         S_CENTAUR,   S_DRAGON,  S_JABBERWOCK,
                                         '\0' };
 

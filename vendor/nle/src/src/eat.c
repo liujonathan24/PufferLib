@@ -581,7 +581,7 @@ int *dmg_p; /* for dishing out extra damage in lieu of Int loss */
          */
         /* no such thing as mindless players */
         if (ABASE(A_INT) <= ATTRMIN(A_INT)) {
-            static NEARDATA const char brainlessness[] = "brainlessness";
+            static const char brainlessness[] = "brainlessness";
 
             if (Lifesaved) {
                 Strcpy(killer.name, brainlessness);
@@ -3142,7 +3142,7 @@ int corpsecheck; /* 0, no check, 1, corpses, 2, tinnable corpses */
     }
 
     /* Is there some food (probably a heavy corpse) here on the ground? */
-    for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
+    for (otmp = level.objs[u.ux][u.uy]; otmp; otmp = otmp->nexthere) {
         if (corpsecheck
                 ? (otmp->otyp == CORPSE
                    && (corpsecheck == 1 || tinnable(otmp)))

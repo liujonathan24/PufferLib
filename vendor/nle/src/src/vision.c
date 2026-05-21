@@ -172,7 +172,7 @@ register struct rm *lev;
         return 1;
 
     /* Boulders block light. */
-    for (obj = level.objects[x][y]; obj; obj = obj->nexthere)
+    for (obj = level.objs[x][y]; obj; obj = obj->nexthere)
         if (obj->otyp == BOULDER)
             return 1;
 

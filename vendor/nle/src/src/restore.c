@@ -89,7 +89,7 @@ static NEARDATA long omoves;
 
 #define Is_IceBox(o) ((o)->otyp == ICE_BOX ? TRUE : FALSE)
 
-/* Recalculate level.objects[x][y], since this info was not saved. */
+/* Recalculate level.objs[x][y], since this info was not saved. */
 STATIC_OVL void
 find_lev_obj()
 {
@@ -99,7 +99,7 @@ find_lev_obj()
 
     for (x = 0; x < COLNO; x++)
         for (y = 0; y < ROWNO; y++)
-            level.objects[x][y] = (struct obj *) 0;
+            level.objs[x][y] = (struct obj *) 0;
 
     /*
      * Reverse the entire fobj chain, which is necessary so that we can
@@ -114,7 +114,7 @@ find_lev_obj()
     }
     /* fobj should now be empty */
 
-    /* Set level.objects (as well as reversing the chain back again) */
+    /* Set level.objs (as well as reversing the chain back again) */
     while ((otmp = fobjtmp) != 0) {
         fobjtmp = otmp->nobj;
         place_object(otmp, otmp->ox, otmp->oy);

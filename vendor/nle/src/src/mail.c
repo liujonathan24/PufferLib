@@ -272,7 +272,7 @@ coord *startp; /* starting position (read only) */
 }
 
 /* Let the mail daemon have a larger vocabulary. */
-static NEARDATA const char *mail_text[] = { "Gangway!", "Look out!",
+static const char *mail_text[] = { "Gangway!", "Look out!",
                                             "Pardon me!" };
 #define md_exclamations() (mail_text[rn2(3)])
 

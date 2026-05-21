@@ -194,7 +194,7 @@ struct obj *wep; /* uwep for attack(), null for kick_monster() */
                       mtmp->mtame ? "tame" : "wild", l_monnam(mtmp));
             else if (Blind || (is_pool(mtmp->mx, mtmp->my) && !Underwater))
                 pline("Wait!  There's a hidden monster there!");
-            else if ((obj = level.objects[mtmp->mx][mtmp->my]) != 0)
+            else if ((obj = level.objs[mtmp->mx][mtmp->my]) != 0)
                 pline("Wait!  There's %s hiding under %s!",
                       an(l_monnam(mtmp)), doname(obj));
             return TRUE;

@@ -22,7 +22,7 @@ STATIC_DCL void NDECL(final_level);
 
 extern int n_dgns; /* number of dungeons, from dungeon.c */
 
-static NEARDATA const char drop_types[] = { ALLOW_COUNT, COIN_CLASS,
+static const char drop_types[] = { ALLOW_COUNT, COIN_CLASS,
                                             ALL_CLASSES, 0 };
 
 /* 'd' command: drop one inventory item */
@@ -455,7 +455,7 @@ register struct obj *obj;
         break;
     case RIN_HUNGER:
         ideed = FALSE;
-        for (otmp = level.objects[u.ux][u.uy]; otmp; otmp = otmp2) {
+        for (otmp = level.objs[u.ux][u.uy]; otmp; otmp = otmp2) {
             otmp2 = otmp->nexthere;
             if (otmp != uball && otmp != uchain
                 && !obj_resists(otmp, 1, 99)) {

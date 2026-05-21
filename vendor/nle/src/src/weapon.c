@@ -63,7 +63,7 @@ STATIC_VAR NEARDATA const char *const barehands_or_martial[] = {
                ? barehands_or_martial[martial_bonus()]  \
                : odd_skill_names[-skill_names_indices[type]])
 
-static NEARDATA const char kebabable[] = { S_XORN, S_DRAGON, S_JABBERWOCK,
+static const char kebabable[] = { S_XORN, S_DRAGON, S_JABBERWOCK,
                                            S_NAGA, S_GIANT,  '\0' };
 
 STATIC_OVL void
@@ -486,7 +486,7 @@ int x;
 }
 
 /* TODO: have monsters use aklys' throw-and-return */
-static NEARDATA const int rwep[] = {
+static const int rwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, JAVELIN,
     SHURIKEN, YA, SILVER_ARROW, ELVEN_ARROW, ARROW, ORCISH_ARROW,
     CROSSBOW_BOLT, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, KNIFE,
@@ -494,7 +494,7 @@ static NEARDATA const int rwep[] = {
     /* BOOMERANG, */ CREAM_PIE
 };
 
-static NEARDATA const int pwep[] = { HALBERD,       BARDICHE, SPETUM,
+static const int pwep[] = { HALBERD,       BARDICHE, SPETUM,
                                      BILL_GUISARME, VOULGE,   RANSEUR,
                                      GUISARME,      GLAIVE,   LUCERN_HAMMER,
                                      BEC_DE_CORBIN, FAUCHARD, PARTISAN,

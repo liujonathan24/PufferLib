@@ -1902,7 +1902,7 @@ struct obj *obj, *otmp;
                 (void) boxlock(obj, otmp);
 
             if (obj_shudders(obj)) {
-                boolean cover = ((obj == level.objects[u.ux][u.uy])
+                boolean cover = ((obj == level.objs[u.ux][u.uy])
                                  && u.uundetected
                                  && hides_under(youmonst.data));
 
@@ -2111,17 +2111,17 @@ schar zz;
     }
 
     poly_zapped = -1;
-    for (otmp = level.objects[tx][ty]; otmp; otmp = next_obj) {
+    for (otmp = level.objs[tx][ty]; otmp; otmp = next_obj) {
         next_obj = otmp->nexthere;
         /* for zap downwards, don't hit object poly'd hero is hiding under */
-        if (zz > 0 && u.uundetected && otmp == level.objects[u.ux][u.uy]
+        if (zz > 0 && u.uundetected && otmp == level.objs[u.ux][u.uy]
             && hides_under(youmonst.data))
             continue;
 
         hitanything += (*fhito)(otmp, obj);
     }
     if (poly_zapped >= 0)
-        create_polymon(level.objects[tx][ty], poly_zapped);
+        create_polymon(level.objs[tx][ty], poly_zapped);
 
     return hitanything;
 }
@@ -2212,7 +2212,7 @@ struct obj *otmp;
     useup(otmp);
 }
 
-static NEARDATA const char zap_syms[] = { WAND_CLASS, 0 };
+static const char zap_syms[] = { WAND_CLASS, 0 };
 
 /* 'z' command (or 'y' if numbed_pad==-1) */
 int
@@ -2995,7 +2995,7 @@ struct obj *obj; /* wand or spell */
          */
         if (u.uundetected && hides_under(youmonst.data)) {
             int hitit = 0;
-            otmp = level.objects[u.ux][u.uy];
+            otmp = level.objs[u.ux][u.uy];
 
             if (otmp)
                 hitit = bhito(otmp, obj);
@@ -3913,7 +3913,7 @@ boolean u_caused;
     char buf1[BUFSZ], buf2[BUFSZ];
     int cnt = 0;
 
-    for (obj = level.objects[x][y]; obj; obj = obj2) {
+    for (obj = level.objs[x][y]; obj; obj = obj2) {
         obj2 = obj->nexthere;
         if (obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS
             || (obj->oclass == FOOD_CLASS
@@ -5229,7 +5229,7 @@ STATIC_OVL void
 wishcmdassist(triesleft)
 int triesleft;
 {
-    static NEARDATA const char *
+    static const char *
         wishinfo[] = {
   "Wish details:",
   "",
