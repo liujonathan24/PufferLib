@@ -780,7 +780,7 @@ register xchar x, y;
             } else if (otmp->cursed && !breathless(mtmp->data)) {
                 if (um_dist(mtmp->mx, mtmp->my, 5)
                     || (mtmp->mhp -= rnd(2)) <= 0) {
-                    long save_pacifism = u.uconduct.killer;
+                    long save_pacifism = u.uconduct.killcount;
 
                     Your("leash chokes %s to death!", mon_nam(mtmp));
                     /* hero might not have intended to kill pet, but
@@ -790,7 +790,7 @@ register xchar x, y;
                     xkilled(mtmp, XKILL_NOMSG);
                     /* life-saving doesn't ordinarily reset this */
                     if (!DEADMONSTER(mtmp))
-                        u.uconduct.killer = save_pacifism;
+                        u.uconduct.killcount = save_pacifism;
                 } else {
                     pline("%s is choked by the leash!", Monnam(mtmp));
                     /* tameness eventually drops to 1 here (never 0) */

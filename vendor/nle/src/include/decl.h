@@ -171,7 +171,7 @@ E NEARDATA int smeq[];
 E NEARDATA int doorindex;
 E NEARDATA char *save_cm;
 
-E NEARDATA struct kinfo {
+struct kinfo {
     struct kinfo *next; /* chain of delayed killers */
     int id;             /* uprop keys to ID a delayed killer */
     int format;         /* one of the killer formats */
@@ -179,7 +179,11 @@ E NEARDATA struct kinfo {
 #define KILLED_BY 1
 #define NO_KILLER_PREFIX 2
     char name[BUFSZ]; /* actual killer name */
-} killer;
+};
+/* killer — stage 9' batch C migrated to nle_ctx_t. The struct
+ * u_conduct.killer field was renamed to u_conduct.killcount in you.h
+ * to free the `killer` token for this macro. */
+#define killer (*current_nle_ctx->s9c_killer_p)
 
 E NEARDATA char plname[PL_NSIZ];
 E NEARDATA char dogname[];

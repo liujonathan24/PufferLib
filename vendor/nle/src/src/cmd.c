@@ -3278,7 +3278,7 @@ int final;
                 plur(u.uconduct.weaphit));
         you_have_X(buf);
     }
-    if (!u.uconduct.killer)
+    if (!u.uconduct.killcount)
         you_have_been("a pacifist");
 
     if (!u.uconduct.literate) {

@@ -86,7 +86,9 @@ struct u_conduct {     /* number of times... */
     long food;         /* ... or any comestible */
     long gnostic;      /* used prayer, priest, or altar */
     long weaphit;      /* hit a monster with a weapon */
-    long killer;       /* killed a monster yourself */
+    long killcount;    /* killed a monster yourself (renamed from
+                          'killer' so the `killer` token can become
+                          a macro pointing at per-env kinfo struct). */
     long literate;     /* read something (other than BotD) */
     long polypiles;    /* polymorphed an object */
     long polyselfs;    /* transformed yourself */

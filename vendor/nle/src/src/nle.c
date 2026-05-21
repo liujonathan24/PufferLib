@@ -230,9 +230,11 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s9c_spl_book_p     = calloc(MAXSPELL + 1, sizeof(struct spell));
     nle->s9c_youmonst_p     = calloc(1, sizeof(struct monst));
     nle->s9c_mvitals_p      = calloc(NUMMONS, sizeof(struct nle_mvitals_t));
+    nle->s9c_killer_p       = calloc(1, sizeof(struct kinfo));
     if (!nle->s9c_m_shot_p || !nle->s9c_urealtime_p
         || !nle->s9c_quest_status_p || !nle->s9c_spl_book_p
-        || !nle->s9c_youmonst_p || !nle->s9c_mvitals_p) {
+        || !nle->s9c_youmonst_p || !nle->s9c_mvitals_p
+        || !nle->s9c_killer_p) {
         fprintf(stderr, "init_nle: failed to allocate stage 9' batch C state\n");
         abort();
     }
@@ -591,7 +593,7 @@ struct nle_dungeon_save {
     /* stage 9' — remaining swap entries (DEFERRED to batch C):
      * struct-value types with header cascades or worn[] static-init refs.
      * Stays in swap until per-struct heap allocation lands. */
-    struct kinfo        killer;
+    /* killer migrated direct to nle_ctx_t (stage 9' batch C). */
     /* body-slot pointers — pinned by worn[] table in worn.c (&uarm etc.) */
     struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu;
     struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
@@ -625,10 +627,8 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
     /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     s->tc_gbl_data = tc_gbl_data;
     /* stage 9' batch C — partial migration. youmonst/urealtime/spl_book/
-     * m_shot/quest_status moved direct to nle_ctx_t and no longer need
-     * round-tripping here. Remaining: killer (struct kinfo) and body-slot
-     * pointers (pinned by worn[]) and mvitals[]. */
-    s->killer = killer;
+     * m_shot/quest_status/mvitals/killer moved direct to nle_ctx_t.
+     * Remaining: body-slot pointers (pinned by worn[]). */
     s->uwep = uwep; s->uarm = uarm; s->uswapwep = uswapwep;
     s->uquiver = uquiver; s->uarmu = uarmu;
     s->uarmc = uarmc; s->uarmh = uarmh; s->uarms = uarms;
@@ -659,7 +659,6 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     /* stage 8' - vision_full_recalc, viz_array, WIN_*, toplines migrated direct. */
     tc_gbl_data = s->tc_gbl_data;
     /* stage 9' batch C — partial migration (see save_to). */
-    killer = s->killer;
     uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
     uquiver = s->uquiver; uarmu = s->uarmu;
     uarmc = s->uarmc; uarmh = s->uarmh; uarms = s->uarms;

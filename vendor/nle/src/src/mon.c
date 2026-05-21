@@ -2343,7 +2343,7 @@ int xkill_flags; /* 1: suppress message, 2: suppress corpse, 4: pacifist */
 
     mtmp->mhp = 0; /* caller will usually have already done this */
     if (!noconduct) /* KMH, conduct */
-        u.uconduct.killer++;
+        u.uconduct.killcount++;
 
     if (!nomsg) {
         boolean namedpet = has_mname(mtmp) && !Hallucination;

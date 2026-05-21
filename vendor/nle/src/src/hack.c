@@ -1870,7 +1870,7 @@ domove_core()
                        killed() so we duplicate some of the latter here */
                     int tmp, mndx;
 
-                    u.uconduct.killer++;
+                    u.uconduct.killcount++;
                     mndx = monsndx(mtmp->data);
                     tmp = experience(mtmp, (int) mvitals[mndx].died);
                     more_experienced(tmp, 0);

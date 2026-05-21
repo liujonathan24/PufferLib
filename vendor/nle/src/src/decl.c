@@ -42,7 +42,7 @@ NEARDATA int smeq[MAXNROFROOMS + 1] = DUMMY;
 NEARDATA int doorindex = 0;
 NEARDATA char *save_cm = 0;
 
-NEARDATA struct kinfo killer = DUMMY;  /* deferred (struct-value, batch C). */
+/* killer — stage 9' batch C migrated to nle_ctx_t. */
 const char *nomovemsg = 0;
 NEARDATA char plname[PL_NSIZ] = DUMMY; /* player name */
 NEARDATA char pl_character[PL_CSIZ] = DUMMY;
