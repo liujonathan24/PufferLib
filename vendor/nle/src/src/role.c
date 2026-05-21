@@ -2060,38 +2060,28 @@ role_init()
     urole = roles[flags.initrole];
     urace = races[flags.initrace];
 
-    /* Fix up the quest leader */
+    /* mons[] is intended to be const after process init. The original
+     * role_init mutated mons[] per-game to set quest-leader flags. Inspection
+     * of monst.c shows the source data ALREADY has MS_LEADER / M2_PEACEFUL /
+     * M3_CLOSE on every role's leader, MS_NEMESIS / M2_HOSTILE / M2_NASTY /
+     * M2_STALK / M3_WANTSARTI / M3_WAITFORU on every role's nemesis, and
+     * M2_PEACEFUL on every role's guardian. Only `maligntyp = alignmnt * 3`
+     * was a real change, and even that matches the source value for the
+     * Monk-Neutral case (PufferLib's default).
+     *
+     * Keeping const mons[] is required to make it shared-safe across all
+     * envs in a single libnethack instance (the vecenv target). The fixups
+     * are removed; gender lookups now read const fields directly. */
     if (urole.ldrnum != NON_PM) {
         pm = &mons[urole.ldrnum];
-        pm->msound = MS_LEADER;
-        pm->mflags2 |= (M2_PEACEFUL);
-        pm->mflags3 |= M3_CLOSE;
-        pm->maligntyp = alignmnt * 3;
-        /* if gender is random, we choose it now instead of waiting
-           until the leader monster is created */
         quest_status.ldrgend =
             is_neuter(pm) ? 2 : is_female(pm) ? 1 : is_male(pm)
                                                         ? 0
                                                         : (rn2(100) < 50);
     }
 
-    /* Fix up the quest guardians */
-    if (urole.guardnum != NON_PM) {
-        pm = &mons[urole.guardnum];
-        pm->mflags2 |= (M2_PEACEFUL);
-        pm->maligntyp = alignmnt * 3;
-    }
-
-    /* Fix up the quest nemesis */
     if (urole.neminum != NON_PM) {
         pm = &mons[urole.neminum];
-        pm->msound = MS_NEMESIS;
-        pm->mflags2 &= ~(M2_PEACEFUL);
-        pm->mflags2 |= (M2_NASTY | M2_STALK | M2_HOSTILE);
-        pm->mflags3 &= ~(M3_CLOSE);
-        pm->mflags3 |= M3_WANTSARTI | M3_WAITFORU;
-        /* if gender is random, we choose it now instead of waiting
-           until the nemesis monster is created */
         quest_status.nemgend = is_neuter(pm) ? 2 : is_female(pm) ? 1
                                    : is_male(pm) ? 0 : (rn2(100) < 50);
     }

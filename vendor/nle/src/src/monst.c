@@ -107,7 +107,11 @@ void NDECL(monst_init);
  * envs in one libnethack instance) this still races on the per-game
  * fields; finishing that requires migrating just those quest fields
  * to nle_ctx_t. */
-struct permonst mons[] = {
+/* mons[] is const after process init. role_init no longer mutates it
+ * (see role.c). With const + designated initializers the linker places
+ * mons[] in .data.rel.ro, mprotected read-only after dynamic linking —
+ * shared-safe across all envs in a single libnethack. */
+const struct permonst mons[] = {
     /*
      * ants
      */
