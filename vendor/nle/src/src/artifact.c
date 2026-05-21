@@ -8,6 +8,22 @@
 #include "artifact.h"
 #include "artilist.h"
 
+/* Per-env artifact table — macro to ctx field; init_nle calls
+ * nle_artilist_init() to allocate + seed it from artilist_baseline. */
+#define artilist (current_nle_ctx->s_artilist_p)
+
+/* Called once per env, from init_nle. */
+void
+nle_artilist_init(struct artifact **target)
+{
+    size_t n = sizeof(artilist_baseline) / sizeof(artilist_baseline[0]);
+    struct artifact *p = (struct artifact *) alloc(n * sizeof(struct artifact));
+    if (p) {
+        memcpy(p, artilist_baseline, n * sizeof(struct artifact));
+    }
+    *target = p;
+}
+
 /*
  * Note:  both artilist[] and artiexist[] have a dummy element #0,
  *        so loops over them should normally start at #1.  The primary
@@ -2138,7 +2154,7 @@ int x, y;
                 ++ret;
                 continue;
             }
-            for (otmp = level.objects[dx][dy]; otmp; otmp = otmp->nexthere)
+            for (otmp = level.objs[dx][dy]; otmp; otmp = otmp->nexthere)
                 if (Is_container(otmp) && otmp->otrapped) {
                     ++ret; /* we're counting locations, so just */
                     break; /* count the first one in a pile     */

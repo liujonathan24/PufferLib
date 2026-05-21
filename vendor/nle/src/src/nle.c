@@ -243,6 +243,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     {
         extern struct nle_rndmonst_state *rndmonst_state_alloc(void);
         nle->s_rndmonst_state_p = rndmonst_state_alloc();
+        extern void nle_artilist_init(struct artifact **);
+        nle_artilist_init(&nle->s_artilist_p);
     }
     nle->s7_level_p         = calloc(1, sizeof(dlevel_t));
     nle->s7_rooms_p         = calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
@@ -259,6 +261,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         || !nle->s9c_killer_p || !nle->s8_tcap_p || !nle->s5_cmd_p
         || !nle->s_disco_p || !nle->s_obufs_p || !nle->s_tty_status_p
         || !nle->s_context_p || !nle->s_rndmonst_state_p
+        || !nle->s_artilist_p
         || !nle->s7_level_p || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
         || !nle->s7_lastseentyp_p) {

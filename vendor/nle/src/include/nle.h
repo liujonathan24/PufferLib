@@ -51,6 +51,7 @@ struct nle_dlevel;       /* include/rm.h     (stage 7' completion) */
 struct cmd;              /* include/flag.h   (Cmd migration) */
 struct context_info;     /* include/context.h (context migration) */
 struct nle_rndmonst_state; /* makemon.c (rndmonst_state migration) */
+struct artifact;         /* include/artifact.h (artilist migration) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -239,6 +240,7 @@ typedef struct nle_globals {
     int                  s_hpbar_color;       /* wintty.c hpbar_color */
     struct context_info *s_context_p;         /* macro: context */
     struct nle_rndmonst_state *s_rndmonst_state_p; /* makemon.c rndmonst_state */
+    struct artifact     *s_artilist_p;        /* artifact.c artilist[] */
 } nle_ctx_t;
 
 /*
