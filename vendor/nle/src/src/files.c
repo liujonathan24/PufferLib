@@ -65,7 +65,9 @@ const
 
 #ifdef PREFIXES_IN_USE
 #define FQN_NUMBUF 4
-static char fqn_filename_buffer[FQN_NUMBUF][FQN_MAX_FILENAME];
+/* fqn_filename_buffer — per-env scratch buffer for file-path formatting.
+ * Migrated to nle_ctx_t (heap). */
+#define fqn_filename_buffer ((char (*)[FQN_MAX_FILENAME]) current_nle_ctx->s_fqn_fname_p)
 #endif
 
 #if !defined(MFLOPPY) && !defined(VMS) && !defined(WIN32)

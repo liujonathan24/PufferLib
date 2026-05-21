@@ -284,6 +284,8 @@ typedef struct nle_globals {
     char                *s_viz_clear_rows[21];
     /* special-level position map (sp_lev.c). */
     void                *s_SpLev_Map_p;
+    /* file-path scratch buffers (files.c fqn_filename_buffer[FQN_NUMBUF][FQN_MAX_FILENAME]). */
+    void                *s_fqn_fname_p;       /* 2048 bytes */
 } nle_ctx_t;
 
 /*
