@@ -3653,9 +3653,10 @@ char *posbar;
  * src/windows.c and as such are considered to be on the window-port
  * "side" of things, rather than the NetHack-core "side" of things.
  */
-extern __thread const char *status_fieldfmt[MAXBLSTATS];
-extern __thread char *status_vals[MAXBLSTATS];
-extern __thread boolean status_activefields[MAXBLSTATS];
+/* Per-env status-line state — see windows.c. */
+#define status_fieldfmt      (current_nle_ctx->s_status_fieldfmt)
+#define status_vals          (current_nle_ctx->s_status_vals)
+#define status_activefields  (current_nle_ctx->s_status_activefields)
 /* WIN_STATUS now a macro (stage 8'); no extern needed. */
 
 #ifdef STATUS_HILITES

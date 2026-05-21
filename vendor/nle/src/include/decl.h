@@ -168,7 +168,8 @@ E const char ynNaqchars[];
 
 E const char disclosure_options[];
 
-E NEARDATA int smeq[];
+/* smeq[] — per-env room-equivalence work array migrated to nle_ctx_t. */
+#define smeq (current_nle_ctx->s_smeq_p)
 E NEARDATA int doorindex;
 E NEARDATA char *save_cm;
 

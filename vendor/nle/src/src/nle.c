@@ -248,6 +248,10 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     }
     nle->s9o_objects_p   = malloc(NUM_OBJECTS * sizeof(struct objclass));
     nle->s9o_obj_descr_p = malloc(NUM_OBJECTS * sizeof(struct objdescr));
+    /* do_name.c name-buffer pool: NUMMBUF=5 * BUFSZ=256 = 1280 bytes. */
+    nle->s_mbufs_p       = calloc(5 * 256, sizeof(char));
+    /* decl.c smeq[MAXNROFROOMS+1] — calloc'd zero matches original {0,...}. */
+    nle->s_smeq_p        = calloc(MAXNROFROOMS + 1, sizeof(int));
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                NUM_OBJECTS * sizeof(struct objclass));
@@ -270,7 +274,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         || !nle->s_disco_p || !nle->s_obufs_p || !nle->s_tty_status_p
         || !nle->s_context_p || !nle->s_rndmonst_state_p
         || !nle->s_artilist_p || !nle->s9o_objects_p
-        || !nle->s9o_obj_descr_p
+        || !nle->s9o_obj_descr_p || !nle->s_mbufs_p || !nle->s_smeq_p
         || !nle->s7_level_p || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
         || !nle->s7_lastseentyp_p) {

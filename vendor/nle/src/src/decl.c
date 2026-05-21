@@ -38,7 +38,7 @@ NEARDATA int in_doagain = 0;
 
 /* quest_status — stage 9' batch C migrated to nle_ctx_t. */
 
-NEARDATA int smeq[MAXNROFROOMS + 1] = DUMMY;
+/* smeq — per-env room-equivalence work array, migrated to nle_ctx_t. */
 NEARDATA int doorindex = 0;
 NEARDATA char *save_cm = 0;
 

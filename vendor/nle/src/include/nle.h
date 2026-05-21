@@ -245,6 +245,17 @@ typedef struct nle_globals {
     struct artifact     *s_artilist_p;        /* artifact.c artilist[] */
     struct objclass     *s9o_objects_p;       /* macro: objects (NUM_OBJECTS entries) */
     struct objdescr     *s9o_obj_descr_p;     /* macro: obj_descr (NUM_OBJECTS entries) */
+    /* per-env status-line state (windows.c / wintty.c). MAXBLSTATS=23. */
+    const char          *s_status_fieldnm[23];
+    const char          *s_status_fieldfmt[23];
+    char                *s_status_vals[23];
+    boolean              s_status_activefields[23];
+    /* per-env "name buffers" pool used by do_name.c nextmbuf().
+     * NUMMBUF=5, BUFSZ=256 → 1280 bytes flat. */
+    char                *s_mbufs_p;
+    int                  s_mbuf_idx;
+    /* per-env room-equivalence work array (decl.c smeq[]). */
+    int                 *s_smeq_p;            /* size MAXNROFROOMS+1 */
 } nle_ctx_t;
 
 /*

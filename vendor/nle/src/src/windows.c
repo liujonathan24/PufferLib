@@ -888,10 +888,13 @@ const char *string UNUSED;
  * holds malloc'd pointers per env, so two envs would overwrite each
  * other's allocations. TLS each, per-thread isolation matches the
  * NEARDATA pattern used elsewhere in the refactor. */
-__thread const char *status_fieldnm[MAXBLSTATS];
-__thread const char *status_fieldfmt[MAXBLSTATS];
-__thread char *status_vals[MAXBLSTATS];
-__thread boolean status_activefields[MAXBLSTATS];
+/* Per-env status-line state migrated to nle_ctx_t. Macros are defined
+ * here (file-local) since these symbols are also extern'd from
+ * wintty.c. */
+#define status_fieldnm       (current_nle_ctx->s_status_fieldnm)
+#define status_fieldfmt      (current_nle_ctx->s_status_fieldfmt)
+#define status_vals          (current_nle_ctx->s_status_vals)
+#define status_activefields  (current_nle_ctx->s_status_activefields)
 
 void
 genl_status_init()

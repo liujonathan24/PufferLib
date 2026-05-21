@@ -28,11 +28,11 @@ extern const char what_is_an_unknown_object[]; /* from pager.c */
 STATIC_OVL char *
 nextmbuf()
 {
-    static char NEARDATA bufs[NUMMBUF][BUFSZ];
-    static int bufidx = 0;
+    /* bufs/bufidx migrated to nle_ctx_t (per-env). */
+    char (*bufs)[BUFSZ] = (char (*)[BUFSZ]) current_nle_ctx->s_mbufs_p;
 
-    bufidx = (bufidx + 1) % NUMMBUF;
-    return bufs[bufidx];
+    current_nle_ctx->s_mbuf_idx = (current_nle_ctx->s_mbuf_idx + 1) % NUMMBUF;
+    return bufs[current_nle_ctx->s_mbuf_idx];
 }
 
 /* function for getpos() to highlight desired map locations.
