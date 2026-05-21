@@ -17,8 +17,8 @@ rebuild via `ocean/nethack/verify_determinism_all.sh`.
 | Determinism replays passing         | 16/16 at every commit |
 | `multi_shared` N=1 single libnethack | ✅ works |
 | `multi_shared` N=64 × 5000 steps random | ✅ 10/10 trials pass |
-| `multi_shared` N=88 × 5000 steps random | ✅ 10/10 trials pass |
-| `multi_shared` N=92+ × 1000 steps random | ❌ deterministic vision-recursion hang (one specific env+step combination) |
+| `multi_shared` N=88 × 5000 steps random | ✅ 5/5 trials, deterministic |
+| `multi_shared` N=92+ × 1000 steps random | ❌ deterministic vision-recursion hang (env 37 at t=811 with seed 0x12345+37) |
 | PufferLib binding: single process-wide dlopen | ✅ no memfd/per-env copies |
 | Plot                                | `ocean/nethack/experiments/exp_026_globals_plot/globals.png` |
 
