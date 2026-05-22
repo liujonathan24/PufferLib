@@ -678,6 +678,20 @@ typedef struct nle_globals {
     /* mkmap.c */
     char                        *s_new_locations;
     int                          s_n_loc_filled;
+
+    /* Cluster AU group 4 — combat tick per-env.
+     * File-statics in mhitm.c / mhitu.c / mthrowu.c / muse.c that
+     * carry state across a pline / Y-N prompt yield within one
+     * combat tick. With N>=128 parallel envs, env A's pointer
+     * could become dangling when env B reads it. Direct-ctx fields
+     * (NOT swap pattern). */
+    long          s_noisetime;        /* mhitm.c noisetime */
+    struct obj   *s_mhitm_otmp;       /* mhitm.c otmp (file-static) */
+    int           s_dieroll_mhitm;    /* mhitm.c dieroll */
+    struct obj   *s_mon_currwep;      /* mhitu.c mon_currwep */
+    int           s_dieroll_mhitu;    /* mhitu.c dieroll */
+    int           s_mesg_given;       /* mthrowu.c mesg_given */
+    boolean       s_zap_oseen;        /* muse.c zap_oseen */
 } nle_ctx_t;
 
 /*

@@ -7,7 +7,9 @@
 #include "nle.h" /* current_nle_ctx */
 #include "artifact.h"
 
-STATIC_VAR NEARDATA struct obj *mon_currwep = (struct obj *) 0;
+/* Cluster AU group 4 — combat tick per-env (mhitu.c statics). */
+#define mon_currwep (current_nle_ctx->s_mon_currwep)
+#define dieroll     (current_nle_ctx->s_dieroll_mhitu)
 
 STATIC_DCL boolean FDECL(u_slip_free, (struct monst *, struct attack *));
 STATIC_DCL int FDECL(passiveum, (struct permonst *, struct monst *,
@@ -25,7 +27,8 @@ STATIC_DCL void FDECL(hitmsg, (struct monst *, struct attack *));
 
 /* See comment in mhitm.c.  If we use this a lot it probably should be */
 /* changed to a parameter to mhitu. */
-static int dieroll;
+/* (Cluster AU group 4: dieroll migrated to current_nle_ctx->s_dieroll_mhitu
+ * via macro at top of file; original `static int dieroll;` removed.) */
 
 STATIC_OVL void
 hitmsg(mtmp, mattk)

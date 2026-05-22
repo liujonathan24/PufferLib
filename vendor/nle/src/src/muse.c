@@ -9,6 +9,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 4 — combat tick per-env (muse.c statics). */
+#define zap_oseen (current_nle_ctx->s_zap_oseen)
+
 boolean m_using = FALSE;
 
 /* Let monsters use magic items.  Arbitrary assumptions: Monsters only use
@@ -49,12 +52,13 @@ static struct musable {
      */
 } m;
 static int trapx, trapy;
-static boolean zap_oseen; /* for wands which use mbhitm and are zapped at
-                           * players.  We usually want an oseen local to
-                           * the function, but this is impossible since the
-                           * function mbhitm has to be compatible with the
-                           * normal zap routines, and those routines don't
-                           * remember who zapped the wand. */
+/* (Cluster AU group 4: zap_oseen migrated to current_nle_ctx->s_zap_oseen
+ * via macro at top of file; original `static boolean zap_oseen;` removed.
+ * Comment retained for context:)
+ * for wands which use mbhitm and are zapped at players.  We usually want
+ * an oseen local to the function, but this is impossible since the
+ * function mbhitm has to be compatible with the normal zap routines,
+ * and those routines don't remember who zapped the wand. */
 
 /* Any preliminary checks which may result in the monster being unable to use
  * the item.  Returns 0 if nothing happened, 2 if the monster can't do

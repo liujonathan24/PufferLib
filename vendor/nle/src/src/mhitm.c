@@ -7,11 +7,14 @@
 #include "nle.h" /* current_nle_ctx, refactor */
 #include "artifact.h"
 
+/* Cluster AU group 4 — combat tick per-env (mhitm.c statics). */
+#define noisetime (current_nle_ctx->s_noisetime)
+#define otmp      (current_nle_ctx->s_mhitm_otmp)
+#define dieroll   (current_nle_ctx->s_dieroll_mhitm)
+
 extern boolean notonhead;
 
 static NEARDATA boolean vis, far_noise;
-static NEARDATA long noisetime;
-static NEARDATA struct obj *otmp;
 
 static const char brief_feeling[] =
     "have a %s feeling for a moment, then it passes.";
@@ -37,8 +40,9 @@ STATIC_DCL int FDECL(passivemm, (struct monst *, struct monst *,
 /* Needed for the special case of monsters wielding vorpal blades (rare).
  * If we use this a lot it should probably be a parameter to mdamagem()
  * instead of a global variable.
+ * (Cluster AU group 4: dieroll migrated to current_nle_ctx->s_dieroll_mhitm
+ * via macro above; original `static int dieroll;` removed.)
  */
-static int dieroll;
 
 STATIC_OVL void
 noises(magr, mattk)

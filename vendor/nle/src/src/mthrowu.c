@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 4 — combat tick per-env (mthrowu.c statics). */
+#define mesg_given (current_nle_ctx->s_mesg_given)
+
 STATIC_DCL int FDECL(monmulti, (struct monst *, struct obj *, struct obj *));
 STATIC_DCL void FDECL(monshoot, (struct monst *, struct obj *, struct obj *));
 STATIC_DCL int FDECL(drop_throw, (struct obj *, BOOLEAN_P, int, int));
@@ -28,7 +31,8 @@ STATIC_OVL NEARDATA const char *breathwep[] = {
 };
 
 extern boolean notonhead; /* for long worms */
-STATIC_VAR int mesg_given; /* for m_throw()/thitu() 'miss' message */
+/* (Cluster AU group 4: mesg_given migrated to current_nle_ctx->s_mesg_given
+ * via macro at top of file; original `STATIC_VAR int mesg_given;` removed.) */
 
 /* hero is hit by something other than a monster */
 int
