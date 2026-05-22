@@ -5,6 +5,14 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 5 — per-env prayer-in-flight state. Were three
+ * file-statics (p_aligntyp, p_trouble, p_type) set when prayer started
+ * and read when the deferred prayer_done callback fired; across envs
+ * one env's prayer could complete with another env's god. */
+#define p_aligntyp (current_nle_ctx->s_p_aligntyp)
+#define p_trouble  (current_nle_ctx->s_p_trouble)
+#define p_type     (current_nle_ctx->s_p_type)
+
 STATIC_PTR int NDECL(prayer_done);
 STATIC_DCL struct obj *NDECL(worst_cursed_item);
 STATIC_DCL int NDECL(in_trouble);
@@ -48,10 +56,8 @@ static const char *godvoices[] = {
     "booms out", "thunders", "rings out", "booms",
 };
 
-/* values calculated when prayer starts, and used when completed */
-static aligntyp p_aligntyp;
-static int p_trouble;
-static int p_type; /* (-1)-3: (-1)=really naughty, 3=really good */
+/* values calculated when prayer starts, and used when completed
+ * — migrated to nle_ctx_t (Cluster AU group 5); see macros at top of file. */
 
 #define PIOUS 20
 #define DEVOUT 14

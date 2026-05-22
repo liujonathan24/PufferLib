@@ -12,6 +12,20 @@
  * nle_artilist_init() to allocate + seed it from artilist_baseline. */
 #define artilist (current_nle_ctx->s_artilist_p)
 
+/* Cluster AU group 5 — per-env artifact-existence + touch-blast flag.
+ * artiexist[] was the biggest cross-env leak source: env A creating
+ * Excalibur set artiexist[ART_EXCALIBUR] for every env in the process,
+ * so env B's universe could never generate Excalibur (or could re-
+ * generate it after env A's slot was reused). Now per-env. */
+#define artiexist     (current_nle_ctx->s_artiexist)
+#define touch_blasted (current_nle_ctx->s_touch_blasted)
+
+/* Catch drift in the generated NROFARTIFACTS — nle.h sizes
+ * s_artiexist[35] as 1 + NROFARTIFACTS + 1 with NROFARTIFACTS == 33. */
+_Static_assert(NROFARTIFACTS == 33,
+               "Cluster AU group 5: s_artiexist[35] assumes NROFARTIFACTS == 33; "
+               "update vendor/nle/src/include/nle.h if onames.h changed.");
+
 /* Called once per env, from init_nle. */
 void
 nle_artilist_init(struct artifact **target)
@@ -61,8 +75,7 @@ STATIC_DCL int FDECL(count_surround_traps, (int, int));
 /* coordinate effects from spec_dbon() with messages in artifact_hit() */
 STATIC_OVL int spec_dbon_applies = 0;
 
-/* flags including which artifacts have already been created */
-static boolean artiexist[1 + NROFARTIFACTS + 1];
+/* artiexist[] migrated to nle_ctx_t (Cluster AU group 5) — see macros above. */
 /* and a discovery list for them (no dummy first entry here) */
 STATIC_OVL xchar artidisco[NROFARTIFACTS];
 
@@ -652,7 +665,7 @@ long wp_mask;
 /* touch_artifact()'s return value isn't sufficient to tell whether it
    dished out damage, and tracking changes to u.uhp, u.mh, Lifesaved
    when trying to avoid second wounding is too cumbersome */
-STATIC_VAR boolean touch_blasted; /* for retouch_object() */
+/* touch_blasted migrated to nle_ctx_t (Cluster AU group 5) — macro above. */
 
 /*
  * creature (usually hero) tries to touch (pick up or wield) an artifact obj.

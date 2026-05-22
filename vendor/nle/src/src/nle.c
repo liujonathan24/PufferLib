@@ -260,6 +260,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         nle->s_rndmonst_state_p = rndmonst_state_alloc();
         extern void nle_artilist_init(struct artifact **);
         nle_artilist_init(&nle->s_artilist_p);
+        /* Cluster AU group 5 — per-env quest msg index. */
+        extern void nle_qtlist_alloc(struct qtlists **);
+        nle_qtlist_alloc(&nle->s_qt_list_p);
     }
     nle->s9o_objects_p   = malloc(NUM_OBJECTS * sizeof(struct objclass));
     nle->s9o_obj_descr_p = malloc(NUM_OBJECTS * sizeof(struct objdescr));
