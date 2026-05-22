@@ -7,7 +7,12 @@
 #include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
-extern char bones[]; /* from files.c */
+/* Cluster AO — the legacy `extern char bones[]` (defined in files.c) is
+ * now per-env at current_nle_ctx->s_bones. We can't `#define bones ...`
+ * here because flag.h declares `struct flag { ... boolean bones; ... }`
+ * and the macro would clobber `flags.bones`. The two buffer references
+ * in this file (validate(fd, bones), freediskspace(bones)) are rewritten
+ * to use current_nle_ctx->s_bones directly. */
 #ifdef MFLOPPY
 extern long bytes_counted;
 #endif
@@ -552,7 +557,7 @@ struct obj *corpse;
         bwrite(fd, (genericptr_t) bonesid, (unsigned) c); /* DD.nnn */
         savefruitchn(fd, COUNT_SAVE);
         bflush(fd);
-        if (bytes_counted > freediskspace(bones)) { /* not enough room */
+        if (bytes_counted > freediskspace(current_nle_ctx->s_bones)) { /* per-env bones path; not enough room */
             if (wizard)
                 pline("Insufficient space to create bones file.");
             (void) nhclose(fd);
@@ -597,7 +602,7 @@ getbones()
     if (fd < 0)
         return 0;
 
-    if (validate(fd, bones) != 0) {
+    if (validate(fd, current_nle_ctx->s_bones) != 0) { /* per-env bones path */
         if (!wizard)
             pline("Discarding unusable bones; no need to panic...");
         ok = FALSE;

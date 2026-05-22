@@ -26,7 +26,31 @@ STATIC_DCL void FDECL(kops_gone, (BOOLEAN_P));
 
 extern const struct shclass shtypes[]; /* defined in shknam.c */
 
-STATIC_VAR NEARDATA long int followmsg; /* last time of follow message */
+/* Cluster AT-A: per-env shop/billing state. Five file-statics
+ * (followmsg, repo, sell_response, sell_how, auto_credit) raced across
+ * PufferLib envs at N>=256, producing the dopay() segfault on a
+ * corrupted struct monst* (0xffffffff00000034 pattern). Definitions and
+ * nle_shk() are hoisted to file-top so the `repo` macro at ~line 1691
+ * can dereference the struct. */
+struct nle_shk_repo { struct monst *shopkeeper; coord location; };
+struct nle_shk_state {
+    long int             _followmsg;
+    struct nle_shk_repo  _repo;
+    char                 _sell_response;
+    int                  _sell_how;
+    boolean              _auto_credit;
+};
+static struct nle_shk_state *nle_shk(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_shk_state *s = (struct nle_shk_state *) current_nle_ctx->s_shk_state;
+    if (!s) {
+        s = (struct nle_shk_state *) calloc(1, sizeof(struct nle_shk_state));
+        if (s) s->_sell_response = 'a';
+        current_nle_ctx->s_shk_state = s;
+    }
+    return s;
+}
+
 STATIC_VAR const char and_its_contents[] = " and its contents";
 STATIC_VAR const char the_contents_of[] = "the contents of ";
 
@@ -1686,10 +1710,10 @@ boolean itemize;
     return buy;
 }
 
-static struct repo { /* repossession context */
-    struct monst *shopkeeper;
-    coord location;
-} repo;
+/* repo (repossession context) migrated to per-env nle_shk_state. The
+ * fields are accessed as repo.shopkeeper / repo.location.x / .y; the
+ * `repo` macro below resolves to the per-env struct nle_shk_repo. */
+#define repo (nle_shk()->_repo)
 
 /* routine called after dying (or quitting) */
 boolean
@@ -3000,23 +3024,12 @@ boolean peaceful, silent;
     return value;
 }
 
-/* auto-response flag for/from "sell foo?" 'a' => 'y', 'q' => 'n' */
-static char sell_response = 'a';
-static int sell_how = SELL_NORMAL;
-/* can't just use sell_response='y' for auto_credit because the 'a' response
-   shouldn't carry over from ordinary selling to credit selling */
-/* Cluster AO: per-env. Was static __thread boolean. */
-struct nle_shk_state { boolean _auto_credit; };
-static struct nle_shk_state *nle_shk(void) {
-    if (!current_nle_ctx) return NULL;
-    struct nle_shk_state *s = (struct nle_shk_state *) current_nle_ctx->s_shk_state;
-    if (!s) {
-        s = (struct nle_shk_state *) calloc(1, sizeof(struct nle_shk_state));
-        current_nle_ctx->s_shk_state = s;
-    }
-    return s;
-}
-#define auto_credit (nle_shk()->_auto_credit)
+/* Cluster AT-A migration macros (struct + nle_shk() defined at file top).
+ * Note: `repo` macro is at the original static-def site (~line 1691). */
+#define followmsg     (nle_shk()->_followmsg)
+#define sell_response (nle_shk()->_sell_response)
+#define sell_how      (nle_shk()->_sell_how)
+#define auto_credit   (nle_shk()->_auto_credit)
 
 void
 sellobj_state(deliberate)

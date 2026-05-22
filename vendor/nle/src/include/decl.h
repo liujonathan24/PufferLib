@@ -25,7 +25,17 @@ E const char *hname;
 E char *catmore;
 #endif /* DEF_PAGER */
 
+#ifdef NLE_PER_ENV_FILES
+/* Cluster AO — SAVEF, lock, fqn_prefix migrated to nle_ctx_t. Macros
+ * below redirect the legacy identifier so existing call sites in
+ * libnethack.so see the per-env field. Util binaries (lev_main,
+ * recover, ...) build without NLE_PER_ENV_FILES and keep their own
+ * local definitions. */
+#include "nle.h"
+#define SAVEF       (current_nle_ctx->s_SAVEF)
+#else
 E char SAVEF[];
+#endif
 #ifdef MICRO
 E char SAVEP[];
 #endif
@@ -241,7 +251,14 @@ E NEARDATA char horsename[];
 E char preferred_pet;
 E const char *occtxt; /* defined when occupation != NULL */
 E const char *nomovemsg;
+#ifdef NLE_PER_ENV_FILES
+/* Cluster AO — `lock` redirects to current_nle_ctx->s_lock. See nle.h
+ * for the per-env field and the rationale (cross-env level-file clash
+ * from a process-shared lock buffer). */
+#define lock        (current_nle_ctx->s_lock)
+#else
 E char lock[];
+#endif
 
 E const schar xdir[], ydir[], zdir[];
 
@@ -495,7 +512,14 @@ E const char *const monexplain[], invisexplain[], *const oclass_names[];
 #define PREFIXES_IN_USE
 #endif
 
+#ifdef NLE_PER_ENV_FILES
+/* Cluster AO — `fqn_prefix` redirects to current_nle_ctx->s_fqn_prefix.
+ * Each env now keeps its own pointer table; the strings themselves
+ * live in nle->settings.hackdir (which is already per-env). */
+#define fqn_prefix  (current_nle_ctx->s_fqn_prefix)
+#else
 E char *fqn_prefix[PREFIX_COUNT];
+#endif
 #ifdef WIN32
 E boolean fqn_prefix_locked[PREFIX_COUNT];
 #endif

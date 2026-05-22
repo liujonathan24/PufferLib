@@ -507,6 +507,33 @@ typedef struct nle_globals {
      * NOTE: `s_level` is not declared in nle.h; use void* + cast in .c. */
     long                 s_align_shift_oldmoves; /* makemon.c align_shift oldmoves */
     void                *s_align_shift_lev;      /* makemon.c align_shift lev (s_level*) */
+
+    /* Cluster AT-C: per-env dungeon graph + level-builder + key-cmd state.
+     * Was: process-global mutable in dungeon.c/mklev.c/do.c/decl.c. With
+     * N envs in one process, env A's dungeon graph would be walked by env
+     * B's level transition code, causing the save_room(r=NULL) crash. */
+    void                         *s_branches;          /* branch * (dungeon.c) */
+    int                           s_branch_id_ctr;     /* dungeon.c add_branch */
+    void                         *s_mapseenchn;        /* mapseen * (dungeon.c) */
+    int                           s_n_dgns;            /* dungeon.c */
+    signed char                   s_vault_x;           /* xchar (mklev.c) */
+    signed char                   s_vault_y;           /* xchar (mklev.c) */
+    char                          s_made_branch;       /* boolean (mklev.c) */
+    char                          s_at_ladder;         /* boolean (do.c) */
+    void                         *s_save_cm;           /* struct ext_func_tab * (decl.c) */
+    /* Cluster AT-B: per-env level/save filename buffers and prefix table.
+     * Was: process-global `char lock[PL_NSIZ+14]`, `char SAVEF[SAVESIZE]`,
+     * `char bones[]`, `char *fqn_prefix[PREFIX_COUNT]` in files.c/decl.c.
+     * With N envs in one process, all envs collided on the same buffer:
+     * getlock() builds lock="<uid><plname>" (same for every env's wizard
+     * default), and fqn_prefix[] was set once per env at mainloop entry
+     * then overwritten by the next env. Result: env j writes its level
+     * file over env i's; env i later mreads a torn level and panics.
+     * Sizes match compile-time arrays in files.c (PL_NSIZ=32). */
+    char                          s_lock[46];      /* PL_NSIZ+14 */
+    char                          s_SAVEF[45];     /* SAVESIZE = PL_NSIZ+13 (UNIX) */
+    char                          s_bones[16];    /* "bonesnn.xxx" + slack */
+    char                         *s_fqn_prefix[10]; /* PREFIX_COUNT */
 } nle_ctx_t;
 
 /*

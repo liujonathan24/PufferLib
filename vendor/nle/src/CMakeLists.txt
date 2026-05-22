@@ -127,6 +127,12 @@ target_link_directories(nethack PUBLIC /usr/local/lib)
 # captures all NetHack heap state. Also link with -Bsymbolic-functions so
 # libnethack's intra-DSO calls bind to our wrapper, not libc free.
 target_compile_definitions(nethack PRIVATE NLE_USE_ARENA_FREE=1)
+# Cluster AO: lock[], SAVEF[], bones[], fqn_prefix[] are per-env fields in
+# nle_ctx_t (see include/nle.h). Decl.h redirects the legacy identifiers
+# to current_nle_ctx->s_FOO when this define is set. Util binaries do
+# NOT define this, so their local `char lock[N]` / `char SAVEF[N]` keep
+# working unchanged.
+target_compile_definitions(nethack PRIVATE NLE_PER_ENV_FILES=1)
 # -Bsymbolic-functions: bind libnethack's intra-DSO function calls (notably
 # free) to our own definitions, so NetHack's free() calls resolve to
 # nle_arena_free instead of libc free even when the loader is also linked.
@@ -175,7 +181,8 @@ pybind11_add_module(
   $<TARGET_OBJECTS:tile>)
 target_link_libraries(_pynethack PUBLIC nethackdl)
 set_target_properties(_pynethack PROPERTIES CXX_STANDARD 14)
-target_include_directories(_pynethack PUBLIC ${NLE_INC_GEN})
+target_include_directories(_pynethack PUBLIC ${NLE_INC_GEN}
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/deboost.context/include)
 add_dependencies(_pynethack util) # For pm.h.
 
 # ttyrec converter library

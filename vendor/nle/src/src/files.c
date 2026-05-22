@@ -70,22 +70,19 @@ const
 #define fqn_filename_buffer ((char (*)[FQN_MAX_FILENAME]) current_nle_ctx->s_fqn_fname_p)
 #endif
 
+/* Cluster AO — `bones` and `lock` migrated to nle_ctx_t (s_bones,
+ * s_lock). `lock` is exposed via decl.h's NLE_PER_ENV_FILES macro;
+ * `bones` is not in decl.h so a local file-level macro is used here
+ * (and a matching one in bones.c). nle.c initializes both fields on
+ * each new env: s_lock = "1lock" (historical default), s_bones =
+ * "bonesnn.xxx" (template that set_bonesfile_name() then overwrites
+ * with the per-level filename). Only the UNIX/__BEOS__ sizing applies
+ * to the library build; non-UNIX ports would need their own per-env
+ * sizing if ever reintroduced. */
 #if !defined(MFLOPPY) && !defined(VMS) && !defined(WIN32)
-char bones[] = "bonesnn.xxx";
-char lock[PL_NSIZ + 14] = "1lock"; /* long enough for uid+name+.99 */
+#define bones (current_nle_ctx->s_bones)
 #else
-#if defined(MFLOPPY)
-char bones[FILENAME]; /* pathname of bones files */
-char lock[FILENAME];  /* pathname of level files */
-#endif
-#if defined(VMS)
-char bones[] = "bonesnn.xxx;1";
-char lock[PL_NSIZ + 17] = "1lock"; /* long enough for _uid+name+.99;1 */
-#endif
-#if defined(WIN32)
-char bones[] = "bonesnn.xxx";
-char lock[PL_NSIZ + 25]; /* long enough for username+-+name+.99 */
-#endif
+#error "Per-env lock/bones migration only implemented for UNIX/__BEOS__ ports."
 #endif
 
 #if defined(UNIX) || defined(__BEOS__)
@@ -111,7 +108,12 @@ char lock[PL_NSIZ + 25]; /* long enough for username+-+name+.99 */
 #endif
 #endif
 
-char SAVEF[SAVESIZE]; /* holds relative path of save file from playground */
+/* Cluster AO — SAVEF migrated to current_nle_ctx->s_SAVEF. Sized
+ * 45 bytes there (matches SAVESIZE = PL_NSIZ + 13 on UNIX/__BEOS__).
+ * Verified at compile time below. */
+#if SAVESIZE > 45
+#error "SAVESIZE exceeds s_SAVEF[45] in nle.h; widen the field."
+#endif
 #ifdef MICRO
 char SAVEP[SAVESIZE]; /* holds path of directory for save file */
 #endif

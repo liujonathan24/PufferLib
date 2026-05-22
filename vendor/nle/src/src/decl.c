@@ -267,10 +267,10 @@ const char *materialnm[] = { "mysterious", "liquid",  "wax",        "organic",
  * tc_gbl_data deferred (struct-tag self-reference). */
 /* tc_gbl_data — stage 8' migrated to nle_ctx_t. Heap-alloc'd in init_nle. */
 
-char *fqn_prefix[PREFIX_COUNT] = { (char *) 0, (char *) 0, (char *) 0,
-                                   (char *) 0, (char *) 0, (char *) 0,
-                                   (char *) 0, (char *) 0, (char *) 0,
-                                   (char *) 0 };
+/* Cluster AO — `fqn_prefix[]` migrated to current_nle_ctx->s_fqn_prefix.
+ * Each env's table is zero-initialized when nle_ctx_t is calloc'd in
+ * nle_start(); nle.c's main_loop_real() then populates each slot from
+ * settings->hackdir (per-env) on the first step. */
 #ifdef WIN32
 boolean fqn_prefix_locked[PREFIX_COUNT] = { FALSE, FALSE, FALSE,
                                             FALSE, FALSE, FALSE,
