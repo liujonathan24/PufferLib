@@ -176,7 +176,7 @@ extern char *FDECL(translate_path_variables, (const char *, char *));
 extern char *sounddir;
 #endif
 
-extern int n_dgns; /* from dungeon.c */
+#define n_dgns (current_nle_ctx->s_n_dgns) /* was extern from dungeon.c */
 
 #if defined(UNIX) && defined(QT_GRAPHICS)
 #define SELECTSAVED

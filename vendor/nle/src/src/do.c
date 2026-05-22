@@ -20,7 +20,7 @@ STATIC_DCL int NDECL(currentlevel_rewrite);
 STATIC_DCL void NDECL(final_level);
 /* static boolean FDECL(badspot, (XCHAR_P,XCHAR_P)); */
 
-extern int n_dgns; /* number of dungeons, from dungeon.c */
+#define n_dgns (current_nle_ctx->s_n_dgns) /* was extern from dungeon.c */
 
 static const char drop_types[] = { ALLOW_COUNT, COIN_CLASS,
                                             ALL_CLASSES, 0 };
@@ -934,7 +934,10 @@ int retry;
 }
 
 /* on a ladder, used in goto_level */
-static NEARDATA boolean at_ladder = FALSE;
+/* Cluster AT-C: per-env (was static). do.c calls goto_level which
+ * yields through pline; at_ladder must persist across the yield as
+ * per-env state. */
+#define at_ladder (*(boolean *)&current_nle_ctx->s_at_ladder)
 
 /* the '>' command */
 int

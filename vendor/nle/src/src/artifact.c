@@ -1536,7 +1536,7 @@ struct obj *obj;
         case CREATE_PORTAL: {
             int i, num_ok_dungeons, last_ok_dungeon = 0;
             d_level newlev;
-            extern int n_dgns; /* from dungeon.c */
+            #define n_dgns (current_nle_ctx->s_n_dgns) /* was extern from dungeon.c */
             winid tmpwin = create_nhwindow(NHW_MENU);
             anything any;
 

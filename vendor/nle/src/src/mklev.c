@@ -39,8 +39,12 @@ STATIC_DCL void FDECL(mk_knox_portal, (XCHAR_P, XCHAR_P));
 #define create_vault() create_room(-1, -1, 2, 2, -1, -1, VAULT, TRUE)
 #define init_vault() vault_x = -1
 #define do_vault() (vault_x != -1)
-static xchar vault_x, vault_y;
-static boolean made_branch; /* used only during level creation */
+/* Cluster AT-C: per-env (was static file-scope). mklev() yields through
+ * pline/menu prompts; with N envs running in one process, env A's value
+ * was visible to env B's continuation. */
+#define vault_x     (*(xchar *)&current_nle_ctx->s_vault_x)
+#define vault_y     (*(xchar *)&current_nle_ctx->s_vault_y)
+#define made_branch (*(boolean *)&current_nle_ctx->s_made_branch)
 
 /* Args must be (const genericptr) so that qsort will always be happy. */
 
@@ -1882,7 +1886,7 @@ STATIC_OVL void
 mk_knox_portal(x, y)
 xchar x, y;
 {
-    extern int n_dgns; /* from dungeon.c */
+    #define n_dgns (current_nle_ctx->s_n_dgns) /* was extern from dungeon.c */
     d_level *source;
     branch *br;
     schar u_depth;
