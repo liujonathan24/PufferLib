@@ -194,7 +194,15 @@ class NetHackRL
     struct rl_window {
         int type;
         std::vector<rl_menu_item> menu_items;
-        std::vector<std::string> strings;
+        /* Cluster AP fix: replaced std::vector<std::string> strings with a
+         * single last_msg string.  The vector's _M_finish pointer lived in
+         * the arena (operator new → arena alloc), so nle_fr_restore would
+         * overwrite it with stale (pre-snapshot) content including a non-zero
+         * _M_finish, making strings.size() > 0 at the next clear and causing
+         * glibc to detect a double-free of an already-tcache'd _M_p.
+         * A single string is sufficient because fill_obs only reads the LAST
+         * pushed message (back()) for the yn_function case. */
+        std::string last_msg;
     };
 
     struct rl_inventory_item {
@@ -300,7 +308,7 @@ NetHackRL::NetHackRL(int &argc, char **argv) : glyphs_(), blstats_{}
 void
 NetHackRL::player_selection_method()
 {
-    windows_[BASE_WINDOW]->strings.clear();
+    windows_[BASE_WINDOW]->last_msg.clear();
 }
 
 void
@@ -387,11 +395,13 @@ NetHackRL::fill_obs(nle_obs *obs)
             // Special case. See tty_putstr: yn_function doesn't add to
             // toplines until after that frame is over. Use last string on
             // NHW_MESSAGE instead.
-            assert(windows_.size() > WIN_MESSAGE);
-            rl_window *win = windows_[WIN_MESSAGE].get();
-            assert(win->type == NHW_MESSAGE);
-            std::strncpy((char *) &obs->message[0],
-                         win->strings.back().c_str(), NLE_MESSAGE_SIZE);
+            const char *msg = "";
+            if (WIN_MESSAGE != WIN_ERR &&
+                (size_t)WIN_MESSAGE < windows_.size() &&
+                windows_[WIN_MESSAGE]) {
+                msg = windows_[WIN_MESSAGE]->last_msg.c_str();
+            }
+            std::strncpy((char *) &obs->message[0], msg, NLE_MESSAGE_SIZE);
         } else if (ttyDisplay->toplin) {
             // Copy toplines[], see topl.c.
             std::strncpy((char *) &obs->message[0], toplines,
@@ -642,7 +652,7 @@ void
 NetHackRL::putstr_method(winid wid, int attr, const char *str)
 {
     DEBUG_API("About to set strings on " << wid << std::endl);
-    windows_[wid]->strings.push_back(str);
+    windows_[wid]->last_msg = str;
 }
 
 winid
@@ -673,7 +683,18 @@ NetHackRL::create_nhwindow_method(int type)
     winid wid = tty_create_nhwindow(type);
     DEBUG_API(": wid == " << wid << std::endl);
 
-    windows_.resize(wid + 1);
+    /* Cluster AP fix: only GROW the vector, never shrink.
+     * The original `windows_.resize(wid + 1)` would shrink the vector
+     * when wid < windows_.size()-1 (e.g., after WIN_INVEN is destroyed and
+     * slot 4 is reused while slot 5 is still live).  Shrinking calls the
+     * unique_ptr destructors for all slots above `wid`, freeing those
+     * rl_window objects without a corresponding tty_destroy_nhwindow — the
+     * freed rl_window's strings vector destructs its elements, and one of
+     * those string data buffers may already be in the glibc tcache (freed
+     * by a prior rl_clear_nhwindow), triggering a double-free abort.
+     * Fix: only extend the vector; never implicitly delete live windows. */
+    if ((size_t)(wid + 1) > windows_.size())
+        windows_.resize(wid + 1);
     assert(!windows_[wid]);
 
     DEBUG_API("ABOUT TO RESET " << wid << std::endl;);
@@ -693,7 +714,7 @@ NetHackRL::clear_nhwindow_method(winid wid)
     }
     auto &rl_win = windows_[wid];
     rl_win->menu_items.clear();
-    rl_win->strings.clear();
+    rl_win->last_msg.clear();
 
     if (wid == WIN_MAP) {
         glyphs_.fill(nul_glyph);
