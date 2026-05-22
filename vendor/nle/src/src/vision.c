@@ -2402,7 +2402,7 @@ char *limits;   /* points at range limit for current row, or NULL */
      * from hanging in dog_move -> do_clear_area -> right_side. */
     int nle_iter = 0;
     while (left <= right_mark) {
-        if (++nle_iter > COLNO + 8) return;
+        if (++nle_iter > COLNO + 8) goto nle_right_done;
         right_edge = right_ptrs[row][left];
         if (right_edge > lim_max)
             right_edge = lim_max;
@@ -2464,7 +2464,7 @@ char *limits;   /* points at range limit for current row, or NULL */
              *
              */
             if (left > lim_max)
-                return;            /* check (1) */
+                goto nle_right_done;            /* check (1) */
             if (left == lim_max) { /* check (2) */
                 if (vis_func) {
                     (*vis_func)(lim_max, row, varg);
@@ -2472,7 +2472,7 @@ char *limits;   /* points at range limit for current row, or NULL */
                     set_cs(rowp, lim_max);
                     set_max(lim_max);
                 }
-                return;
+                goto nle_right_done;
             }
             /*
              * Check if we can see any spots in the opening.  We might
@@ -2547,6 +2547,7 @@ char *limits;   /* points at range limit for current row, or NULL */
             left = right + 1; /* no limit check necessary */
         }
     }
+nle_right_done:;
     } /* close nle_iter block */
     vision_recur_depth--;
 }
@@ -2597,7 +2598,7 @@ char *limits;
      * pathological left_ptrs values can't hang multi-env training. */
     int nle_iter = 0;
     while (right >= left_mark) {
-        if (++nle_iter > COLNO + 8) return;
+        if (++nle_iter > COLNO + 8) goto nle_left_done;
         left_edge = left_ptrs[row][right];
         if (left_edge < lim_min)
             left_edge = lim_min;
@@ -2637,7 +2638,7 @@ char *limits;
 
             /* Check for boundary conditions. */
             if (right < lim_min)
-                return;
+                goto nle_left_done;
             if (right == lim_min) {
                 if (vis_func) {
                     (*vis_func)(lim_min, row, varg);
@@ -2645,7 +2646,7 @@ char *limits;
                     set_cs(rowp, lim_min);
                     set_min(lim_min);
                 }
-                return;
+                goto nle_left_done;
             }
             /* Check if we can see any spots in the opening. */
             if (right <= left_edge) {
@@ -2694,6 +2695,7 @@ char *limits;
             right = left - 1; /* no limit check necessary */
         }
     }
+nle_left_done:;
     } /* close nle_iter block */
     vision_recur_depth--;
 }
