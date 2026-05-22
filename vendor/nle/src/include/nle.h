@@ -381,6 +381,25 @@ typedef struct nle_globals {
      * init thread, pop on worker thread → empty-deque pop_back UB. Owned
      * by this pointer; nle_end frees it via NetHackRL::destroy_for_ctx(). */
     void                *s_win_proc_calls;
+    /* Cluster AN: per-env tty backend state (win/tty/*.c).
+     * Each file owns its own struct; void* here so nle.h doesn't have
+     * to pull in MAX_PER_ROW, BUFSIZ, enum statusfields. Owned by the
+     * respective .c file's accessor; nle_end frees via nle_tty_destroy_for_ctx().
+     *
+     * wintty.c:  obuf / clipping / clipx,y / vt_tile_current_window /
+     *            fieldorder / finalx / windowdata_init / cond_shrinklvl /
+     *            enclev,enc_shrinklvl / dlvl_shrinklvl / truncation_expected /
+     *            do_field_opt
+     * topl.c:    snapshot_mesgs
+     * termcap.c: KS, KE
+     *
+     * Was `static __thread X foo`. Cross-thread coroutine resume saw the
+     * worker pthread's TLS slots empty after the env was init'd on the
+     * main thread, triggering jump_fcontext+103 SIGSEGV. Now per-env so
+     * resume on any thread reads the same env state. */
+    void                *s_wintty_state;
+    void                *s_topl_state;
+    void                *s_termcap_state;
 } nle_ctx_t;
 
 /*

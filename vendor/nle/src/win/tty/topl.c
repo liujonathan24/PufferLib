@@ -541,8 +541,26 @@ char def;
     return q;
 }
 
-/* shared by tty_getmsghistory() and tty_putmsghistory() */
-static __thread char **snapshot_mesgs = 0;
+/* Cluster AN: per-env snapshot buffer for message history.
+ * Was `static __thread char **snapshot_mesgs = 0`. Shared by
+ * tty_getmsghistory() and tty_putmsghistory() across coroutine yields,
+ * so it must live in the env, not the calling thread. */
+struct nle_topl_state {
+    char **_snapshot_mesgs;
+};
+static struct nle_topl_state *
+nle_topl(void)
+{
+    if (!current_nle_ctx)
+        return NULL;
+    struct nle_topl_state *s = (struct nle_topl_state *) current_nle_ctx->s_topl_state;
+    if (!s) {
+        s = (struct nle_topl_state *) calloc(1, sizeof(struct nle_topl_state));
+        current_nle_ctx->s_topl_state = s;
+    }
+    return s;
+}
+#define snapshot_mesgs (nle_topl()->_snapshot_mesgs)
 
 /* collect currently available message history data into a sequential array;
    optionally, purge that data from the active circular buffer set as we go */

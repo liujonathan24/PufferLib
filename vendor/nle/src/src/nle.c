@@ -422,11 +422,13 @@ write_ttyrec_header(int length, unsigned char channel)
 int
 nle_fflush(FILE *stream)
 {
-    /* Only act on fflush(stdout). */
+    /* Only act on fflush(stdout). For any other stream, pass straight
+     * through to libc's fflush via the real symbol. The wintty.h macro
+     * `#define fflush nle_fflush` is still in scope inside this TU, so a
+     * naked `fflush(stream)` would recurse — call the libc symbol
+     * directly. */
     if (stream != stdout) {
-        fprintf(stderr,
-                "Warning: nle_flush called with unexpected FILE pointer %p ",
-                stream);
+#undef fflush
         return fflush(stream);
     }
     nle_ctx_t *nle = current_nle_ctx;

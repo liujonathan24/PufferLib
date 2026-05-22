@@ -462,12 +462,20 @@ const dlb_procs_t rsrc_dlb_procs = { rsrc_dlb_init,  rsrc_dlb_cleanup,
 #define do_dlb_ftell (*dlb_procs->dlb_ftell_proc)
 
 static const dlb_procs_t *dlb_procs;
-static __thread boolean dlb_initialized = FALSE;
+/* Cluster AN: dlb_initialized was `static __thread boolean`. dlb_libs[]
+ * (above) is process-global; with __thread the init ran once per thread
+ * and each re-ran lib_dlb_init which memsets dlb_libs[0]=0, racing with
+ * other threads holding the old FILE*. Now process-global with a guard
+ * so init runs exactly once across all threads. */
+#include <stdatomic.h>
+static atomic_int dlb_init_state = 0;  /* 0=unstarted, 1=in-progress, 2=done */
+static boolean dlb_initialized = FALSE;
 
 boolean
 dlb_init()
 {
-    if (!dlb_initialized) {
+    int expected = 0;
+    if (atomic_compare_exchange_strong(&dlb_init_state, &expected, 1)) {
 #ifdef DLBLIB
         dlb_procs = &lib_dlb_procs;
 #endif
@@ -477,8 +485,11 @@ dlb_init()
 
         if (dlb_procs)
             dlb_initialized = do_dlb_init();
+        atomic_store(&dlb_init_state, 2);
+    } else {
+        /* Another thread is initializing or already finished — wait. */
+        while (atomic_load(&dlb_init_state) != 2) { /* spin briefly */ }
     }
-
     return dlb_initialized;
 }
 

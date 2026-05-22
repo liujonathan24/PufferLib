@@ -143,9 +143,54 @@ const struct window_procs tty_procs = {
 
 extern void FDECL(cmov, (int, int));   /* from termcap.c */
 extern void FDECL(nocmov, (int, int)); /* from termcap.c */
+
+/* Cluster AN: per-env file-local state. Was a pile of `static __thread`
+ * declarations scattered through wintty.c, each at the top of its
+ * functional block. Crossing OMP-thread boundaries during a coroutine
+ * resume (env init on main, step on pthread) left worker threads reading
+ * empty TLS, triggering jump_fcontext SIGSEGV after the Cluster AM fix.
+ * Each env now carries its own copy via current_nle_ctx->s_wintty_state. */
+struct nle_wintty_state {
+    char    _obuf[BUFSIZ];
+    /* CLIPPING block */
+    boolean _clipping;
+    int     _clipx, _clipxmax;
+    int     _clipy, _clipymax;
+    /* TTY_TILES_ESCCODES */
+    int     _vt_tile_current_window;       /* default -2 */
+    /* STATUS_HILITES block (size of fieldorder array fixed at 15 = MAX_PER_ROW) */
+    const enum statusfields (*_fieldorder)[15];
+    int     _finalx[3][2];
+    boolean _windowdata_init;
+    int     _cond_shrinklvl;
+    int     _enclev, _enc_shrinklvl;
+    int     _dlvl_shrinklvl;
+    boolean _truncation_expected;
+    int     _do_field_opt;                 /* default 1 (or 0 if DISABLE_TTY_FIELD_OPT) */
+};
+static struct nle_wintty_state *
+nle_wintty(void)
+{
+    if (!current_nle_ctx)
+        return NULL;
+    struct nle_wintty_state *s =
+        (struct nle_wintty_state *) current_nle_ctx->s_wintty_state;
+    if (!s) {
+        s = (struct nle_wintty_state *) calloc(1, sizeof(struct nle_wintty_state));
+        s->_vt_tile_current_window = -2;
+#if defined(DISABLE_TTY_FIELD_OPT)
+        s->_do_field_opt = 0;
+#else
+        s->_do_field_opt = 1;
+#endif
+        current_nle_ctx->s_wintty_state = s;
+    }
+    return s;
+}
+
 #if defined(UNIX) || defined(VMS)
 #ifndef RL_GRAPHICS
-static __thread char obuf[BUFSIZ]; /* BUFSIZ is defined in stdio.h */
+#define obuf (nle_wintty()->_obuf)
 #endif
 #endif
 
@@ -157,10 +202,12 @@ char defmorestr[] = "--More--";
 boolean clipping = FALSE; /* clipping on? */
 int clipx = 0, clipxmax = 0;
 #else
-static __thread boolean clipping = FALSE; /* clipping on? */
-static __thread int clipx = 0, clipxmax = 0;
+#define clipping (nle_wintty()->_clipping)
+#define clipx (nle_wintty()->_clipx)
+#define clipxmax (nle_wintty()->_clipxmax)
 #endif
-static __thread int clipy = 0, clipymax = 0;
+#define clipy (nle_wintty()->_clipy)
+#define clipymax (nle_wintty()->_clipymax)
 #endif /* CLIPPING */
 
 #if defined(USE_TILES) && defined(MSDOS)
@@ -230,7 +277,7 @@ static const char default_menu_cmds[] = {
 };
 
 #ifdef TTY_TILES_ESCCODES
-static __thread int vt_tile_current_window = -2;
+#define vt_tile_current_window (nle_wintty()->_vt_tile_current_window)
 
 void
 print_vt_code(i, c, d)
@@ -3720,14 +3767,15 @@ static const enum statusfields
     { BL_LEVELDESC, BL_TIME, BL_CONDITION, BL_FLUSH, blPAD, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
-static __thread const enum statusfields (*fieldorder)[MAX_PER_ROW];
+#define fieldorder (nle_wintty()->_fieldorder)
 
-static __thread int finalx[3][2];    /* [rows][NOW or BEFORE] */
-static __thread boolean windowdata_init = FALSE;
-static __thread int cond_shrinklvl = 0;
-static __thread int enclev = 0, enc_shrinklvl = 0;
-static __thread int dlvl_shrinklvl = 0;
-static __thread boolean truncation_expected = FALSE;
+#define finalx (nle_wintty()->_finalx)    /* [rows][NOW or BEFORE] */
+#define windowdata_init (nle_wintty()->_windowdata_init)
+#define cond_shrinklvl (nle_wintty()->_cond_shrinklvl)
+#define enclev (nle_wintty()->_enclev)
+#define enc_shrinklvl (nle_wintty()->_enc_shrinklvl)
+#define dlvl_shrinklvl (nle_wintty()->_dlvl_shrinklvl)
+#define truncation_expected (nle_wintty()->_truncation_expected)
 #define FORCE_RESET TRUE
 #define NO_RESET FALSE
 
@@ -3739,12 +3787,9 @@ static __thread boolean truncation_expected = FALSE;
  * for all platforms eventually and the conditional
  * setting below can be removed.
  */
-static __thread int do_field_opt =
-#if defined(DISABLE_TTY_FIELD_OPT)
-    0;
-#else
-    1;
-#endif
+#define do_field_opt (nle_wintty()->_do_field_opt)
+/* default seeded by nle_wintty() lazy-alloc: 0 if DISABLE_TTY_FIELD_OPT
+ * else 1, matching the original initializer that was here. */
 
 #endif  /* STATUS_HILITES */
 

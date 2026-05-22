@@ -49,7 +49,28 @@ STATIC_VAR char tbuf[512];
 /* hilites — per-env color-escape table migrated to nle_ctx_t. */
 #define hilites (current_nle_ctx->s_hilites_p)
 
-static __thread char *KS = (char *) 0, *KE = (char *) 0; /* keypad sequences */
+/* Cluster AN: per-env keypad sequences. Was `static __thread char *KS, *KE`. */
+struct nle_termcap_state {
+    char *_KS;
+    char *_KE;
+};
+static struct nle_termcap_state *
+nle_termcap(void)
+{
+    if (!current_nle_ctx)
+        return NULL;
+    struct nle_termcap_state *s = (struct nle_termcap_state *) current_nle_ctx->s_termcap_state;
+    if (!s) {
+        s = (struct nle_termcap_state *) calloc(1, sizeof(struct nle_termcap_state));
+        /* KS, KE default to NULL (calloc zero) — same as the original
+         * `(char *) 0` initializer. */
+        current_nle_ctx->s_termcap_state = s;
+    }
+    return s;
+}
+#define KS (nle_termcap()->_KS)
+#define KE (nle_termcap()->_KE)
+
 static char nullstr[] = "";
 
 #if defined(ASCIIGRAPH) && !defined(NO_TERMS)
