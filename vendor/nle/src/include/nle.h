@@ -369,6 +369,18 @@ typedef struct nle_globals {
     /* per-env role/race description (role.c urole/urace). */
     void                *s_urole_p;
     void                *s_urace_p;
+    /* Cluster AM: per-env NetHackRL singleton (winrl.cc).
+     * Was `static thread_local std::unique_ptr<NetHackRL> instance`. Under
+     * PufferLib's OMP-parallel cpu_vec_step, worker threads have a null
+     * thread_local instance and segfault in rl_nhgetch. Owned by this
+     * pointer; nle_end deletes it via NetHackRL::destroy_for_ctx(). */
+    void                *s_netHackRL_instance;
+    /* Cluster AM: per-env win-procedure trace deque (winrl.cc).
+     * Was `thread_local std::deque<std::string> win_proc_calls`. Same OMP
+     * coroutine-resume hazard as s_netHackRL_instance: push happens on
+     * init thread, pop on worker thread → empty-deque pop_back UB. Owned
+     * by this pointer; nle_end frees it via NetHackRL::destroy_for_ctx(). */
+    void                *s_win_proc_calls;
 } nle_ctx_t;
 
 /*
