@@ -124,9 +124,12 @@ elif [ "$ENV" = "nethack" ]; then
     SRC_DIR="ocean/$ENV"
     NLE_DIR="vendor/nle"
     INCLUDES+=(-I./$NLE_DIR/include)
-    # libnethack.so is loaded at runtime via dlopen (one copy per env, to
-    # isolate NetHack's global state). We only need -ldl here.
-    EXTRA_LDFLAGS+=(-ldl)
+    # Direct linkage: libnethack.so is linked at build time, not dlopen'd at
+    # runtime. nle_step/nle_start/nle_end and the fr_* fast-reset extensions
+    # are resolved as ordinary externs. -Wl,-rpath embeds the search path so
+    # the binary finds libnethack.so without LD_LIBRARY_PATH.
+    NETHACK_LIB_DIR="$(pwd)/vendor/nle/src/build"
+    EXTRA_LDFLAGS+=(-L"$NETHACK_LIB_DIR" -lnethack -Wl,-rpath,"$NETHACK_LIB_DIR" -ldl)
 elif [ -d "ocean/$ENV" ]; then
     SRC_DIR="ocean/$ENV"
 else

@@ -39,12 +39,26 @@ typedef nle_ctx_t* (*nle_start_fn)(nle_obs*, FILE*, nle_seeds_init_t*, nle_setti
 typedef nle_ctx_t* (*nle_step_fn)(nle_ctx_t*, nle_obs*);
 typedef void       (*nle_end_fn)(nle_ctx_t*);
 
-// Fast-reset extension (see vendor/nle/src/src/nle_fast_reset.c). Resolved
-// only if the patched libnethack.so is loaded; absence falls back to the
-// dlopen-per-reset path.
+// Fast-reset extension (see vendor/nle/src/src/nle_fast_reset.c).
 typedef void* (*nle_fr_snapshot_fn)(nle_ctx_t*);
 typedef void  (*nle_fr_restore_fn) (nle_ctx_t*, void*);
 typedef void  (*nle_fr_destroy_fn) (void*);
+
+// Direct linkage: libnethack.so symbols are resolved at link time, not via
+// dlopen. The wrapper retains env->fn_* function pointers for ABI stability,
+// but they're assigned from these externs — no runtime symbol lookup.
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern nle_ctx_t* nle_start(nle_obs*, FILE*, nle_seeds_init_t*, nle_settings*);
+extern nle_ctx_t* nle_step(nle_ctx_t*, nle_obs*);
+extern void       nle_end(nle_ctx_t*);
+extern void*      nle_fr_snapshot(nle_ctx_t*);
+extern void       nle_fr_restore(nle_ctx_t*, void*);
+extern void       nle_fr_destroy(void*);
+#ifdef __cplusplus
+}
+#endif
 
 // Build flag: -DNETHACK_FAST_RESET=1 enables the snapshot/restore path.
 // Default is ON since exp_019 — the heap-aware fast-reset works correctly
@@ -284,56 +298,26 @@ typedef struct Nethack {
 } Nethack;
 
 // ---------------------------------------------------------------------------
-// Shared libnethack: ONE process-wide dlopen on first env init. All envs
-// share the same library code and use per-env nle_ctx_t* for state. The
-// migration in vendor/nle/src/* moved every per-game global into
-// nle_ctx_t, so a single shared library now supports N envs natively.
-// (Previously each env had its own memfd+dlopen copy as a workaround.)
+// Shared libnethack: DIRECT LINKAGE. No dlopen, no dlsym. The library is
+// linked at build time (-lnethack); all envs share the same code and use
+// per-env nle_ctx_t* for state. The migration in vendor/nle/src/* moved
+// every per-game global into nle_ctx_t, so a single shared library
+// supports N envs natively.
 // ---------------------------------------------------------------------------
-static void*               g_libnethack_handle = NULL;
-static nle_start_fn        g_fn_start = NULL;
-static nle_step_fn         g_fn_step  = NULL;
-static nle_end_fn          g_fn_end   = NULL;
-static nle_fr_snapshot_fn  g_fn_fr_snapshot = NULL;
-static nle_fr_restore_fn   g_fn_fr_restore  = NULL;
-static nle_fr_destroy_fn   g_fn_fr_destroy  = NULL;
-
 static int nethack_load_lib(Nethack* env) {
     PROF_INIT_IF_NEEDED();
     PROF_START(reload);
-    if (!g_libnethack_handle) {
-        const char* libpath = getenv("NETHACK_LIBPATH");
-        if (libpath == NULL) libpath = "./vendor/nle/lib/libnethack.so";
-        // Process-wide single dlopen. RTLD_GLOBAL not needed; symbols are
-        // resolved through the saved handle. No memfd/copy hack: globals
-        // are now per-env via nle_ctx_t.
-        void* h = dlopen(libpath, RTLD_NOW | RTLD_LOCAL);
-        if (h == NULL) {
-            fprintf(stderr, "nethack: dlopen failed: %s\n", dlerror());
-            return -1;
-        }
-        g_libnethack_handle = h;
-        g_fn_start = (nle_start_fn)dlsym(h, "nle_start");
-        g_fn_step  = (nle_step_fn) dlsym(h, "nle_step");
-        g_fn_end   = (nle_end_fn)  dlsym(h, "nle_end");
-        if (!g_fn_start || !g_fn_step || !g_fn_end) {
-            fprintf(stderr, "nethack: dlsym missing symbols: %s\n", dlerror());
-            dlclose(h);
-            g_libnethack_handle = NULL;
-            return -1;
-        }
-        g_fn_fr_snapshot = (nle_fr_snapshot_fn) dlsym(h, "nle_fr_snapshot");
-        g_fn_fr_restore  = (nle_fr_restore_fn)  dlsym(h, "nle_fr_restore");
-        g_fn_fr_destroy  = (nle_fr_destroy_fn)  dlsym(h, "nle_fr_destroy");
-    }
-    env->dl_handle = g_libnethack_handle;
+    // No dlopen — symbols are resolved at link time. Just assign the
+    // function pointers so the rest of the wrapper code (env->fn_step etc.)
+    // continues to work unchanged.
+    env->dl_handle = (void*)1;  // non-NULL sentinel: "library is available"
     env->dl_fd     = 0;
-    env->fn_start  = g_fn_start;
-    env->fn_step   = g_fn_step;
-    env->fn_end    = g_fn_end;
-    env->fn_fr_snapshot = g_fn_fr_snapshot;
-    env->fn_fr_restore  = g_fn_fr_restore;
-    env->fn_fr_destroy  = g_fn_fr_destroy;
+    env->fn_start  = &nle_start;
+    env->fn_step   = &nle_step;
+    env->fn_end    = &nle_end;
+    env->fn_fr_snapshot = &nle_fr_snapshot;
+    env->fn_fr_restore  = &nle_fr_restore;
+    env->fn_fr_destroy  = &nle_fr_destroy;
     PROF_END(reload, PROF_RESET_RELOAD);
     return 0;
 }
