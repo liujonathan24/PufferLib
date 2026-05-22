@@ -51,12 +51,81 @@ own state in `nle_ctx_t`. Stepping is `current_nle_ctx = env_i;
 nle_step(env_i)`. Memory drops to one copy of libnethack plus
 `N × sizeof(nle_ctx_t)`. Init drops to one `calloc` per env.
 
-This refactor took Path B from 199 KB of writable globals to 19 KB —
-**but the last 19 KB is enough to make N≥2 envs collide**. The
-`multi_shared 2 500` bench crashes during the second env's
-`welcome → pline → bot → sprintf`, because per-game state still
-lives in ~126 NEARDATA globals that aren't in `nle_ctx_t` and aren't
-in the swap blob.
+This refactor took Path B from 199 KB of writable globals to **19 KB
+(90.4% reduction)**. The vecenv now works reliably at N≤88 envs in a
+single thread with one libnethack instance.
+
+## Scaling status
+
+| N envs (random actions, 5000 steps each) | Result |
+|------------------------------------------|--------|
+| 16 | ✅ 5/5 trials pass |
+| 32 | ✅ 5/5 trials pass |
+| 64 | ✅ 5/5 trials pass, ~270K agg steps/s |
+| 88 | ✅ 5/5 trials pass |
+| 92+ | ❌ deterministic hang at env=37 t=811 with seeds 0x12345+i |
+| 128+ | ❌ same hang earlier (t~536 at N=92) |
+
+**Determinism: 16/16 golden replays pass at every commit.**
+
+## The N≥92 hang — what's known
+
+Backtrace consistently terminates inside `right_side` (or `left_side`)
+recursion called from `vision_recalc → docrt → goto_level → deferred_goto`.
+The repeated stack frames at the same return address suggest either:
+1. A deep recursion in the `view_from` left/right scan, OR
+2. An iteration of the `while (left ≤ right_mark)` inner loop that
+   isn't decreasing due to corrupted `right_ptrs[row][left]` values.
+
+What's been ruled out:
+- Per-env recursion-depth guards: added but the compiler folds the
+  check (no `cmp $0x40` in the prolog even with `volatile`). Needs
+  the guard moved to a separate `noinline` function.
+- Cross-env contamination of `left_ptrs`/`right_ptrs`: these are
+  already per-env via `nle_ctx_t` macro (clusters A onward).
+- `viz_array`/`viz_rmin`/`viz_rmax`: per-env (cluster AD).
+- Vision algorithm transient state (`step`, `start_col`, etc.): per-env
+  (cluster AA).
+- Region table, light source list, timers: all per-env (AB/AG/AI).
+- Function-local static recursion guards (`in_pline`, `inspoteffects`,
+  artifact `nesting`): per-env (AK).
+
+What's *still* shared across envs and could plausibly affect vision:
+- ~39 remaining `static __thread` variables (many are scratch buffers,
+  but a few are functional state — `dlb_initialized`, `Schroedingers_cat`,
+  `now_or_before_idx`, etc.).
+- Many function-local `static int/boolean` (saved game flags, recursion
+  guards we haven't migrated).
+- `static const NhRegion *` chains in region.c, etc.
+
+## How to diagnose the N≥92 hang
+
+1. **Get the loop iterator running.** The compiler is folding the
+   recursion guard. Move it to a separate `__attribute__((noinline))`
+   `bool vision_should_bail(void)` function so the call survives
+   optimization. Add a print at bail-time showing the corrupted
+   `right_ptrs` row.
+2. **Snapshot env 37's `right_ptrs` at t=810 and t=811.** Diff to find
+   exactly which cell got bad. That tells us which writer corrupted it.
+3. **Bisect cluster Z onward.** N=88 works, N=92 doesn't. Revert each
+   cluster one by one against a fixed-seed N=92 test to find the
+   first cluster that fails on its own.
+4. **Search for `static`-without-`__thread` not yet migrated.** Use:
+   `grep -rE '^\s*static\s+(?!const|inline|void|FDECL|NDECL)' vendor/nle/src/src/`.
+
+## How to actually fix it
+
+The right model is the one PufferLib's craftax binding uses
+(`ocean/craftax/binding.c`): **a struct that owns its full state, no
+process-wide globals at all**. NetHack's source assumes process-wide
+globals throughout, so a complete fix needs every remaining
+`__thread`/`static` migrated to `nle_ctx_t` (or proven read-only). The
+remaining 30-ish `__thread` ints, plus the dozens of function-local
+`static int` recursion/memo guards, total maybe a day's mechanical
+work. Each migration is gated on the golden-seed determinism test.
+
+Acceptable short-term: cap vecenv at N=64 in production. The shared
+libnethack is functionally complete at that scale.
 
 ## What this refactor was trying to do
 
