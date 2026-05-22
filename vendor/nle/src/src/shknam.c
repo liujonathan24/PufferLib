@@ -882,6 +882,14 @@ boolean
 shkname_is_pname(mtmp)
 struct monst *mtmp;
 {
+    /* Cluster AV-a: defensive guard. dealloc_mextra() can leave mtmp->isshk
+     * set with mtmp->mextra == NULL; callers should has_eshk(mtmp) first
+     * but this is a leaf utility called from many paths and a NULL deref
+     * here is a process-killing segfault. Treat missing eshk as "no
+     * pname" (the function's return is only used to choose a Mr./Ms.
+     * honorific in death-message text, so the false branch is benign). */
+    if (!has_eshk(mtmp))
+        return FALSE;
     const char *shknm = ESHK(mtmp)->shknam;
 
     return (boolean) (*shknm == '-' || *shknm == '+' || *shknm == '=');

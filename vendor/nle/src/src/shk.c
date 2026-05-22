@@ -188,10 +188,21 @@ next_shkp(shkp, withbill)
 register struct monst *shkp;
 register boolean withbill;
 {
+    /* Cluster AV-a fix: also require has_eshk(). dealloc_mextra() clears
+     * mtmp->mextra to NULL but does NOT clear mtmp->isshk — the bytes of
+     * the old mextra survive (arena no-op free) but the pointer is nulled,
+     * and shopkeeper death paths don't always clear rooms[].resident.
+     * Without this guard, a still-listed shopkeeper monster whose mextra
+     * was dealloc'd causes ESHK(shkp)->billct to segfault at offset 0x18.
+     * The invariant `isshk => has_eshk` is asserted in mon.c:82 but only
+     * fires impossible() warnings — actual deref still crashes. At N=256
+     * PufferLib vecenv this stops being statistically rare and consistently
+     * fires around 130K steps into a rollout. */
     for (; shkp; shkp = shkp->nmon) {
         if (DEADMONSTER(shkp))
             continue;
-        if (shkp->isshk && (ESHK(shkp)->billct || !withbill))
+        if (shkp->isshk && has_eshk(shkp)
+            && (ESHK(shkp)->billct || !withbill))
             break;
     }
 

@@ -502,7 +502,12 @@ int how;
         Strcat(buf, "ghost");
         if (has_mname(mtmp))
             Sprintf(eos(buf), " of %s", MNAME(mtmp));
-    } else if (mtmp->isshk) {
+    } else if (mtmp->isshk && has_eshk(mtmp)) {
+        /* Cluster AV-a: has_eshk() guard. dealloc_mextra() can null
+         * mtmp->mextra while leaving mtmp->isshk set; in that case
+         * shkname()/shkname_is_pname() would dereference ESHK(mtmp)
+         * (= mtmp->mextra->eshk) and segfault. Fall through to the
+         * generic monster-name branch below. */
         const char *shknm = shkname(mtmp),
                    *honorific = shkname_is_pname(mtmp) ? ""
                                    : mtmp->female ? "Ms. " : "Mr. ";
