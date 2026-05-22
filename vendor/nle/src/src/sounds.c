@@ -1111,7 +1111,18 @@ typedef struct audio_mapping_rec {
     struct audio_mapping_rec *next;
 } audio_mapping;
 
-static __thread audio_mapping *soundmap = 0;
+/* Cluster AO: per-env. Was static __thread. */
+struct nle_sounds_state { audio_mapping *_soundmap; };
+static struct nle_sounds_state *nle_sounds(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_sounds_state *s = (struct nle_sounds_state *) current_nle_ctx->s_sounds_state;
+    if (!s) {
+        s = (struct nle_sounds_state *) calloc(1, sizeof(struct nle_sounds_state));
+        current_nle_ctx->s_sounds_state = s;
+    }
+    return s;
+}
+#define soundmap (nle_sounds()->_soundmap)
 
 char *sounddir = ".";
 

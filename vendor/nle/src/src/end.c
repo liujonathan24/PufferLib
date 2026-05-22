@@ -311,7 +311,18 @@ static const char *ends[] = {
     "escaped", "ascended"
 };
 
-static __thread boolean Schroedingers_cat = FALSE;
+/* Cluster AO: per-env. Was static __thread boolean. */
+struct nle_end_state { boolean _Schroedingers_cat; };
+static struct nle_end_state *nle_end_st(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_end_state *s = (struct nle_end_state *) current_nle_ctx->s_end_state;
+    if (!s) {
+        s = (struct nle_end_state *) calloc(1, sizeof(struct nle_end_state));
+        current_nle_ctx->s_end_state = s;
+    }
+    return s;
+}
+#define Schroedingers_cat (nle_end_st()->_Schroedingers_cat)
 
 /*ARGSUSED*/
 void

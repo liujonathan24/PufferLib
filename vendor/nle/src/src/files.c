@@ -1659,10 +1659,31 @@ boolean uncomp;
 
 /* ----------  BEGIN FILE LOCKING HANDLING ----------- */
 
-static __thread int nesting = 0;
-
+/* Cluster AO: per-env files.c state. nesting / lockfd / config_error_data /
+ * symset_count / symset_which_set bundled into one struct. */
+struct _config_error_frame; /* forward */
+struct nle_files_state {
+    int   _nesting;
+    int   _lockfd;
+    struct _config_error_frame *_config_error_data;
+    int   _symset_count;
+    int   _symset_which_set;
+};
+static struct nle_files_state *
+nle_files(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_files_state *s = (struct nle_files_state *) current_nle_ctx->s_files_state;
+    if (!s) {
+        s = (struct nle_files_state *) calloc(1, sizeof(struct nle_files_state));
+        s->_lockfd = -1;  /* non-zero default */
+        current_nle_ctx->s_files_state = s;
+    }
+    return s;
+}
+#define nesting           (nle_files()->_nesting)
 #if defined(NO_FILE_LINKS) || defined(USE_FCNTL) /* implies UNIX */
-static __thread int lockfd = -1; /* for lock_file() to pass to unlock_file() */
+#define lockfd            (nle_files()->_lockfd)
 #endif
 #ifdef USE_FCNTL
 struct flock sflock; /* for unlocking, same as above */
@@ -2816,7 +2837,9 @@ struct _config_error_frame {
     struct _config_error_frame *next;
 };
 
-static __thread struct _config_error_frame *config_error_data = 0;
+/* Cluster AO: per-env (struct definition is just above; macro forwards
+ * into nle_files_state which holds the pointer as a generic forward). */
+#define config_error_data (nle_files()->_config_error_data)
 
 void
 config_error_init(from_file, sourcename, secure)
@@ -3232,9 +3255,10 @@ boolean FDECL((*proc), (char *));
 extern struct symsetentry *symset_list;  /* options.c */
 extern const char *known_handling[];     /* drawing.c */
 extern const char *known_restrictions[]; /* drawing.c */
-static __thread int symset_count = 0;             /* for pick-list building only */
+/* Cluster AO: per-env via nle_files_state (above). */
+#define symset_count      (nle_files()->_symset_count)
+#define symset_which_set  (nle_files()->_symset_which_set)
 static boolean chosen_symset_start = FALSE, chosen_symset_end = FALSE;
-static __thread int symset_which_set = 0;
 
 STATIC_OVL
 FILE *

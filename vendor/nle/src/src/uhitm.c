@@ -27,8 +27,19 @@ STATIC_DCL boolean FDECL(shade_aware, (struct obj *));
 
 extern boolean notonhead; /* for long worms */
 
-/* Used to flag attacks caused by Stormbringer's maliciousness. */
-static __thread boolean override_confirmation = FALSE;
+/* Used to flag attacks caused by Stormbringer's maliciousness.
+ * Cluster AO: per-env. */
+struct nle_uhitm_state { boolean _override_confirmation; };
+static struct nle_uhitm_state *nle_uhitm(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_uhitm_state *s = (struct nle_uhitm_state *) current_nle_ctx->s_uhitm_state;
+    if (!s) {
+        s = (struct nle_uhitm_state *) calloc(1, sizeof(struct nle_uhitm_state));
+        current_nle_ctx->s_uhitm_state = s;
+    }
+    return s;
+}
+#define override_confirmation (nle_uhitm()->_override_confirmation)
 
 #define PROJECTILE(obj) ((obj) && is_ammo(obj))
 

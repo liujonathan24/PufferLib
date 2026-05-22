@@ -3005,7 +3005,18 @@ static char sell_response = 'a';
 static int sell_how = SELL_NORMAL;
 /* can't just use sell_response='y' for auto_credit because the 'a' response
    shouldn't carry over from ordinary selling to credit selling */
-static __thread boolean auto_credit = FALSE;
+/* Cluster AO: per-env. Was static __thread boolean. */
+struct nle_shk_state { boolean _auto_credit; };
+static struct nle_shk_state *nle_shk(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_shk_state *s = (struct nle_shk_state *) current_nle_ctx->s_shk_state;
+    if (!s) {
+        s = (struct nle_shk_state *) calloc(1, sizeof(struct nle_shk_state));
+        current_nle_ctx->s_shk_state = s;
+    }
+    return s;
+}
+#define auto_credit (nle_shk()->_auto_credit)
 
 void
 sellobj_state(deliberate)

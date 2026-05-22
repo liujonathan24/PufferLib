@@ -678,9 +678,26 @@ int fd;
     return;
 }
 
-static __thread int bw_fd = -1;
 static FILE *bw_FILE = 0;
-static __thread boolean buffering = FALSE;
+/* Cluster AO: bw_fd / buffering per-env (saved-game write fd + flag). */
+struct nle_save_state {
+    int     _bw_fd;
+    boolean _buffering;
+};
+static struct nle_save_state *
+nle_save(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_save_state *s = (struct nle_save_state *) current_nle_ctx->s_save_state;
+    if (!s) {
+        s = (struct nle_save_state *) calloc(1, sizeof(struct nle_save_state));
+        s->_bw_fd = -1;
+        current_nle_ctx->s_save_state = s;
+    }
+    return s;
+}
+#define bw_fd     (nle_save()->_bw_fd)
+#define buffering (nle_save()->_buffering)
 
 STATIC_OVL void
 def_bufon(fd)
