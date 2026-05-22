@@ -35,10 +35,16 @@ extern void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2);
 #ifdef NLE_USE_ARENA_FREE
 #include <sys/mman.h>
 
-/* Arena: 512 MB of address space, lazily backed by physical pages on first
- * touch. Bump-allocated. Aligned 16 bytes per allocation. */
-/* 4 GB of address space. Mmap is lazy: unused pages cost no RAM. */
-#define NLE_ARENA_SIZE ((size_t) 4 * 1024 * 1024 * 1024)
+/* Arena: virtual address space, lazily backed by physical pages on first
+ * touch. Bump-allocated. Aligned 16 bytes per allocation.
+ *
+ * Cluster AS: bumped from 4 GB to 64 GB. Under multi-env training with
+ * NETHACK_FAST_RESET=0 (the only safe config for N>=2), nle_end does NOT
+ * rewind the arena bump pointer — arena allocations are leaked-by-design
+ * until process exit. With 256 envs * thousands of episodes, 4 GB fills
+ * up. mmap is lazy: only touched pages cost RAM, so 64 GB virtual is free.
+ */
+#define NLE_ARENA_SIZE ((size_t) 64 * 1024 * 1024 * 1024)
 #define NLE_ARENA_ALIGN 16
 
 /* Exported so nle_fast_reset.c can snapshot the live portion. */

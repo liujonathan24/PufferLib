@@ -61,12 +61,18 @@ extern void       nle_fr_destroy(void*);
 #endif
 
 // Build flag: -DNETHACK_FAST_RESET=1 enables the snapshot/restore path.
-// Default is ON since exp_019 — the heap-aware fast-reset works correctly
-// for in-episode resets, and the slow dlopen+nle_start path now fails on
-// the second start (libstdc++ operator delete deep crash). Slow path needs
-// a separate fix; in the meantime fast-reset is the production path.
+// Default is OFF as of Cluster AS — the fast-reset machinery in
+// vendor/nle/src/src/nle_fast_reset.c is fundamentally unsafe for N>1
+// vecenv: nle_fr_restore memcpys back the SHARED bump-arena
+// (alloc.c:75 — "All envs share one arena") and libnethack.so's
+// .data/.bss segments. Under multi-env, that clobbers other envs' live
+// arena allocations and rewinds the bump pointer past their data,
+// producing 'double free in tcache 2' / 'munmap_chunk()' / SIGSEGV.
+// train_bench at N=64 (which uses slow-only resets via nle_end + nle_start)
+// runs 1M steps clean at 414K agg SPS, so slow-only is plenty fast.
+// To re-enable for single-env benchmarks: build with -DNETHACK_FAST_RESET=1.
 #ifndef NETHACK_FAST_RESET
-#define NETHACK_FAST_RESET 1
+#define NETHACK_FAST_RESET 0
 #endif
 
 // ---------------------------------------------------------------------------
@@ -295,6 +301,13 @@ typedef struct Nethack {
     float episode_return;
     int episode_length;
     unsigned int rng;   // required by vecenv.h (seeded with env index)
+
+    // Per-env explicit RNG seed for nle_start. Without this, NetHack uses
+    // its own internal seeding and some seeds hit infinite loops in level
+    // generation (mklev/topologize). Seed bases known to work at N=32/64/96:
+    // 0x111, 0x222, 0xCAFEBEEF.  Set via NETHACK_SEED_BASE env var or default.
+    unsigned long seed_a;
+    unsigned long seed_b;
 } Nethack;
 
 // ---------------------------------------------------------------------------
@@ -501,6 +514,19 @@ void init(Nethack* env) {
     env->fn_fr_restore = NULL;
     env->fn_fr_destroy = NULL;
     env->fr_snapshot = NULL;
+
+    // Pick per-env seeds derived from env->rng (vecenv sets this to env index)
+    // and a process-wide base. Same construction train_bench uses at N=64,
+    // which avoids the upstream mklev hang.
+    unsigned long base = 0xCAFEBEEFUL;
+    const char* sb = getenv("NETHACK_SEED_BASE");
+    if (sb) {
+        char* end = NULL;
+        unsigned long v = strtoul(sb, &end, 0);
+        if (end && end != sb) base = v;
+    }
+    env->seed_a = base + (unsigned long)env->rng;
+    env->seed_b = (base ^ 0x9E3779B97F4A7C15UL) + (unsigned long)env->rng;
     // Don't load_lib here — c_reset will do it on first call. Avoids a
     // redundant ~180 ms dlopen+nle_start before the user even resets.
     nethack_init_settings(env);
@@ -625,7 +651,18 @@ static void nethack_slow_reset(Nethack* env) {
         return;
     }
     PROF_START(nle_start);
-    env->ctx = env->fn_start(&env->obs, NULL, NULL, &env->settings);
+    // Advance the per-env LCG so each reset gets a fresh seed. Without
+    // explicit seeds, NetHack's internal randomness can land on level-gen
+    // seeds that infinite-loop in mklev/topologize. The LCG constants
+    // (Numerical Recipes / MMIX) are the same as train_bench.
+    env->seed_a = env->seed_a * 6364136223846793005UL + 1442695040888963407UL;
+    env->seed_b = env->seed_b * 6364136223846793005UL + 1442695040888963407UL;
+    nle_seeds_init_t seeds;
+    memset(&seeds, 0, sizeof(seeds));
+    seeds.seeds[0] = env->seed_a;
+    seeds.seeds[1] = env->seed_b;
+    seeds.reseed = 0;
+    env->ctx = env->fn_start(&env->obs, NULL, &seeds, &env->settings);
     PROF_END(nle_start, PROF_RESET_NLE_START);
 
     PROF_START(reset_drain);
