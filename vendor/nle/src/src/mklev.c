@@ -1115,7 +1115,11 @@ coord *mp;
 {
     struct mkroom *croom = 0;
 
-    if (nroom == 0) {
+    /* Cluster AT: nroom should be > 0 here (mklev's mkroom pass) but the
+     * `<= 0` and `== 0` paths both fall to mazexy. Guards against the rare
+     * case where prior level-gen left nroom negative (observed under
+     * multi-env training). */
+    if (nroom <= 0) {
         mazexy(mp); /* already verifies location */
     } else {
         /* not perfect - there may be only one stairway */
@@ -1129,12 +1133,17 @@ coord *mp;
         } else
             croom = &rooms[rn2(nroom)];
 
+        /* Cluster AT: cap the somexy retry loop so a room with degenerate
+         * dimensions (which hits rn2(<=0) inside somex/somey) cannot
+         * spin forever logging impossible(). After N tries, fall through. */
+        int sxy_tries = 0;
         do {
             if (!somexy(croom, mp))
                 impossible("Can't place branch!");
-        } while (occupied(mp->x, mp->y)
-                 || (levl[mp->x][mp->y].typ != CORR
-                     && levl[mp->x][mp->y].typ != ROOM));
+        } while ((occupied(mp->x, mp->y)
+                  || (levl[mp->x][mp->y].typ != CORR
+                      && levl[mp->x][mp->y].typ != ROOM))
+                 && (++sxy_tries < 200));
     }
     return croom;
 }
