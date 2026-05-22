@@ -551,19 +551,17 @@ STATIC_VAR struct istat_s initblstats[MAXBLSTATS] = {
 #define blinit       (current_nle_ctx->s_blinit)
 #define update_all   (current_nle_ctx->s_update_all)
 #define valset       (current_nle_ctx->s_valset)
+/* Cluster AP: per-env status state migrated from static/__thread to nle_ctx_t.
+ * bl_hilite_moves was __thread (broken under OMP coroutine-resume).
+ * cond_hilites[] was a plain static (process-global) — races under concurrent
+ * envs writing condition highlight masks during render_status.
+ * now_or_before_idx was __thread — same OMP cross-thread TLS hazard. */
 #ifdef STATUS_HILITES
-static __thread long bl_hilite_moves = 0L;
+#define bl_hilite_moves     (current_nle_ctx->s_bl_hilite_moves)
 #endif
-
-/* we don't put this next declaration in #ifdef STATUS_HILITES.
- * In the absence of STATUS_HILITES, each array
- * element will be 0 however, and quite meaningless,
- * but we need to pass the first array element as
- * the final argument of status_update, with or
- * without STATUS_HILITES.
- */
-static unsigned long cond_hilites[BL_ATTCLR_MAX];
-static __thread int now_or_before_idx = 0; /* 0..1 for array[2][] first index */
+/* cond_hilites and now_or_before_idx used regardless of STATUS_HILITES */
+#define cond_hilites        (current_nle_ctx->s_cond_hilites)
+#define now_or_before_idx   (current_nle_ctx->s_now_or_before_idx)
 
 STATIC_OVL void
 bot_via_windowport()
@@ -2651,8 +2649,14 @@ struct _status_hilite_line_str {
     struct _status_hilite_line_str *next;
 };
 
-static __thread struct _status_hilite_line_str *status_hilite_str = 0;
-static __thread int status_hilite_str_id = 0;
+/* Cluster AP: per-env. Were __thread; cross-thread coroutine resume (env
+ * init on main thread, step on OMP worker) gave worker an empty TLS list,
+ * leaking allocs from init thread and risking stale pointer dereference. */
+#define status_hilite_str \
+    ((struct _status_hilite_line_str *) current_nle_ctx->s_status_hilite_str_p)
+#define set_status_hilite_str(v) \
+    (current_nle_ctx->s_status_hilite_str_p = (void *)(v))
+#define status_hilite_str_id  (current_nle_ctx->s_status_hilite_str_id)
 
 STATIC_OVL void
 status_hilite_linestr_add(fld, hl, mask, str)
@@ -2681,7 +2685,7 @@ const char *str;
             nxt = nxt->next;
         nxt->next = tmp;
     } else {
-        status_hilite_str = tmp;
+        set_status_hilite_str(tmp);
     }
 }
 
@@ -2695,7 +2699,7 @@ status_hilite_linestr_done()
         free(tmp);
         tmp = nxt;
     }
-    status_hilite_str = (struct _status_hilite_line_str *) 0;
+    set_status_hilite_str(0);
     status_hilite_str_id = 0;
 }
 

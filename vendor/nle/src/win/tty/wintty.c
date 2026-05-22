@@ -2638,14 +2638,17 @@ STATIC_OVL const char *
 compress_str(str)
 const char *str;
 {
-    static char cbuf[BUFSZ];
+    /* Cluster AP: was `static char cbuf[BUFSZ]` — process-global scratch
+     * buffer shared by all envs during tty_putstr. Concurrent OMP envs would
+     * overwrite each other's strings mid-format. Now per-env via nle_ctx_t. */
+    char *cbuf = current_nle_ctx->s_compress_cbuf;
 
     /* compress out consecutive spaces if line is too long;
        topline wrapping converts space at wrap point into newline,
        we reverse that here */
     if ((int) strlen(str) >= CO || index(str, '\n')) {
         const char *in_str = str;
-        char c, *outstr = cbuf, *outend = &cbuf[sizeof cbuf - 1];
+        char c, *outstr = cbuf, *outend = &cbuf[256 - 1];
         boolean was_space = TRUE; /* True discards all leading spaces;
                                      False would retain one if present */
 
@@ -3538,8 +3541,11 @@ tty_nhgetch()
      * is called, interrupted, and then called again.  There
      * is non-reentrant code in the internal _filbuf() routine, called by
      * getc().
-     */
-    static volatile int nesting = 0;
+     * Cluster AP: was `static volatile int nesting = 0`. Under OMP, env A's
+     * re-entrant read on thread 0 would share the static with env B on thread 1.
+     * Now per-env via nle_ctx_t so each env's tty_nhgetch re-entrancy is tracked
+     * independently. */
+#define nesting (current_nle_ctx->s_tty_nhgetch_nesting)
     char nestbuf;
 #endif
 
@@ -3583,6 +3589,9 @@ tty_nhgetch()
 #endif /* TTY_TILES_ESCCODES */
     return i;
 }
+#ifdef UNIX
+#undef nesting /* Cluster AP: local macro — undefine after tty_nhgetch */
+#endif
 
 /*
  * return a key, or 0, in which case a mouse button was pressed

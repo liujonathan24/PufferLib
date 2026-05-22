@@ -685,6 +685,12 @@ NetHackRL::create_nhwindow_method(int type)
 void
 NetHackRL::clear_nhwindow_method(winid wid)
 {
+    /* Cluster AP: bounds-check wid before indexing windows_; a stale
+     * process-shared wid from a not-yet-migrated global would otherwise
+     * cause OOB vector access or a double-free. */
+    if (wid < 0 || (size_t) wid >= windows_.size() || !windows_[wid]) {
+        return; /* silently skip the bad wid */
+    }
     auto &rl_win = windows_[wid];
     rl_win->menu_items.clear();
     rl_win->strings.clear();

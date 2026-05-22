@@ -277,9 +277,15 @@ STATIC_DCL char NDECL(popch);
  * direction), and the input prompt is not shown.  Also, while in_doagain is
  * TRUE, no keystrokes can be saved into the saveq.
  */
+/* Cluster AP: per-env key-input queues. Were plain statics (process-global);
+ * concurrent OMP envs on the same thread could interleave input replay. */
 #define BSIZE 20
-static char pushq[BSIZE], saveq[BSIZE];
-static NEARDATA int phead, ptail, shead, stail;
+#define pushq  (current_nle_ctx->s_pushq)
+#define saveq  (current_nle_ctx->s_saveq)
+#define phead  (current_nle_ctx->s_phead)
+#define ptail  (current_nle_ctx->s_ptail)
+#define shead  (current_nle_ctx->s_shead)
+#define stail  (current_nle_ctx->s_stail)
 
 STATIC_OVL char
 popch()
@@ -1613,8 +1619,12 @@ doterrain(VOID_ARGS)
 }
 
 /* -enlightenment and conduct- */
-static winid en_win = WIN_ERR;
-static __thread boolean en_via_menu = FALSE;
+/* Cluster AP: per-env. en_win was a plain static (process-global winid);
+ * concurrent envs could alias the same window on game-over/conduct display.
+ * en_via_menu was __thread; OMP cross-thread TLS hazard. */
+#define en_win       ((winid) current_nle_ctx->s_en_win)
+#define set_en_win(v) (current_nle_ctx->s_en_win = (short)(v))
+#define en_via_menu  (current_nle_ctx->s_en_via_menu)
 static const char You_[] = "You ", are[] = "are ", were[] = "were ",
                   have[] = "have ", had[] = "had ", can[] = "can ",
                   could[] = "could ";
@@ -1774,7 +1784,7 @@ int final; /* ENL_GAMEINPROGRESS:0, ENL_GAMEOVERALIVE, ENL_GAMEOVERDEAD */
 {
     char buf[BUFSZ], tmpbuf[BUFSZ];
 
-    en_win = create_nhwindow(NHW_MENU);
+    set_en_win(create_nhwindow(NHW_MENU));
     en_via_menu = !final;
     if (en_via_menu)
         start_menu(en_win);
@@ -1823,7 +1833,7 @@ int final; /* ENL_GAMEINPROGRESS:0, ENL_GAMEOVERALIVE, ENL_GAMEOVERDEAD */
         en_via_menu = FALSE;
     }
     destroy_nhwindow(en_win);
-    en_win = WIN_ERR;
+    set_en_win(WIN_ERR);
 }
 
 /*ARGSUSED*/
@@ -3252,7 +3262,7 @@ int final;
     int ngenocided;
 
     /* Create the conduct window */
-    en_win = create_nhwindow(NHW_MENU);
+    set_en_win(create_nhwindow(NHW_MENU));
     putstr(en_win, 0, "Voluntary challenges:");
 
     if (u.uroleplay.blind)
@@ -3349,7 +3359,7 @@ int final;
     /* Pop up the window and wait for a key */
     display_nhwindow(en_win, TRUE);
     destroy_nhwindow(en_win);
-    en_win = WIN_ERR;
+    set_en_win(WIN_ERR);
 }
 
 int nle_dosave() {

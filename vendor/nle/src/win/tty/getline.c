@@ -17,7 +17,11 @@
 #include "func_tab.h"
 
 /* morc migrated to nle_ctx_t (stage 10'). Macro in wintty.h. */
-STATIC_VAR boolean suppress_history;
+/* Cluster AP: suppress_history was a plain STATIC_VAR (process-global).
+ * Concurrent OMP envs at different stages of tty_getlin/ext_cmd_getlin_hook
+ * could race: env A sets FALSE, env B sees FALSE and reads the wrong history
+ * suppress state. Now per-env via nle_ctx_t. */
+#define suppress_history (current_nle_ctx->s_suppress_history)
 STATIC_DCL boolean FDECL(ext_cmd_getlin_hook, (char *));
 
 typedef boolean FDECL((*getlin_hook_proc), (char *));
