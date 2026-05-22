@@ -256,23 +256,92 @@ The N≥16 cycling crash reproduces against the pre-refactor parent of
 `aec522d6` as well — it is not a regression introduced by this work,
 but it does cap how many envs each OS thread can host.
 
-### Training
+### Training-shaped throughput bench (`train_bench`)
 
-Five training jobs were submitted against the final code via
-`ocean/nethack/experiments/exp_025_final_bench/sbatch/run_train.sbatch`
-at 8/16/32 CPUs and varying `agents_per_cpu`. They all crashed at
-epoch 0 before logging any non-zero step count. The crash path
-matches the `multi_shared` N≥16 cycling crash above: PufferLib's
-vecenv hits the same env-death code path that `done_in_by →
-display_inventory → tty_end_menu` walks, and that path retains
-process-shared state.
+`ocean/nethack/train_bench.c` runs the post-refactor single-dlopen
+vecenv with random-policy actions, auto-resetting on `obs.done` (and
+optionally on a forced step-cap to exercise the reset path). It is
+the closest thing in this repo to a real training loop's throughput
+profile: N envs in one process, no thread pool, sustained stepping
+until either a total-step budget is reached or any env hangs.
 
-Training is therefore **not yet measurable** on the final commit.
-Honest answer: no SPS number from a training loop because the loop
-exits before producing one.
+**Steady-state (no forced resets, 5 M agent-steps, 3 trials each):**
 
-Outputs (truncated dashboards, ending in `DONE-…`):
-`ocean/nethack/experiments/exp_025_final_bench/train_*.out`.
+| N envs | aggregate c_steps/sec (3 trials) | per-env SPS  | Notes |
+|--------|----------------------------------|--------------|-------|
+| 32     | 1 173K / 1 228K / 1 245K         | ~37K         | clean |
+| 64     | 1 027K / 1 047K / 1 062K         | ~16K         | clean |
+
+Both N=32 and N=64 sustain ≥1 M aggregate SPS over multi-million-step
+runs. This is comfortably above the throughput PufferLib's training
+loop needs to keep the GPU fed at the default minibatch/horizon for
+nethack.ini.
+
+**Episode count / reward.** A purely-random policy almost never dies
+inside 5 M steps (the Monk-Neutral start in a wandering pattern is
+remarkably robust), so `episodes completed = 0` for the steady-state
+runs. With `ep_cap=100` forced resets, N=1 sustains 200 resets cleanly
+in 10 K steps (mean terminal score 1.9, max 103); with `ep_cap=500`,
+N=8 sustains 296 resets in 30 K steps. After ~30–50 sequential
+resets at small N, `vision_recalc → docrt → goto_level → deferred_goto`
+goes into the same infinite-recursion path as the N≥92 steady-state
+hang. So the post-refactor binding works through *normal* env-death
+auto-reset but the reset code path itself shares a latent bug with
+the N≥92 hang — see "Reset-path hang" below.
+
+**Why we still cannot report a > 1000-reward training run.** The
+`pufferlib._C` Python extension on this machine fails to load
+(`libiomp5.so: cannot open shared object file`) and
+`pufferlib.ocean` / `pufferlib.vector` are not installed in this
+Python env, so a real RL training loop cannot be launched from this
+session. The C-level throughput bench above is what is reportable
+without that Python stack. Building `_C` against GNU OpenMP
+(`OMP_LIB=-lgomp`) or making libiomp5 available should unblock real
+training; that's a Python-env problem, not a refactor problem.
+
+### Reset-path hang (same root cause as N≥92)
+
+`train_bench <N> <T> <seed> <ep_cap>` with a non-zero `ep_cap`
+exercises the `nle_end → nle_start` reset path. After ~30–50 resets
+per env (independent of N), the next call into `vision_recalc` from
+`deferred_goto` walks into a recursive `left_side` / `right_side`
+loop that doesn't terminate. The watchdog backtrace matches the N≥92
+hang exactly:
+
+```
+vision_recalc+0x814 → docrt → goto_level → deferred_goto → moveloop
+```
+
+This says the bug is the same one: a piece of vision-graph state
+that *should* be per-env is still leaking across envs (or across the
+end/start boundary of one env). The diagnostic recipe in "How to
+diagnose the N≥92 hang" applies verbatim — the cluster-bisect approach
+just needs a smaller repro (`train_bench 1 50000 0x12345 100`) which
+is faster than the N=92 case.
+
+### Replay viewer (`replay_view`)
+
+`ocean/nethack/replay_view.c` re-runs a golden trajectory's action
+stream and dumps the per-step chars grid (21×79) and a blstats
+one-liner. Goldens only store actions + hashes, so the viewer needs
+the same library and the same header seed to render the trajectory.
+
+```
+$ ./replay_view ocean/nethack/golden/golden_seed05_1k.bin --from 0 --to 1
+golden: seed=5 action_seed=99 n_steps=1000 v=2 num_actions=23 use_blstats=1
+=== initial ===
+      ------------
+      |....:......
+      |...d......|
+      |....@......
+      -------- ---
+step=0  (x,y)=(11,7)  HP=14/14  ...  msg="Hello Agent, welcome to NetHack! ..."
+=== step 1  action=19 ('?') ===
+...
+```
+
+Flags: `--from N --to M --step S` to bound the dump, `--no-grid` for
+blstats-only "trace" mode (useful with `less` to scan an episode).
 
 ## Globals removed (by commit)
 
