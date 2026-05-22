@@ -499,6 +499,14 @@ dlb_cleanup()
     if (dlb_initialized) {
         do_dlb_cleanup();
         dlb_initialized = FALSE;
+        /* Cluster AQ: reset the init-once guard so the NEXT nle_start can
+         * re-open the DLB file.  Without this, after nle_end calls dlb_cleanup
+         * (setting dlb_initialized=FALSE), the next dlb_init() hits the CAS
+         * guard state==2 (already done) branch, returns dlb_initialized=FALSE,
+         * and dlb_fopen returns NULL → init_dungeons panics.
+         * The CAS guard is still correct: only the first concurrent caller
+         * among N simultaneous threads will run do_dlb_init(). */
+        atomic_store(&dlb_init_state, 0);
     }
 }
 
