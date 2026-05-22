@@ -2364,6 +2364,13 @@ char *limits;   /* points at range limit for current row, or NULL */
     char *row_max = NULL;       /* right most [used by macro set_max()] */
     int lim_max;                /* right most limit of circle */
 
+    /* NLE vecenv: hard recursion bail. Algorithm C's right_side has no
+     * intrinsic depth bound when right_ptrs is in a pathological state;
+     * vecenv level-gen for certain seeds hits this. ROWNO=21 so 64 is a
+     * generous cap that no honest call should ever reach. */
+    if (vision_recur_depth >= 64) return;
+    vision_recur_depth++;
+
     nrow = row + step;
     /*
      * Can go deeper if the row is in bounds and the next row is within
@@ -2387,7 +2394,15 @@ char *limits;   /* points at range limit for current row, or NULL */
     } else
         lim_max = COLNO - 1;
 
+    {
+    /* NLE vecenv: bound this loop. The legitimate iteration count is at
+     * most COLNO cells across a row; if we exceed that, a corrupt or
+     * pathological right_ptrs has put us in an infinite "left = right_edge"
+     * back-up loop (see line ~2470 below). Bail to keep multi-env training
+     * from hanging in dog_move -> do_clear_area -> right_side. */
+    int nle_iter = 0;
     while (left <= right_mark) {
+        if (++nle_iter > COLNO + 8) return;
         right_edge = right_ptrs[row][left];
         if (right_edge > lim_max)
             right_edge = lim_max;
@@ -2532,6 +2547,8 @@ char *limits;   /* points at range limit for current row, or NULL */
             left = right + 1; /* no limit check necessary */
         }
     }
+    } /* close nle_iter block */
+    vision_recur_depth--;
 }
 
 /*
@@ -2553,6 +2570,11 @@ char *limits;
 #ifdef GCC_WARN
     rowp = row_min = row_max = 0;
 #endif
+
+    /* NLE vecenv: hard recursion bail (mirror of right_side). */
+    if (vision_recur_depth >= 64) return;
+    vision_recur_depth++;
+
     nrow = row + step;
     deeper = good_row(nrow) && (!limits || (*limits >= *(limits + 1)));
     if (!vis_func) {
@@ -2570,7 +2592,12 @@ char *limits;
     } else
         lim_min = 0;
 
+    {
+    /* NLE vecenv: mirror of right_side's iter cap — bound the inner loop so
+     * pathological left_ptrs values can't hang multi-env training. */
+    int nle_iter = 0;
     while (right >= left_mark) {
+        if (++nle_iter > COLNO + 8) return;
         left_edge = left_ptrs[row][right];
         if (left_edge < lim_min)
             left_edge = lim_min;
@@ -2667,6 +2694,8 @@ char *limits;
             right = left - 1; /* no limit check necessary */
         }
     }
+    } /* close nle_iter block */
+    vision_recur_depth--;
 }
 
 /*
