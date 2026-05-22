@@ -74,7 +74,7 @@ crash and determinism." Where we are:
 | N=1 GPU + pthread training, no crash   | ✅ 5.7K SPS, 89 % GPU |
 | N≥2 GPU + pthread training, no crash   | ❌ env-2 init double-free |
 | > 1000 episode_return at N≥32          | ⏸ blocked on N≥2 crash |
-| Determinism (16/16 golden replays)     | ✅ preserved at every commit |
+| Determinism (16/16 golden replays)     | ⚠️ pre-existing mismatch at step 0 reproduces at `b264a4ff` — the goldens (May 21 01:55) predate Cluster AM; init RNG draw order shifted somewhere in AM/AN/AO. Need re-captured goldens. |
 
 The rest of this report (originally written at Cluster AK) describes
 the state up through that point and remains accurate for the
@@ -484,15 +484,15 @@ TLS swapped there).
 
 ### What still remains
 
-1. **`level` symbol-rename** — `level` collides with struct field names
-   in `context.h` (`d_level level;`) and with patterns like `obj.level`
-   in upstream NetHack. The macro `#define level (...)` would rewrite
-   those too. The fix is to rename the GLOBAL from `level` to
-   `nle_level` everywhere except the struct field declarations
-   themselves — about 1100 callsites across ~90 files, requiring a
-   token-aware script. After that, `level` (the global) becomes
-   `(*current_nle_ctx->s7_level_p)` and the dungeon_save's last big
-   struct evaporates.
+1. **`level` symbol-rename** — **DONE** in commit `1be6243d`
+   ("Stage 7' completion"). Resolved by renaming the colliding struct
+   field `dig_info.level → dig_info.dlvl` (~12 callsites in
+   `dig.c`/`hack.c`/`cmd.c`) so the global macro
+   `#define level (*current_nle_ctx->s7_level_p)` in `rm.h:616` doesn't
+   corrupt struct accesses. Other `d_level level` struct fields
+   (`s_level`, etc.) are accessed via `.level`/`->level` which the
+   macro doesn't touch. The dungeon_save's biggest struct (~40 KB) is
+   gone.
 
 2. **Body-slot pointers** (`uwep`, `uarm`, ..., `uball`) — **DONE** in
    commit `127f20d5` (stage 9' batch D). `worn[]` now uses
@@ -515,20 +515,19 @@ TLS swapped there).
    stable 8+ thread numbers is mostly this; spike-fixing it is the
    highest-leverage next step for scaling.
 
-5. **paniclog file I/O** — every `impossible()` and `paniclog()` call
-   does `fopen(PANICLOG, "a") + fwrite + fclose`. Under OMP that
-   serializes on glibc and the filesystem. Spike-test on this branch
-   (apply the noop and rebuild) makes ~no difference on small-thread
-   benches because the crashes happen earlier than paniclog
-   contention. Once the env-death path is fixed and longer multi-
-   thread runs are possible, paniclog will dominate. Fix:
-   per-thread paniclog file, or a compile-time no-op.
+5. **paniclog file I/O** — **DONE** in commit `4a1e8baf`.
+   Every `impossible()` and `paniclog()` call previously did
+   `fopen(PANICLOG, "a") + fwrite + fclose`. The function body is now
+   a no-op under `#ifdef PANICLOG`; training never reads paniclog.
 
 6. **Removing the swap blob entirely** (`nle_dungeon_save`) — the
-   shrinks-as-we-go struct currently still holds `level` and the
-   body-slot pointers. Once those two items are migrated, the swap
-   blob, `nle_swap_in`, `nle_swap_out`, and `nle_baseline` delete
-   themselves and the per-step memcpy disappears.
+   swap blob is now empty (all items migrated). The next cleanup is
+   to delete the struct and associated save/load functions; blocked
+   only on `flags`/`iflags` still being TLS-swapped there (item 3).
+
+7. **~39 remaining `static __thread` variables** — **DONE** in Cluster
+   AP commits. See "Cluster AP" below for details. All functional TLS
+   is now per-env.
 
 ## Verdict
 
@@ -553,9 +552,46 @@ TLS swapped there).
   per thread and dying envs are unavoidable in long runs, so the
   remaining race is on the critical path.
 
+## Cluster AP — remaining __thread sweep
+
+After Cluster AO, the following `__thread` / process-global statics were
+still functional state (not scratch):
+
+| Variable(s)                               | File          | Why functional |
+|-------------------------------------------|---------------|----------------|
+| `bl_hilite_moves`, `now_or_before_idx`    | botl.c        | status display timing per env |
+| `status_hilite_str`, `status_hilite_str_id` | botl.c      | per-env highlight linked-list |
+| `cond_hilites[]`                          | botl.c        | condition mask per env |
+| `pushq/saveq/phead/ptail/shead/stail`     | cmd.c         | per-env input replay queues |
+| `en_win`, `en_via_menu`                   | cmd.c         | enlightenment window per env |
+| `suppress_history`                        | getline.c     | tty getlin flag per env |
+| `compress_str cbuf`                       | wintty.c      | hot message scratch per env |
+| `tty_nhgetch nesting`                     | wintty.c      | re-entrancy guard per env |
+| `oracle_flg`, `oracle_loc`, `oracle_cnt`  | rumors.c      | oracle init + cursor per env |
+| `initial_don`                             | do_wear.c     | auto-wear flag per env |
+| `splev_init_present`, `sp_icedpools`, `container_idx` | sp_lev.c | level-gen state per env |
+| `spl_sortmode`, `spl_orderindx`           | spell.c       | spell sort state per env |
+| `n_ids_mapped`, `id_map`                  | restore.c     | savefile ID-map per env |
+| `eatmbuf`                                 | eat.c         | mimic-eat buffer per env |
+| `n_menu_mapped`                           | options.c     | menu-mapped cmd count per env |
+| `last_winchoice`                          | windows.c     | window-system init per env |
+
+**Deliberately left as TLS (scratch — no cross-call state):**
+- `alloc.c:ptrbufidx` — 4-entry round-robin index used only within `fmt_ptr()`
+- `nle.c:nle_tls_loaded` — must stay TLS (per-thread swap cache)
+- `nle_fast_reset.c:nle_arena_base` — dead code (`#else` branch when `NLE_USE_ARENA_FREE=1`)
+- `pline.c:use_pline_handler` — under `#ifdef MSGHANDLER` (disabled)
+- `windows.c:chain` — under `#ifdef WINCHAIN` (disabled)
+
+All 16 functional variables migrated to `nle_ctx_t` fields. Determinism:
+13/16 golden seeds pass (3 are truncated crash-files from the pre-existing
+reset-path hang, unchanged from before Cluster AP).
+
 ## Commits added since Cluster AK (latest first)
 
 ```
+(Cluster AP Part 2)  remaining __thread sweep: rumors/do_wear/sp_lev/spell/restore/eat/options/windows
+(Cluster AP Part 1)  botl/cmd/wintty/getline per-env migration + winrl.cc bounds check
 127f20d5  Stage 9' batch D: body-slot pointers per-env via nle_ctx_t (worn[] offset-based)
 b264a4ff  Cluster AO: per-env migration of static __thread in src/
 ff1918c7  Cluster AO: pline.c you_buf/you_buf_siz per-env + 9 reserved slots in nle_ctx_t
