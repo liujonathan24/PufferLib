@@ -6,6 +6,19 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
+/* Cluster AU group 2 — invent.c per-env state. The old `static T name;`
+ * file-statics raced across N>=128 PufferLib envs sharing this library.
+ * Each macro below rewrites every textual use of `name` in this TU to
+ * the corresponding s_<name> slot in the active env's nle_ctx_t.
+ * Note: `only` was `static coord only;` — replaced not by a macro but
+ * by direct rewrites of the 4 access sites to use s_only_x / s_only_y
+ * (xchar fields), to keep coord.h out of nle.h. */
+#define sortlootmode       (current_nle_ctx->s_sortlootmode)
+#define cached_pickinv_win (current_nle_ctx->s_cached_pickinv_win)
+#define this_type          (current_nle_ctx->s_this_type)
+#define invbuf             (current_nle_ctx->s_invbuf)
+#define invbufsiz          (current_nle_ctx->s_invbufsiz)
+
 #ifndef C /* same as cmd.c */
 #define C(c) (0x1f & (c))
 #endif
@@ -300,7 +313,7 @@ struct obj *obj;
 }
 
 /* set by sortloot() for use by sortloot_cmp(); reset by sortloot when done */
-static unsigned sortlootmode = 0;
+/* sortlootmode migrated to nle_ctx_t->s_sortlootmode (Cluster AU group 2) */
 
 /* qsort comparison routine for sortloot() */
 STATIC_OVL int CFDECLSPEC
@@ -2541,7 +2554,8 @@ struct obj *list, **last_found;
 /* for perm_invent when operating on a partial inventory display, so that
    the persistent one doesn't get shrunk during filtering for item selection
    then regrown to full inventory, possibly being resized in the process */
-static winid cached_pickinv_win = WIN_ERR;
+/* cached_pickinv_win migrated to nle_ctx_t->s_cached_pickinv_win
+ * (Cluster AU group 2). Initialized to WIN_ERR in init_nle() (nle.c). */
 
 void
 free_pickinv_cache()
@@ -3098,7 +3112,7 @@ dounpaid()
 }
 
 /* query objlist callback: return TRUE if obj type matches "this_type" */
-static int this_type;
+/* this_type migrated to nle_ctx_t->s_this_type (Cluster AU group 2) */
 
 STATIC_OVL boolean
 this_type_only(obj)
@@ -3920,8 +3934,8 @@ STATIC_VAR NEARDATA const char *names[] = {
 STATIC_VAR NEARDATA const char oth_symbols[] = { CONTAINED_SYM, '\0' };
 STATIC_VAR NEARDATA const char *oth_names[] = { "Bagged/Boxed items" };
 
-STATIC_VAR NEARDATA char *invbuf = (char *) 0;
-STATIC_VAR NEARDATA unsigned invbufsiz = 0;
+/* invbuf / invbufsiz migrated to nle_ctx_t->s_invbuf / s_invbufsiz
+ * (Cluster AU group 2). Calloc-zero is the correct initial state. */
 
 char *
 let_to_name(let, unpaid, showsym)
@@ -4417,13 +4431,17 @@ register struct obj *obj;
 }
 
 /* query objlist callback: return TRUE if obj is at given location */
-static coord only;
+/* `only` (coord) migrated to nle_ctx_t->s_only_x / s_only_y
+ * (Cluster AU group 2). Access sites rewritten in-place — no macro, to
+ * keep coord.h out of nle.h (the .x/.y syntax can't be hidden behind
+ * a single object-like macro). */
 
 STATIC_OVL boolean
 only_here(obj)
 struct obj *obj;
 {
-    return (obj->ox == only.x && obj->oy == only.y);
+    return (obj->ox == current_nle_ctx->s_only_x
+            && obj->oy == current_nle_ctx->s_only_y);
 }
 
 /*
@@ -4450,13 +4468,13 @@ boolean as_if_seen;
         }
 
     if (n) {
-        only.x = x;
-        only.y = y;
+        current_nle_ctx->s_only_x = x;
+        current_nle_ctx->s_only_y = y;
         if (query_objlist("Things that are buried here:",
                           &level.buriedobjlist, INVORDER_SORT,
                           &selected, PICK_NONE, only_here) > 0)
             free((genericptr_t) selected);
-        only.x = only.y = 0;
+        current_nle_ctx->s_only_x = current_nle_ctx->s_only_y = 0;
     }
     return n;
 }

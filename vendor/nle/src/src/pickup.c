@@ -10,6 +10,21 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 2 — pickup.c per-env state. Replaces four file-scope
+ * statics that raced across N>=128 PufferLib envs sharing this library
+ * (notably current_container, which the use_container callbacks
+ * implicitly thread through). Each macro rewrites every textual use of
+ * the old name in this TU to the corresponding s_<name> slot in the
+ * active env's nle_ctx_t. The Icebox macro below (file-scope) expands
+ * through current_container -> current_nle_ctx->s_current_container,
+ * which is correct as long as Icebox is only used while a use_container
+ * is in progress (true: all Icebox uses are inside loot-handling
+ * functions that set current_container first). */
+#define current_container   (current_nle_ctx->s_current_container)
+#define abort_looting       (current_nle_ctx->s_abort_looting)
+#define val_for_n_or_more   (current_nle_ctx->s_val_for_n_or_more)
+#define valid_menu_classes  (current_nle_ctx->s_valid_menu_classes)
+
 #define CONTAINED_SYM '>' /* from invent.c */
 
 STATIC_DCL void FDECL(simple_look, (struct obj *, BOOLEAN_P));
@@ -58,8 +73,8 @@ STATIC_DCL void FDECL(tipcontainer, (struct obj *));
 /* A variable set in use_container(), to be used by the callback routines
    in_container() and out_container() from askchain() and use_container().
    Also used by menu_loot() and container_gone(). */
-static NEARDATA struct obj *current_container;
-static NEARDATA boolean abort_looting;
+/* current_container / abort_looting migrated to nle_ctx_t->
+ * s_current_container / s_abort_looting (Cluster AU group 2). */
 #define Icebox (current_container->otyp == ICE_BOX)
 
 static const char
@@ -317,7 +332,8 @@ boolean picked_some;
 }
 
 /* Value set by query_objlist() for n_or_more(). */
-static long val_for_n_or_more;
+/* val_for_n_or_more migrated to nle_ctx_t->s_val_for_n_or_more
+ * (Cluster AU group 2). */
 
 /* query_objlist callback: return TRUE if obj's count is >= reference value */
 STATIC_OVL boolean
@@ -331,7 +347,12 @@ struct obj *obj;
 
 /* list of valid menu classes for query_objlist() and allow_category callback
    (with room for all object classes, 'u'npaid, BUCX, and terminator) */
-static char valid_menu_classes[MAXOCLASSES + 1 + 4 + 1];
+/* valid_menu_classes migrated to nle_ctx_t->s_valid_menu_classes
+ * (Cluster AU group 2). The size literal in nle.h (24) matches
+ * MAXOCLASSES(18) + 1 + 4 + 1; the _Static_assert catches future
+ * MAXOCLASSES drift. */
+_Static_assert(MAXOCLASSES + 1 + 4 + 1 == 24,
+               "MAXOCLASSES changed; update s_valid_menu_classes size in nle.h");
 static boolean class_filter, bucx_filter, shop_filter;
 
 /* check valid_menu_classes[] for an entry; also used by askchain() */

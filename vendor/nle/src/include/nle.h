@@ -609,6 +609,38 @@ typedef struct nle_globals {
     struct obj          *s_telescroll;            /* teleport.c (scroll currently being read) */
     struct nhcoord      *s_utrack;                /* track.c (UTSZ=50 player-step ring; heap-alloc'd in init_nle to keep coord.h out of nle.h, matching s6_inv_pos_p / s7_doors_p / bhitpos_p pattern) */
     struct obj          *s_propellor;             /* weapon.c (ranged-weapon select cache) */
+
+    /* Cluster AU group 2 — invent.c + pickup.c per-env state.
+     * Ten file-statics that race across envs during inventory display,
+     * sort, container loot, and object-class menu filtering. Direct
+     * fields on nle_ctx_t (no swap struct); macros at the top of each
+     * .c file rewrite accesses to current_nle_ctx->s_<name>.
+     *
+     * Notes:
+     *   - s_cached_pickinv_win must be initialized to WIN_ERR (-1), not
+     *     the calloc-zero default; init_nle() in nle.c sets it after
+     *     allocation. (winid 0 is a valid window — calloc-zero would
+     *     make the "no cache" check fail and crash destroy_nhwindow.)
+     *   - s_only_x / s_only_y replace `static coord only` in invent.c;
+     *     we use two raw signed-char fields instead of a coord pointer
+     *     to keep coord.h out of nle.h (xchar == signed char). The 4
+     *     access sites in invent.c are rewritten in-place.
+     *   - s_invbuf is the heap buffer pointer itself (NetHack reallocs
+     *     it via alloc()/free()); only the pointer + size move into
+     *     the ctx, the buffer stays on the heap.
+     *   - s_valid_menu_classes is MAXOCLASSES(18) + 1 + 4 + 1 = 24
+     *     bytes; literal 24 here so nle.h doesn't need objclass.h. */
+    unsigned             s_sortlootmode;          /* invent.c (sortloot_cmp mode) */
+    int                  s_cached_pickinv_win;    /* invent.c (winid; init to WIN_ERR in init_nle) */
+    int                  s_this_type;             /* invent.c (this_type_only filter) */
+    char                *s_invbuf;                /* invent.c (let_to_name scratch ptr) */
+    unsigned             s_invbufsiz;             /* invent.c (let_to_name scratch size) */
+    signed char          s_only_x;                /* invent.c (only_here coord.x, was xchar) */
+    signed char          s_only_y;                /* invent.c (only_here coord.y, was xchar) */
+    struct obj          *s_current_container;     /* pickup.c (active container for loot) */
+    boolean              s_abort_looting;         /* pickup.c (use_container abort flag) */
+    long                 s_val_for_n_or_more;     /* pickup.c (n_or_more threshold) */
+    char                 s_valid_menu_classes[24]; /* pickup.c (MAXOCLASSES+1+4+1) */
 } nle_ctx_t;
 
 /*

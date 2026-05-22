@@ -337,6 +337,15 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* body-slot pointers (s9_uwep, s9_uarm, etc.) zero-init'd by calloc;
      * that matches the original decl.c NULL initializer. */
 
+    /* Cluster AU group 2 — non-zero initializers for migrated invent/
+     * pickup file-statics. Only cached_pickinv_win needs init (was
+     * `static winid cached_pickinv_win = WIN_ERR;` and WIN_ERR == -1,
+     * not 0). The others (sortlootmode=0, this_type=0, invbuf=NULL,
+     * invbufsiz=0, only={0,0}, current_container=NULL,
+     * abort_looting=FALSE, val_for_n_or_more=0, valid_menu_classes=0)
+     * all match calloc-zero. */
+    nle->s_cached_pickinv_win = WIN_ERR;
+
     return nle;
 }
 
