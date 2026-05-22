@@ -759,3 +759,40 @@ The cheap solution (TLS) gets us part-way. The next mile is
 the heap-per-env work in items 1–4 above — what the user has
 already identified as the clean solution and the direction the
 unfinished Option B stages were heading.
+
+## Clusters AT + AS status (2026-05-22)
+
+`Cluster AS` (`801395e6`) disables `NETHACK_FAST_RESET` for N>1 (the
+fast-reset path memcpys back the shared bump arena and clobbers other
+envs), seeds each env explicitly from `NETHACK_SEED_BASE` (default
+`0xCAFEBEEF`) advanced via LCG on each `slow_reset`, and bumps the
+arena from 4 GB to 64 GB virtual.
+
+`Cluster AT` (`aeb37ee1`, `42718730`) adds NetHack-core guards against
+seeds that produce degenerate level geometry:
+
+- `mklev.c:topologize` early-returns when a room has `hix<lowx` or
+  `hiy<lowy` — without the guard the loop step `+= (h-lo+2)` becomes
+  non-positive and spins forever.
+- `mklev.c:find_branch_room` treats any `nroom <= 0` as no-rooms
+  (falls back to mazexy), and caps the somexy retry loop at 200 to
+  prevent infinite `impossible("Can't place branch!")` cascades.
+
+**Result:** N=64 GPU+pthread training now passes init for all 64 envs.
+First Epoch 0 frame draws at t=30s with `GPU 11%`, `VRAM 0.9/39 G`,
+`clipfrac 0.406`. Previous runs hung indefinitely (>10 min, no output)
+in `topologize` or `find_branch_room`.
+
+### Step-time follow-up bug
+
+First rollout step crashes when an agent action triggers a level
+transition. Stack: `rhack(cmd='<')` → `doup` → `prev_level` →
+`goto_level` → `getlev` → `rest_rooms` → `rest_room` → `mread` (fails)
+→ `panic("Error reading level file")` → `dosave0` → `save_room(r=NULL)`
+→ `bwrite(loc=0x0)` → SIGSEGV in `__memmove_avx_unaligned`.
+
+The level-file save/restore path was untested under multi-env until
+N=64 init started succeeding. PID-based filenames in the per-env
+vardir likely collide across envs, or stairway state
+(`s6_upstair_p`/`s6_dnstair_p`) carries a stale cross-env pointer.
+This is the next concrete blocker (task #58).
