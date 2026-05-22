@@ -54,6 +54,7 @@ struct nle_rndmonst_state; /* makemon.c (rndmonst_state migration) */
 struct artifact;         /* include/artifact.h (artilist migration) */
 struct objclass;         /* include/objclass.h (objects migration) */
 struct objdescr;         /* include/objclass.h (obj_descr migration) */
+struct fruit;            /* include/youprop.h via hack.h — Cluster AU group 1 (restore.c oldfruit) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -534,6 +535,27 @@ typedef struct nle_globals {
     char                          s_SAVEF[45];     /* SAVESIZE = PL_NSIZ+13 (UNIX) */
     char                          s_bones[16];    /* "bonesnn.xxx" + slack */
     char                         *s_fqn_prefix[10]; /* PREFIX_COUNT */
+
+    /* Cluster AU group 1 — save/restore session state (save.c + restore.c).
+     * Eleven file-statics that race across envs during c_reset save paths.
+     * Direct fields on nle_ctx_t (no swap struct); macros at the top of
+     * each .c file rewrite accesses to current_nle_ctx->s_<name>.
+     *
+     * Note: s_outbuf is sized 256 here because nle.h is included by util
+     * binaries that don't pull in hack.h (where BUFSZ=256 is defined).
+     * A _Static_assert in save.c enforces BUFSZ == 256 / ZEROCOMP_BUFSIZ
+     * to catch any future config drift. */
+    int                  s_count_only;            /* save.c (MFLOPPY-gated; harmless on UNIX) */
+    unsigned             s_ustuck_id;             /* save.c (preserve monster id across save) */
+    unsigned             s_usteed_id;             /* save.c (preserve steed id across save) */
+    FILE                *s_bw_FILE;               /* save.c (def_bufon fdopen'd save stream) */
+    unsigned char        s_outbuf[256];           /* save.c (BUFSZ == ZEROCOMP_BUFSIZ on UNIX) */
+    unsigned short       s_outbufp;               /* save.c (zerocomp output cursor) */
+    short                s_outrunlength;          /* save.c (RLE run len; -1 == no run) */
+    int                  s_bwritefd;              /* save.c (zerocomp active fd) */
+    boolean              s_compressing;           /* save.c (zerocomp mode flag) */
+    struct fruit        *s_oldfruit;              /* restore.c (ghost-level fruit chain) */
+    long                 s_omoves;                /* restore.c (ghost-level monstermoves) */
 } nle_ctx_t;
 
 /*

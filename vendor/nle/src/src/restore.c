@@ -8,6 +8,11 @@
 #include "lev.h"
 #include "tcap.h" /* for TERMLIB and ASCIIGRAPH */
 
+/* Cluster AU group 1 — per-env restore state. Same direct-ctx pattern
+ * as save.c; see vendor/nle/src/include/nle.h for the fields. */
+#define oldfruit (current_nle_ctx->s_oldfruit)
+#define omoves   (current_nle_ctx->s_omoves)
+
 #if defined(MICRO)
 extern int dotcnt; /* shared with save */
 extern int dotrow; /* shared with save */
@@ -87,8 +92,7 @@ extern int amii_numcolors;
 #include "display.h"
 
 /* current_nle_ctx->restoring migrated to nle_ctx_t (refactor stage 3d). */
-static NEARDATA struct fruit *oldfruit;
-static NEARDATA long omoves;
+/* oldfruit/omoves migrated to nle_ctx_t (Cluster AU group 1). */
 
 #define Is_IceBox(o) ((o)->otyp == ICE_BOX ? TRUE : FALSE)
 

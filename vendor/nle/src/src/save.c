@@ -7,6 +7,20 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 
+/* Cluster AU group 1 — per-env save-session state. Macros rewrite
+ * file-statics to direct nle_ctx_t fields so concurrent c_reset save
+ * paths in N>=128 vecenv training don't trample each other's buffers.
+ * See vendor/nle/src/include/nle.h for the field declarations. */
+#define count_only      (current_nle_ctx->s_count_only)
+#define ustuck_id       (current_nle_ctx->s_ustuck_id)
+#define usteed_id       (current_nle_ctx->s_usteed_id)
+#define bw_FILE         (current_nle_ctx->s_bw_FILE)
+#define outbuf          (current_nle_ctx->s_outbuf)
+#define outbufp         (current_nle_ctx->s_outbufp)
+#define outrunlength    (current_nle_ctx->s_outrunlength)
+#define bwritefd        (current_nle_ctx->s_bwritefd)
+#define compressing     (current_nle_ctx->s_compressing)
+
 #ifndef NO_SIGNAL
 #include <signal.h>
 #endif
@@ -16,7 +30,7 @@
 
 #ifdef MFLOPPY
 long bytes_counted;
-static int count_only;
+/* count_only migrated to nle_ctx_t (Cluster AU group 1). */
 #endif
 
 #ifdef MICRO
@@ -72,8 +86,8 @@ static struct save_procs {
 #define HUP
 #endif
 
-/* need to preserve these during save to avoid accessing freed memory */
-static unsigned ustuck_id = 0, usteed_id = 0;
+/* ustuck_id/usteed_id migrated to nle_ctx_t (Cluster AU group 1).
+ * They preserve monst ids across the save path. */
 
 int
 dosave()
@@ -678,8 +692,8 @@ int fd;
     return;
 }
 
-static FILE *bw_FILE = 0;
-/* Cluster AO: bw_fd / buffering per-env (saved-game write fd + flag). */
+/* bw_FILE migrated to nle_ctx_t (Cluster AU group 1) — macro at top of file. */
+/* Cluster AO: bw_fd / buffering per-env via nle_save_state. */
 struct nle_save_state {
     int     _bw_fd;
     boolean _buffering;
@@ -808,11 +822,14 @@ int fd;
 #ifndef ZEROCOMP_BUFSIZ
 #define ZEROCOMP_BUFSIZ BUFSZ
 #endif
-static NEARDATA unsigned char outbuf[ZEROCOMP_BUFSIZ];
-static NEARDATA unsigned short outbufp = 0;
-static NEARDATA short outrunlength = -1;
-static NEARDATA int bwritefd;
-static NEARDATA boolean compressing = FALSE;
+/* outbuf[ZEROCOMP_BUFSIZ], outbufp, outrunlength, bwritefd, compressing
+ * migrated to nle_ctx_t (Cluster AU group 1). The struct field is sized
+ * BUFSZ (256) on the assumption that ZEROCOMP_BUFSIZ == BUFSZ on every
+ * config we build (UNIX); enforced by the static assert below. */
+#if defined(__GNUC__) || defined(__clang__)
+_Static_assert(ZEROCOMP_BUFSIZ == 256,
+               "Cluster AU group 1: nle_ctx_t::s_outbuf was sized 256 (BUFSZ)");
+#endif
 
 /*dbg()
 {
