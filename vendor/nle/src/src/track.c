@@ -9,8 +9,13 @@
 
 #define UTSZ 50
 
+/* Cluster AU group 6 — utrack[] migrated to nle_ctx_t (per-env ring of
+ * the player's last UTSZ steps). Heap-allocated as a coord* in init_nle;
+ * the macro restores the array-like syntax of all existing call-sites.
+ * utcnt/utpnt are out-of-scope here. */
+#define utrack (current_nle_ctx->s_utrack)
+
 STATIC_VAR NEARDATA int utcnt, utpnt;
-STATIC_VAR NEARDATA coord utrack[UTSZ];
 
 void
 initrack()

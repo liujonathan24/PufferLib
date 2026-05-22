@@ -7,7 +7,9 @@
 #include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
-STATIC_VAR NEARDATA struct engr *head_engr;
+/* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
+#define head_engr (current_nle_ctx->s_head_engr)
+
 STATIC_DCL const char *NDECL(blengr);
 
 char *

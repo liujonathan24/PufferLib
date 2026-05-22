@@ -6,7 +6,8 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-static NEARDATA boolean did_dig_msg;
+/* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
+#define did_dig_msg (current_nle_ctx->s_did_dig_msg)
 
 STATIC_DCL boolean NDECL(rm_waslit);
 STATIC_DCL void FDECL(mkcavepos,

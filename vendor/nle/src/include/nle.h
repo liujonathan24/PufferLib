@@ -57,6 +57,8 @@ struct objdescr;         /* include/objclass.h (obj_descr migration) */
 struct fruit;            /* include/youprop.h via hack.h — Cluster AU group 1 (restore.c oldfruit) */
 struct qtlists;          /* include/qtext.h — Cluster AU group 5 (questpgr.c qt_list) */
 struct dlb_handle;       /* include/dlb.h   — Cluster AU group 5 (questpgr.c msg_file; dlb is typedef'd to this) */
+struct engr;             /* include/engrave.h — Cluster AU group 6 (engrave.c head_engr) */
+struct litmon;           /* defined locally in src/read.c — Cluster AU group 6 (read.c gremlins) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -586,6 +588,27 @@ typedef struct nle_globals {
     int                  s_p_type;                /* pray.c ((-1)..3: prayer outcome class) */
     boolean              s_artiexist[35];         /* artifact.c (1+NROFARTIFACTS+1; NROFARTIFACTS==33) */
     boolean              s_touch_blasted;         /* artifact.c (retouch_object damage flag) */
+
+    /* Cluster AU group 6 — single-action target caches per-env.
+     * Eight file-statics that hold the "current action target" between
+     * tick N (action started) and tick N+1 (continuation / y-n prompt).
+     * At N>=128 envs, env A's cache (e.g. telescroll = the scroll
+     * currently being read) was visible to env B's continuation,
+     * corrupting both games. Direct fields here; macros at the top of
+     * each .c file rewrite bare-name accesses to current_nle_ctx->s_<name>.
+     *
+     * struct litmon is defined locally inside src/read.c (a small linked
+     * list node holding {struct monst*, struct litmon* nxt}); forward
+     * decl in nle.h is sufficient because only read.c dereferences it. */
+    boolean              s_obj_zapped;            /* zap.c (polyuse cookie) */
+    int                  s_poly_zapped;           /* zap.c (polyuse cookie) */
+    boolean              s_did_dig_msg;           /* dig.c (dig-msg latch) */
+    struct engr         *s_head_engr;             /* engrave.c (engr list head) */
+    struct litmon       *s_gremlins;              /* read.c (gremlin-spawn queue) */
+    int                  s_force_mintrap;         /* trap.c (mintrap() flag stand-in) */
+    struct obj          *s_telescroll;            /* teleport.c (scroll currently being read) */
+    struct nhcoord      *s_utrack;                /* track.c (UTSZ=50 player-step ring; heap-alloc'd in init_nle to keep coord.h out of nle.h, matching s6_inv_pos_p / s7_doors_p / bhitpos_p pattern) */
+    struct obj          *s_propellor;             /* weapon.c (ranged-weapon select cache) */
 } nle_ctx_t;
 
 /*

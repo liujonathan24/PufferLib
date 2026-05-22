@@ -6,6 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 6 — file-static migrated to nle_ctx_t.
+ * 'struct litmon' is defined further down in this TU (~line 1899); the
+ * macro is just textual, the type only needs to be visible at the
+ * point of use (which is below the local struct definition). */
+#define gremlins (current_nle_ctx->s_gremlins)
+
 #define Your_Own_Role(mndx)  \
     ((mndx) == urole.malenum \
      || (urole.femalenum != NON_PM && (mndx) == urole.femalenum))
@@ -1900,7 +1906,8 @@ struct litmon {
     struct monst *mon;
     struct litmon *nxt;
 };
-STATIC_VAR struct litmon *gremlins = 0;
+/* gremlins migrated to current_nle_ctx->s_gremlins (Cluster AU group 6).
+ * Zero-initialization preserved by calloc() of nle_ctx_t. */
 
 /*
  * Low-level lit-field update routine.

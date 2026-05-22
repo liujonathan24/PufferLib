@@ -311,6 +311,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s7_lastseentyp_p   = calloc(COLNO * ROWNO, sizeof(schar));
     /* cluster V — bhitpos per-env. */
     nle->bhitpos_p          = calloc(1, sizeof(coord));
+    /* Cluster AU group 6 — utrack[UTSZ=50] per-env (track.c). */
+    nle->s_utrack           = calloc(50, sizeof(coord));
     /* subrooms points into the rooms array (slot MAXNROFROOMS+1). */
     nle->s7_subrooms        = nle->s7_rooms_p + (MAXNROFROOMS + 1);
     /* upstairs_room/dnstairs_room/sstairs_room/ftrap left NULL — original
@@ -326,7 +328,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         || !nle->s_bases_p || !nle->s_hilites_p
         || !nle->s7_level_p || !nle->s7_rooms_p
         || !nle->s7_doors_p || !nle->s7_level_info_p
-        || !nle->s7_lastseentyp_p || !nle->bhitpos_p) {
+        || !nle->s7_lastseentyp_p || !nle->bhitpos_p
+        || !nle->s_utrack) {
         fprintf(stderr, "init_nle: failed to allocate stage 9' batch C state\n");
         abort();
     }

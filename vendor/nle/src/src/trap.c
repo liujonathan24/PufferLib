@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
+#define force_mintrap (current_nle_ctx->s_force_mintrap)
+
 extern const char *const destroy_strings[][3]; /* from zap.c */
 
 STATIC_DCL boolean FDECL(keep_saddle_with_steedcorpse, (unsigned, struct obj *,
@@ -41,7 +44,7 @@ STATIC_DCL boolean FDECL(thitm, (int, struct monst *, struct obj *, int,
 STATIC_DCL void NDECL(maybe_finish_sokoban);
 
 /* mintrap() should take a flags argument, but for time being we use this */
-STATIC_VAR int force_mintrap = 0;
+/* force_mintrap migrated to current_nle_ctx->s_force_mintrap (Cluster AU group 6). */
 
 STATIC_VAR const char *const a_your[2] = { "a", "your" };
 STATIC_VAR const char *const A_Your[2] = { "A", "Your" };
