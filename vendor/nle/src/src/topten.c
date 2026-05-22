@@ -14,6 +14,13 @@
  * (VMS-only) — dead on UNIX, migrated for completeness. */
 #define nle_toptenwin   (current_nle_ctx->s_toptenwin)
 #define final_fpos      (current_nle_ctx->s_final_fpos)
+
+/* Cluster AV-b3 — function-local static tt_buf in get_rnd_toptenentry()
+ * promoted to a per-env lazily-alloc'd struct (struct toptenentry is
+ * ~hundreds of bytes; embedding inline would bloat nle_ctx_t). The macro
+ * expands to the dereferenced lvalue so existing `tt = &tt_buf;` works.
+ * Call site allocs the struct on first call (see get_rnd_toptenentry). */
+#define tt_buf          (*(current_nle_ctx->s_get_rnd_toptenentry_tt_buf))
 #ifdef SHORT_FILENAMES
 #include "patchlev.h"
 #else
@@ -1212,7 +1219,13 @@ get_rnd_toptenentry()
     int rank, i;
     FILE *rfile;
     register struct toptenentry *tt;
-    static struct toptenentry tt_buf;
+
+    /* Cluster AV-b3: lazy-alloc per-env tt_buf storage (replaces file-local
+     * static). Once allocated, the buffer persists for the env's lifetime;
+     * cleared each call via readentry(). */
+    if (!current_nle_ctx->s_get_rnd_toptenentry_tt_buf)
+        current_nle_ctx->s_get_rnd_toptenentry_tt_buf =
+            (struct toptenentry *) alloc(sizeof(struct toptenentry));
 
     rfile = fopen_datafile(RECORD, "r", SCOREPREFIX);
     if (!rfile) {

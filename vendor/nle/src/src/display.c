@@ -131,6 +131,14 @@
  * the struct at the one use site. Initialized in init_nle (nle.c). */
 #define bad_count  (current_nle_ctx->s_bad_count)
 
+/* Cluster AV-b3 — function-local statics promoted to per-env ctx fields.
+ * tmp_at() animation list head + cls()/flush_screen() recursion guards.
+ * All calloc-zero initial (NULL/FALSE/0); no explicit init in init_nle. */
+#define tglyph          (current_nle_ctx->s_tmp_at_tglyph)
+#define in_cls          (current_nle_ctx->s_cls_in_cls)
+#define flushing        (current_nle_ctx->s_flush_screen_flushing)
+#define delay_flushing  (current_nle_ctx->s_flush_screen_delay_flushing)
+
 STATIC_DCL void FDECL(show_mon_or_warn, (int, int, int));
 STATIC_DCL void FDECL(display_monster,
                       (XCHAR_P, XCHAR_P, struct monst *, int, XCHAR_P));
@@ -973,7 +981,7 @@ void
 tmp_at(x, y)
 int x, y;
 {
-    static struct tmp_glyph *tglyph = (struct tmp_glyph *) 0;
+    /* Cluster AV-b3: tglyph promoted to current_nle_ctx->s_tmp_at_tglyph */
     struct tmp_glyph *tmp;
 
     switch (x) {
@@ -1641,7 +1649,7 @@ int start, stop, y;
 void
 cls()
 {
-    static boolean in_cls = 0;
+    /* Cluster AV-b3: in_cls promoted to current_nle_ctx->s_cls_in_cls */
 
     if (in_cls)
         return;
@@ -1664,8 +1672,7 @@ int cursor_on_u;
     /* Prevent infinite loops on errors:
      *      flush_screen->print_glyph->impossible->pline->flush_screen
      */
-    static int flushing = 0;
-    static int delay_flushing = 0;
+    /* Cluster AV-b3: flushing/delay_flushing promoted to ctx fields */
     register int x, y;
 
     if (cursor_on_u == -1)

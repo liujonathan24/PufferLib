@@ -36,6 +36,8 @@ struct dungeon;          /* include/dungeon.h (stage 6') */
 struct s_level;          /* include/dungeon.h (stage 6') */
 struct stairway;         /* include/dungeon.h (stage 6') */
 struct dest_area;        /* include/dungeon.h (stage 6') */
+struct tmp_glyph;        /* display.c file-local (Cluster AV-b3) */
+struct toptenentry;      /* topten.c file-local (Cluster AV-b3) */
 struct nhcoord;          /* include/coord.h (stage 6'); typedef'd as `coord` */
 struct multishot;        /* include/decl.h (stage 9' batch C) */
 struct u_realtime;       /* include/you.h (stage 9' batch C) */
@@ -750,6 +752,7 @@ typedef struct nle_globals {
     struct entity  *s_occupants;            /* dbridge.c occupants[ENTITIES=2] (heap, lazy alloc'd) */
     int             s_sex_change_ok;        /* polyself.c sex_change_ok */
 
+<<<<<<< HEAD
     /* Cluster AV-b1 — function-local statics: rnd/trap/mkmaze */
     unsigned                     s_rn2disprng_seed;        /* rnd.c rn2_on_display_rng (non-ISAAC64) */
     boolean                      s_dotrap_recursive_mine;  /* trap.c dotrap landmine recursion guard */
@@ -764,6 +767,12 @@ typedef struct nle_globals {
     struct trap                  *s_spoteffects_spottrap;      /* hack.c spoteffects */
     unsigned                      s_spoteffects_spottraptyp;   /* hack.c spoteffects (NO_TRAP==0) */
     int                           s_makedog_petname_used;      /* dog.c makedog */
+    /* Cluster AV-b3 — function-local statics: display/topten */
+    struct tmp_glyph    *s_tmp_at_tglyph;               /* display.c tmp_at() animation list head */
+    boolean              s_cls_in_cls;                  /* display.c cls() recursion guard */
+    int                  s_flush_screen_flushing;       /* display.c flush_screen() recursion guard */
+    int                  s_flush_screen_delay_flushing; /* display.c flush_screen() delay latch */
+    struct toptenentry  *s_get_rnd_toptenentry_tt_buf;  /* topten.c get_rnd_toptenentry scratch (lazy-alloc) */
 } nle_ctx_t;
 
 /*
