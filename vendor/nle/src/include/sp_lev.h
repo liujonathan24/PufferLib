@@ -401,7 +401,9 @@ typedef struct {
 } replaceterrain;
 
 /* values for rtype are defined in dungeon.h */
-typedef struct {
+/* Tag `nle_lev_region_s` lets nle.h forward-declare this struct without
+ * pulling in sp_lev.h (Cluster AU group 3). */
+typedef struct nle_lev_region_s {
     struct {
         xchar x1, y1, x2, y2;
     } inarea;

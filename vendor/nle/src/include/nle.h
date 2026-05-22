@@ -59,6 +59,7 @@ struct qtlists;          /* include/qtext.h — Cluster AU group 5 (questpgr.c q
 struct dlb_handle;       /* include/dlb.h   — Cluster AU group 5 (questpgr.c msg_file; dlb is typedef'd to this) */
 struct engr;             /* include/engrave.h — Cluster AU group 6 (engrave.c head_engr) */
 struct litmon;           /* defined locally in src/read.c — Cluster AU group 6 (read.c gremlins) */
+struct nle_lev_region_s; /* Cluster AU group 3 (mkmaze.c bughack); tag added in include/sp_lev.h */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -641,6 +642,42 @@ typedef struct nle_globals {
     boolean              s_abort_looting;         /* pickup.c (use_container abort flag) */
     long                 s_val_for_n_or_more;     /* pickup.c (n_or_more threshold) */
     char                 s_valid_menu_classes[24]; /* pickup.c (MAXOCLASSES+1+4+1) */
+
+    /* Cluster AU group 3 — level-build per-env
+     *
+     * File-statics from sp_lev.c / mkmaze.c / mkmap.c that hold transient
+     * state during mklev() and special-level loading. With N>=128 PufferLib
+     * envs in one process, env A's mid-build values can be observed by env
+     * B's continuation (mklev yields through pline/menu prompts), corrupting
+     * level construction and surfacing as libc memcpy NULL-source GPFs.
+     *
+     * Heavy NetHack types are forward-declared (struct obj, struct monst,
+     * struct trap) and stored as pointers / array-of-pointers so this block
+     * does not pull objclass.h / monst.h / trap.h cascade into util TUs.
+     * `lev_region` is a typedef; the underlying struct gets the tag
+     * `nle_lev_region_s` (added in sp_lev.h) so it can be forward-declared
+     * here without including sp_lev.h. */
+    struct obj                  *s_container_obj[10]; /* MAX_CONTAINMENT == 10
+                                                       * (sp_lev.h); literal
+                                                       * to keep nle.h light;
+                                                       * _Static_assert in
+                                                       * sp_lev.c catches
+                                                       * future drift. */
+    /* s_container_idx already declared in Cluster AP Part 2 block above */
+    struct monst                *s_invent_carrying_monster;
+    int                          s_mines_prize_count;
+    int                          s_soko_prize_count;
+    schar                        s_floodfillchk_match_under_typ;
+    /* mkmaze.c */
+    struct nle_lev_region_s     *s_bughack;       /* lev_region *; lazily
+                                                   * allocated on first use
+                                                   * in mkmaze.c so nle.c
+                                                   * does not need to pull
+                                                   * sp_lev.h. */
+    struct trap                 *s_wportal;
+    /* mkmap.c */
+    char                        *s_new_locations;
+    int                          s_n_loc_filled;
 } nle_ctx_t;
 
 /*

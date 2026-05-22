@@ -8,11 +8,41 @@
 #include "sp_lev.h"
 #include "lev.h" /* save & restore info */
 
+/* Cluster AU group 3 — file-statics migrated to nle_ctx_t for per-env
+ * isolation. `bughack` is a lev_region value at the source level; the ctx
+ * field is a pointer to that struct (forward-declared in nle.h as
+ * `struct nle_lev_region_s`). Lazy-allocated via nle_get_bughack() the
+ * first time a baalz wall_cleanup / fix_wall_spines fires for this env.
+ * The canonical "uninitialized" lev_region in the original code is
+ * { {COLNO, ROWNO, 0, 0}, {COLNO, ROWNO, 0, 0}, ... } and the reset block
+ * in baalz_fixup() restores it to that same state after use; we mirror
+ * that init exactly in the alloc path. */
+static lev_region *
+nle_get_bughack(void)
+{
+    if (!current_nle_ctx->s_bughack) {
+        lev_region *p = (lev_region *) alloc(sizeof(lev_region));
+        (void) memset((genericptr_t) p, 0, sizeof(lev_region));
+        p->inarea.x1 = COLNO;
+        p->inarea.y1 = ROWNO;
+        p->inarea.x2 = 0;
+        p->inarea.y2 = 0;
+        p->delarea.x1 = COLNO;
+        p->delarea.y1 = ROWNO;
+        p->delarea.x2 = 0;
+        p->delarea.y2 = 0;
+        current_nle_ctx->s_bughack = (struct nle_lev_region_s *) p;
+    }
+    return (lev_region *) current_nle_ctx->s_bughack;
+}
+#define bughack   (*nle_get_bughack())
+#define wportal   (current_nle_ctx->s_wportal)
+
 /* from sp_lev.c, for fixup_special() */
 extern lev_region *lregions;
 extern int num_lregions;
 /* for preserving the insect legs when wallifying baalz level */
-static lev_region bughack = { {COLNO, ROWNO, 0, 0}, {COLNO, ROWNO, 0, 0} };
+/* bughack moved to nle_ctx_t (Cluster AU group 3) — see macro above. */
 
 STATIC_DCL int FDECL(iswall, (int, int));
 STATIC_DCL int FDECL(iswall_or_stone, (int, int));
@@ -1379,7 +1409,7 @@ fumaroles()
 
 static struct bubble *bbubbles, *ebubbles;
 
-static struct trap *wportal;
+/* wportal moved to nle_ctx_t (Cluster AU group 3) */
 static int xmin, ymin, xmax, ymax; /* level boundaries */
 /* bubble movement boundaries */
 #define bxmin (xmin + 1)

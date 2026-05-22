@@ -14,6 +14,23 @@
 #include "dlb.h"
 #include "sp_lev.h"
 
+/* Cluster AU group 3 — file-statics migrated to nle_ctx_t for per-env
+ * isolation. See nle.h `Cluster AU group 3` block. The macros route every
+ * existing direct-name access through current_nle_ctx->s_<name>. */
+#define mines_prize_count           (current_nle_ctx->s_mines_prize_count)
+#define soko_prize_count            (current_nle_ctx->s_soko_prize_count)
+#define container_obj               (current_nle_ctx->s_container_obj)
+#define container_idx               (current_nle_ctx->s_container_idx)
+#define invent_carrying_monster     (current_nle_ctx->s_invent_carrying_monster)
+#define floodfillchk_match_under_typ \
+    (current_nle_ctx->s_floodfillchk_match_under_typ)
+
+/* MAX_CONTAINMENT is in sp_lev.h (==10). The nle.h ctx field is sized to
+ * a literal 10 to avoid pulling sp_lev.h into nle.h. Catch future drift. */
+_Static_assert(MAX_CONTAINMENT == 10,
+               "Cluster AU group 3: s_container_obj sized to 10 in nle.h "
+               "but MAX_CONTAINMENT changed; update nle.h");
+
 #ifdef _MSC_VER
  #pragma warning(push)
  #pragma warning(disable : 4244)
@@ -212,10 +229,13 @@ int num_lregions = 0;
 #define splev_init_present (current_nle_ctx->s_splev_init_present)
 #define sp_icedpools       (current_nle_ctx->s_icedpools)
 #define container_idx      (current_nle_ctx->s_container_idx)
-static int mines_prize_count = 0, soko_prize_count = 0; /* achievements */
-
-static struct obj *container_obj[MAX_CONTAINMENT];
-static struct monst *invent_carrying_monster = NULL;
+/* Cluster AU group 3: per-env mid-build statics that race when N envs
+ * run in one process. Direct ctx fields; macros below. */
+#define mines_prize_count       (current_nle_ctx->s_mines_prize_count)
+#define soko_prize_count        (current_nle_ctx->s_soko_prize_count)
+#define container_obj           (current_nle_ctx->s_container_obj)
+#define invent_carrying_monster (current_nle_ctx->s_invent_carrying_monster)
+#define floodfillchk_match_under_typ (current_nle_ctx->s_floodfillchk_match_under_typ)
 
 #define SPLEV_STACK_RESERVE 128
 
@@ -3873,7 +3893,7 @@ int dir;
 }
 
 STATIC_VAR int FDECL((*selection_flood_check_func), (int, int));
-STATIC_VAR schar floodfillchk_match_under_typ;
+/* floodfillchk_match_under_typ moved to nle_ctx_t (Cluster AU group 3) */
 
 void
 set_selection_floodfillchk(f)
