@@ -126,28 +126,35 @@ was written against:
    was 88 % train, 2 % env, 0 % GPU because the OMP worker was
    spinning on a null `thread_local` NetHackRL instance).
 
-### What's still broken (post-fanout)
+### What's still broken (post-fanout + Cluster AR)
 
-The N≥2 double-free is **fixed** (commit `b498fdab`). Two issues
-remain on the path to the goal:
+The N≥2 double-free is **fixed** (commit `b498fdab`). Cluster AR
+(`c5cc7e9a`, `cc005419`) added vision-recursion guards in algorithm C
+right_side / left_side that bound both recursion depth (≤64) and
+inner-loop iterations (≤COLNO+8), matching the guards algorithm D
+already has.
 
-1. **Pre-existing `dog_move → do_clear_area` vision-recursion hang.**
-   `train_bench N>=26 steps=1000 seed=0xdeadbeef` deterministically
-   hangs at env=6, t≈231 in `dog_move → do_clear_area → ...` recursing
-   on its own return address. The same hang at different (N, t, env)
-   triplets reproduces across seeds — it's an env-specific seed-driven
-   pathfinding bug (with seed S, some env_idx gets a dungeon layout
-   where the pet's pathfinder infinite-loops). Not a regression. This
-   is the same hang documented in "The N≥92 hang" section below; the
-   N threshold dropped because Cluster AQ unblocked OMP scaling so
-   more envs now actually progress to the bug. Fix: replace the
-   recursive `do_clear_area` with an iterative BFS.
-2. **Intermittent CUDA-init SIGSEGV in `puffer train` at N≥2.**
-   `bash ocean/nethack/experiments/exp_028_gpu_n64/run_n4.sh` exits
-   with `Steps=0, SPS=0, Epoch=0` on some attempts and exit 139, then
-   runs successfully on the next attempt. Looks like a CUDA-side init
-   race in PufferLib's training backend; not a libnethack issue.
-   Independent of the N≥2 double-free that was the agents' target.
+Two issues remain on the path to the > 1000 reward goal:
+
+1. **Seed-specific init-time hang outside vision_recalc.**
+   `train_bench N>=26 ... seed=0xdeadbeef` deterministically hangs
+   during init+drain of a specific env in [0..N-1] whose
+   `seeds.seeds[0]=0xdeadbeef+env_idx` triggers a NetHack level-gen
+   stall. Other seeds (0x111, 0x222, 0xCAFEBEEF) work cleanly at
+   N=32 / 64 / 96. With seed `0xCAFEBEEF`, `train_bench 64 1000000`
+   sustains **414K aggregate steps/sec, exit=0, no hangs.** The bug
+   is upstream NetHack level-gen on specific layouts, NOT the
+   refactor. Workaround: choose seeds that don't hit the bad
+   configurations.
+2. **Intermittent SIGSEGV in `puffer train` rollouts loop.**
+   `backend.rollouts(pufferl)` at `pufferl.py:250` fires
+   `munmap_chunk(): invalid pointer` on roughly 1 in 3 N=1 runs (the
+   other two complete the full 200K steps at SPS 3.4-5.5K). N=4 and
+   N=32 hang at Epoch 0 more often than they progress. The crash is
+   in PufferLib's C training extension (`pufferlib._C`) or a
+   PufferLib↔libnethack obs/action buffer interaction, NOT in the
+   libnethack core (which `train_bench` exercises cleanly at the
+   same N counts).
 
 ### Updated baseline for the goal
 
@@ -158,11 +165,13 @@ crash and determinism." Where we are:
 |----------------------------------------|--------|
 | Zero dlopen, direct libnethack linkage | ✅ done (`d8fff5bc`) |
 | Every NetHack global on `nle_ctx_t`    | 🟡 ~95 % after Cluster AP+AQ — `flags`/`iflags`/`sysflags` still TLS (struct-field collision), 6 deliberate TLS scratch/dead-code variables |
-| N=1 GPU + pthread training, no crash   | ✅ 5.0-5.7K SPS, 83-89 % GPU |
-| N≥2 GPU + pthread training, no crash   | ✅ double-free fixed (`b498fdab`); intermittent CUDA-init SIGSEGV remains |
+| N=1 GPU + pthread training, no crash   | 🟡 2/3 attempts complete 200K steps at SPS 3.4-5.5K; 1/3 intermittent SIGSEGV in `puffer train` rollouts |
+| N≥2 GPU + pthread training, no crash   | ✅ double-free fixed (`b498fdab`); puffer hangs at Epoch 0 more often than progressing |
 | `multi_threaded` 8 OMP threads, no crash | ✅ 5/5 trials pass (`82f3f831`) — was 0/10 |
 | `vec_smoke` N=2 100 steps              | ✅ 0 crashes (`b498fdab`) |
-| > 1000 episode_return at N≥32          | ❌ blocked by `dog_move → do_clear_area` recursion hang (env-specific seed-driven NetHack bug) |
+| C-level vecenv N=64 1M steps           | ✅ 414K agg SPS at seed `0xCAFEBEEF`, exit=0 (`train_bench 64 1000000 0xCAFEBEEF 0`) |
+| C-level vecenv N=96 1K steps           | ✅ ~43K agg SPS at seeds `0x111`, `0xCAFEBEEF` |
+| > 1000 episode_return at N≥32 GPU      | ❌ blocked by intermittent SIGSEGV in `pufferlib._C` rollouts (NOT a libnethack bug — `train_bench` runs same N cleanly) |
 | Determinism (16 golden replays)        | ⚠️ 13/16 pass against regenerated goldens (`d77f7966`); 3 truncated by reset-path hang |
 
 The rest of this report (originally written at Cluster AK) describes
