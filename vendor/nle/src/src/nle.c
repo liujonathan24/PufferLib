@@ -207,6 +207,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * `&uarm` etc. as compile-time initializers under __thread. Patch the
      * table once at startup (idempotent across env inits, since uarm/etc.
      * have stable per-thread addresses). Same for decl.c subrooms. */
+    extern void worn_init(void);
     extern void subrooms_init(void);
     worn_init();
     subrooms_init();
@@ -327,7 +328,8 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         abort();
     }
     nle->s9c_m_shot_p->o = STRANGE_OBJECT;
-    /* mvitals/killer/body-slot-pointers still in dungeon_save (deferred). */
+    /* body-slot pointers (s9_uwep, s9_uarm, etc.) zero-init'd by calloc;
+     * that matches the original decl.c NULL initializer. */
 
     return nle;
 }
@@ -670,14 +672,9 @@ struct nle_dungeon_save {
      * struct dig_info.level was renamed to .dlvl to free the token. */
     /* stage 8 — display / message state migrated direct to nle_ctx_t
      * (vision_full_recalc, viz_array, WIN_*, toplines, tc_gbl_data). */
-    /* stage 9' — remaining swap entries (DEFERRED to batch C):
-     * struct-value types with header cascades or worn[] static-init refs.
-     * Stays in swap until per-struct heap allocation lands. */
-    /* killer migrated direct to nle_ctx_t (stage 9' batch C). */
-    /* body-slot pointers — pinned by worn[] table in worn.c (&uarm etc.) */
-    struct obj         *uwep, *uarm, *uswapwep, *uquiver, *uarmu;
-    struct obj         *uarmc, *uarmh, *uarms, *uarmg, *uarmf;
-    struct obj         *uamul, *uright, *uleft, *ublindf, *uchain, *uball;
+    /* stage 9' batch D — body-slot pointers migrated direct to nle_ctx_t
+     * (s9_uwep, s9_uarm, etc.).  worn[] uses offsetof resolution; no
+     * per-thread address pinning.  Swap blob now empty of all stage-9 items. */
     /* mvitals migrated direct to nle_ctx_t (stage 9' batch C). */
     /* youmonst, urealtime, spl_book, m_shot, quest_status migrated direct
      * to nle_ctx_t (stage 9' batch C). */
@@ -697,15 +694,8 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
      * migrated direct to nle_ctx_t (s7_*). Save/load no longer needed. */
     /* stage 8' completed: tc_gbl_data + vision_full_recalc + viz_array
      * + WIN_* + toplines all migrated direct to nle_ctx_t. */
-    /* stage 9' batch C — partial migration. youmonst/urealtime/spl_book/
-     * m_shot/quest_status/mvitals/killer moved direct to nle_ctx_t.
-     * Remaining: body-slot pointers (pinned by worn[]). */
-    s->uwep = uwep; s->uarm = uarm; s->uswapwep = uswapwep;
-    s->uquiver = uquiver; s->uarmu = uarmu;
-    s->uarmc = uarmc; s->uarmh = uarmh; s->uarms = uarms;
-    s->uarmg = uarmg; s->uarmf = uarmf;
-    s->uamul = uamul; s->uright = uright; s->uleft = uleft;
-    s->ublindf = ublindf; s->uchain = uchain; s->uball = uball;
+    /* stage 9' batch D — body-slot pointers now live in nle_ctx_t (s9_u*).
+     * No save needed: they are already per-env by definition. */
     /* invent, uskin, current_wand, thrownobj, kickedobj, migrating_objs,
      * billobjs, mydogs, migrating_mons, apelist migrated direct.
      * ubirthday, moves, monstermoves, wailmsg, domove_* migrated direct. */
@@ -715,15 +705,10 @@ nle_dungeon_save_to(struct nle_dungeon_save *s)
 static void
 nle_dungeon_load_from(const struct nle_dungeon_save *s)
 {
-    /* stage 6'/7'/8' completed — nothing left to load for those stages. */
-    /* stage 9' batch C — partial migration (see save_to). */
-    uwep = s->uwep; uarm = s->uarm; uswapwep = s->uswapwep;
-    uquiver = s->uquiver; uarmu = s->uarmu;
-    uarmc = s->uarmc; uarmh = s->uarmh; uarms = s->uarms;
-    uarmg = s->uarmg; uarmf = s->uarmf;
-    uamul = s->uamul; uright = s->uright; uleft = s->uleft;
-    ublindf = s->ublindf; uchain = s->uchain; uball = s->uball;
-    /* Migrated direct (no load needed). */
+    /* stage 6'/7'/8'/9' all completed — nothing left to save/load. */
+    /* stage 9' batch D — body-slot pointers now in nle_ctx_t (s9_u*).
+     * No load needed: macros resolve directly via current_nle_ctx. */
+    (void) s; /* suppress unused-parameter warning */
     /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
 

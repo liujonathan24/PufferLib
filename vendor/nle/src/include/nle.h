@@ -413,6 +413,91 @@ typedef struct nle_globals {
     void                *s_end_state;         /* end.c: Schroedingers_cat */
     void                *s_sounds_state;      /* sounds.c: soundmap */
     void                *s_fast_reset_state;  /* nle_fast_reset.c: nle_arena_base */
+    /* Stage 9' batch D — body-slot pointers.  Were TLS NEARDATA in decl.c,
+     * pinned there by worn[] referencing &uarm etc. at static-init time.
+     * Now live per-env on nle_ctx_t; worn[] uses byte-offset resolution.
+     * Prefixed s9_ to match the batch naming used for other stage-9' work. */
+    struct obj          *s9_uarm;
+    struct obj          *s9_uarmc;
+    struct obj          *s9_uarmh;
+    struct obj          *s9_uarms;
+    struct obj          *s9_uarmg;
+    struct obj          *s9_uarmf;
+    struct obj          *s9_uarmu;
+    struct obj          *s9_uleft;
+    struct obj          *s9_uright;
+    struct obj          *s9_uwep;
+    struct obj          *s9_uswapwep;
+    struct obj          *s9_uquiver;
+    struct obj          *s9_uamul;
+    struct obj          *s9_ublindf;
+    struct obj          *s9_uball;
+    struct obj          *s9_uchain;
+    /* Cluster AP: botl.c per-env status state.
+     * cond_hilites[] was a plain static (process-global) unsigned long array;
+     * it holds condition highlight masks computed per-env during render_status.
+     * bl_hilite_moves and now_or_before_idx were __thread; broken under OMP
+     * vecenv for the same coroutine-resume reason as the Cluster AN group.
+     * status_hilite_str / status_hilite_str_id were __thread linked-list
+     * head+id; thread-local values are zero on worker threads after env was
+     * init'd on main thread, so the list is lost and allocs leak. */
+    unsigned long        s_cond_hilites[21]; /* BL_ATTCLR_MAX = CLR_MAX(16)+5 */
+    long                 s_bl_hilite_moves;  /* botl.c bl_hilite_moves */
+    int                  s_now_or_before_idx; /* botl.c now_or_before_idx */
+    void                *s_status_hilite_str_p; /* botl.c status_hilite_str */
+    int                  s_status_hilite_str_id; /* botl.c status_hilite_str_id */
+    /* Cluster AP: cmd.c per-env key-input queues.
+     * pushq/saveq/phead/ptail/shead/stail were plain statics (process-global);
+     * concurrent OMP envs sharing one thread could interleave reads/writes
+     * from different envs' input replay sequences. */
+    char                 s_pushq[20];       /* cmd.c pushq[BSIZE], BSIZE=20 */
+    char                 s_saveq[20];       /* cmd.c saveq[BSIZE] */
+    int                  s_phead;           /* cmd.c phead */
+    int                  s_ptail;           /* cmd.c ptail */
+    int                  s_shead;           /* cmd.c shead */
+    int                  s_stail;           /* cmd.c stail */
+    /* Cluster AP: wintty.c/getline.c per-env scratch.
+     * compress_str() cbuf was a function-local static used by tty_putstr
+     * on every message output — a hot per-env buffer shared across envs.
+     * tty_nhgetch nesting was __thread; marks re-entrant getc under UNIX.
+     * suppress_history in getline.c was a plain STATIC_VAR (process-global). */
+    char                 s_compress_cbuf[256]; /* wintty.c compress_str cbuf, BUFSZ=256 */
+    int                  s_tty_nhgetch_nesting; /* wintty.c tty_nhgetch nesting */
+    boolean              s_suppress_history; /* getline.c suppress_history */
+    /* Cluster AP: cmd.c enlightenment-window state.
+     * en_win was a plain static (process-global winid); concurrent envs
+     * both running enlightenment (e.g. at game-over) would race on it.
+     * en_via_menu was __thread; OMP cross-thread resume hazard. */
+    short                s_en_win;           /* cmd.c en_win (winid=short) */
+    boolean              s_en_via_menu;      /* cmd.c en_via_menu */
+    /* Cluster AP Part 2: remaining functional __thread variables.
+     * Each was __thread (broken under OMP coroutine-resume) or a plain
+     * process-global static (racy under concurrent envs). */
+    /* rumors.c oracle state — __thread; each env has its own oracle file
+     * cursor and location table. */
+    int                  s_oracle_flg;       /* rumors.c oracle_flg */
+    unsigned long       *s_oracle_loc;       /* rumors.c oracle_loc (heap ptr) */
+    /* do_wear.c initial_don — __thread; per-env flag for startup auto-wear */
+    boolean              s_initial_don;
+    /* sp_lev.c special-level generation state — __thread; each env's level
+     * gen is independent. container_obj[] is already a plain static (not TLS),
+     * so container_idx (index into it) must be per-env to avoid aliasing. */
+    boolean              s_splev_init_present;
+    boolean              s_icedpools;
+    int                  s_container_idx;
+    /* spell.c sort state — __thread; sort mode and index array per-env. */
+    int                  s_spl_sortmode;
+    int                 *s_spl_orderindx;    /* heap ptr, NULL=not alloced */
+    /* restore.c ID-mapping state — __thread; used during savefile restore. */
+    int                  s_n_ids_mapped;
+    void                *s_id_map;           /* struct bucket *, heap */
+    /* eat.c eatmbuf — __thread; allocated string for mimic-eating feedback. */
+    char                *s_eatmbuf;          /* heap ptr, NULL=none */
+    /* options.c n_menu_mapped — __thread; count of mapped menu cmds per env. */
+    short                s_n_menu_mapped;
+    /* windows.c last_winchoice — __thread; window-system choice during init;
+     * used only at startup, but must be per-env if envs init concurrently. */
+    void                *s_last_winchoice;   /* struct win_choices * */
 } nle_ctx_t;
 
 /*

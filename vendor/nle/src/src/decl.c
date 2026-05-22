@@ -146,8 +146,10 @@ NEARDATA struct flag flags = DUMMY;
 
 /* lastseentyp — stage 7' partial migrated to nle_ctx_t. */
 
-/* Body-slot pointers deferred to stage 9' batch C
- * (worn[] table in worn.c has &uarm etc. — static-init needs rewrite). */
+/* Body-slot pointers — stage 9' batch D migrated to nle_ctx_t (s9_u*).
+ * worn[] now uses offsetof-based resolution; no TLS address pinning.
+ * Definitions retained here only for build-tool (NLE_OBJECTS_GLOBAL) builds. */
+#ifdef NLE_OBJECTS_GLOBAL
 NEARDATA struct obj
     *uwep = (struct obj *) 0, *uarm = (struct obj *) 0,
     *uswapwep = (struct obj *) 0,
@@ -159,6 +161,7 @@ NEARDATA struct obj
     *uright = (struct obj *) 0, *uleft = (struct obj *) 0,
     *ublindf = (struct obj *) 0, *uchain = (struct obj *) 0,
     *uball = (struct obj *) 0;
+#endif /* NLE_OBJECTS_GLOBAL */
 /* invent, uskin, current_wand, thrownobj, kickedobj migrated to nle_ctx_t
  * (stage 9' batch A/B). */
 

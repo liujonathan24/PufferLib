@@ -11,54 +11,48 @@ STATIC_DCL void FDECL(m_dowear_type,
                       (struct monst *, long, BOOLEAN_P, BOOLEAN_P));
 STATIC_DCL int FDECL(extra_pref, (struct monst *, struct obj *));
 
-/* Stage 5 Option-A: under __thread NEARDATA, &uarm etc. are not
- * compile-time constants. w_obj is patched at runtime by worn_init().
- * Marked non-const so worn_init() can populate it. */
+/* Stage 9' batch D: body-slot pointers are now per-env fields on
+ * nle_ctx_t.  worn[] stores byte offsets into nle_ctx_t so the table
+ * can be process-global (one copy) while each access resolves through
+ * current_nle_ctx — no per-thread addresses, no per-env table copy. */
+#include <stddef.h>
+
 struct worn {
-    long w_mask;
-    struct obj **w_obj;
-} worn[] = { { W_ARM, (struct obj **) 0 },
-             { W_ARMC, (struct obj **) 0 },
-             { W_ARMH, (struct obj **) 0 },
-             { W_ARMS, (struct obj **) 0 },
-             { W_ARMG, (struct obj **) 0 },
-             { W_ARMF, (struct obj **) 0 },
-             { W_ARMU, (struct obj **) 0 },
-             { W_RINGL, (struct obj **) 0 },
-             { W_RINGR, (struct obj **) 0 },
-             { W_WEP, (struct obj **) 0 },
-             { W_SWAPWEP, (struct obj **) 0 },
-             { W_QUIVER, (struct obj **) 0 },
-             { W_AMUL, (struct obj **) 0 },
-             { W_TOOL, (struct obj **) 0 },
-             { W_BALL, (struct obj **) 0 },
-             { W_CHAIN, (struct obj **) 0 },
-             { 0, 0 }
+    long   w_mask;
+    size_t w_off;  /* offsetof(nle_ctx_t, s9_uXXX) */
 };
 
-/* Initialize worn[] w_obj pointers at runtime (called once early during
- * init, before any setworn / setnotworn). Idempotent (re-running is a
- * no-op since the addresses are stable per-thread once set). */
+/* Resolve a worn[] entry to the per-env obj* pointer. */
+#define worn_slot(wp) \
+    ((struct obj **)((char *)(current_nle_ctx) + (wp)->w_off))
+
+static struct worn worn[] = {
+    { W_ARM,    offsetof(nle_ctx_t, s9_uarm)     },
+    { W_ARMC,   offsetof(nle_ctx_t, s9_uarmc)    },
+    { W_ARMH,   offsetof(nle_ctx_t, s9_uarmh)    },
+    { W_ARMS,   offsetof(nle_ctx_t, s9_uarms)    },
+    { W_ARMG,   offsetof(nle_ctx_t, s9_uarmg)    },
+    { W_ARMF,   offsetof(nle_ctx_t, s9_uarmf)    },
+    { W_ARMU,   offsetof(nle_ctx_t, s9_uarmu)    },
+    { W_RINGL,  offsetof(nle_ctx_t, s9_uleft)    },
+    { W_RINGR,  offsetof(nle_ctx_t, s9_uright)   },
+    { W_WEP,    offsetof(nle_ctx_t, s9_uwep)     },
+    { W_SWAPWEP,offsetof(nle_ctx_t, s9_uswapwep) },
+    { W_QUIVER, offsetof(nle_ctx_t, s9_uquiver)  },
+    { W_AMUL,   offsetof(nle_ctx_t, s9_uamul)    },
+    { W_TOOL,   offsetof(nle_ctx_t, s9_ublindf)  },
+    { W_BALL,   offsetof(nle_ctx_t, s9_uball)    },
+    { W_CHAIN,  offsetof(nle_ctx_t, s9_uchain)   },
+    { 0,        0                                 }
+};
+
+/* worn_init() is now a no-op: the table is statically initialized with
+ * offsets and needs no runtime patching.  Kept for call-site compatibility
+ * (nle.c calls it from init_nle). */
 void
 worn_init(void)
 {
-    int i = 0;
-    worn[i++].w_obj = &uarm;
-    worn[i++].w_obj = &uarmc;
-    worn[i++].w_obj = &uarmh;
-    worn[i++].w_obj = &uarms;
-    worn[i++].w_obj = &uarmg;
-    worn[i++].w_obj = &uarmf;
-    worn[i++].w_obj = &uarmu;
-    worn[i++].w_obj = &uleft;
-    worn[i++].w_obj = &uright;
-    worn[i++].w_obj = &uwep;
-    worn[i++].w_obj = &uswapwep;
-    worn[i++].w_obj = &uquiver;
-    worn[i++].w_obj = &uamul;
-    worn[i++].w_obj = &ublindf;
-    worn[i++].w_obj = &uball;
-    worn[i++].w_obj = &uchain;
+    /* nothing to do — worn[] uses offsetof, not runtime addresses */
 }
 
 /* This only allows for one blocking item per property */
@@ -90,7 +84,7 @@ long mask;
             u.uroleplay.nudist = FALSE;
         for (wp = worn; wp->w_mask; wp++)
             if (wp->w_mask & mask) {
-                oobj = *(wp->w_obj);
+                oobj = *(worn_slot(wp));
                 if (oobj && !(oobj->owornmask & wp->w_mask))
                     impossible("Setworn: mask = %ld.", wp->w_mask);
                 if (oobj) {
@@ -112,7 +106,7 @@ long mask;
                        is pending (via 'A' command for multiple items) */
                     cancel_doff(oobj, wp->w_mask);
                 }
-                *(wp->w_obj) = obj;
+                *(worn_slot(wp)) = obj;
                 if (obj) {
                     obj->owornmask |= wp->w_mask;
                     /* Prevent getting/blocking intrinsics from wielding
@@ -152,12 +146,12 @@ register struct obj *obj;
     if (obj == uwep || obj == uswapwep)
         u.twoweap = 0;
     for (wp = worn; wp->w_mask; wp++)
-        if (obj == *(wp->w_obj)) {
+        if (obj == *(worn_slot(wp))) {
             /* in case wearing or removal is in progress or removal
                is pending (via 'A' command for multiple items) */
             cancel_doff(obj, wp->w_mask);
 
-            *(wp->w_obj) = 0;
+            *(worn_slot(wp)) = 0;
             p = objects[obj->otyp].oc_oprop;
             u.uprops[p].extrinsic = u.uprops[p].extrinsic & ~wp->w_mask;
             obj->owornmask &= ~wp->w_mask;
@@ -178,7 +172,7 @@ long wornmask;
 
     for (wp = worn; wp->w_mask; wp++)
         if (wp->w_mask & wornmask)
-            return *wp->w_obj;
+            return *(worn_slot(wp));
     return (struct obj *) 0;
 }
 

@@ -287,16 +287,34 @@ E const struct class_sym def_monsyms[MAXMCLASSES]; /* default class symbols */
 E uchar monsyms[MAXMCLASSES];                      /* current class symbols */
 
 #include "obj.h"
-/* Body-slot pointers (uarm*, uwep, uswapwep, uquiver, uamul, uleft, uright,
- * ublindf, uchain, uball) deferred — they're referenced by worn[] table in
- * worn.c with constant-init address-of (&uarm etc.), which forces a
- * static-init fix. Handled in stage 9' batch C (worn[] rewrite). */
+/* Body-slot pointers — stage 9' batch D migrated to nle_ctx_t.
+ * worn[] now uses byte-offset resolution (worn.c worn_init) so these
+ * no longer need to be TLS globals with stable addresses. */
+#ifdef NLE_OBJECTS_GLOBAL
+/* Build-tool view: regular writable globals (lev_comp, makedefs, etc.) */
 E NEARDATA struct obj *uarm, *uarmc, *uarmh, *uarms, *uarmg, *uarmf,
     *uarmu, /* under-wear, so to speak */
     *uamul, *uleft, *uright, *ublindf, *uwep, *uswapwep, *uquiver;
-
 E NEARDATA struct obj *uchain; /* defined only when punished */
 E NEARDATA struct obj *uball;
+#else
+#define uarm     (current_nle_ctx->s9_uarm)
+#define uarmc    (current_nle_ctx->s9_uarmc)
+#define uarmh    (current_nle_ctx->s9_uarmh)
+#define uarms    (current_nle_ctx->s9_uarms)
+#define uarmg    (current_nle_ctx->s9_uarmg)
+#define uarmf    (current_nle_ctx->s9_uarmf)
+#define uarmu    (current_nle_ctx->s9_uarmu)
+#define uamul    (current_nle_ctx->s9_uamul)
+#define uleft    (current_nle_ctx->s9_uleft)
+#define uright   (current_nle_ctx->s9_uright)
+#define ublindf  (current_nle_ctx->s9_ublindf)
+#define uwep     (current_nle_ctx->s9_uwep)
+#define uswapwep (current_nle_ctx->s9_uswapwep)
+#define uquiver  (current_nle_ctx->s9_uquiver)
+#define uchain   (current_nle_ctx->s9_uchain)  /* defined only when punished */
+#define uball    (current_nle_ctx->s9_uball)
+#endif
 /* invent / uskin / current_wand / thrownobj / kickedobj / migrating_objs /
  * billobjs migrated direct (no static-init refs to address-of). */
 #define invent         (current_nle_ctx->invent_p)
