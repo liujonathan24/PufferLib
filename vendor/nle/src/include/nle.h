@@ -473,10 +473,11 @@ typedef struct nle_globals {
     /* Cluster AP Part 2: remaining functional __thread variables.
      * Each was __thread (broken under OMP coroutine-resume) or a plain
      * process-global static (racy under concurrent envs). */
-    /* rumors.c oracle state — __thread; each env has its own oracle file
-     * cursor and location table. */
+    /* rumors.c oracle state — __thread (flg/loc) or plain static (cnt).
+     * oracle_cnt is decremented as oracles are used, so it must be per-env. */
     int                  s_oracle_flg;       /* rumors.c oracle_flg */
     unsigned long       *s_oracle_loc;       /* rumors.c oracle_loc (heap ptr) */
+    unsigned             s_oracle_cnt;       /* rumors.c oracle_cnt */
     /* do_wear.c initial_don — __thread; per-env flag for startup auto-wear */
     boolean              s_initial_don;
     /* sp_lev.c special-level generation state — __thread; each env's level

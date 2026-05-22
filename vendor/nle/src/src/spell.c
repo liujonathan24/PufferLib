@@ -1438,8 +1438,9 @@ static const char *spl_sortchoices[NUM_SPELL_SORTBY] = {
     /* a menu choice rather than a sort choice */
     "reassign casting letters to retain current order",
 };
-static __thread int spl_sortmode = 0;   /* index into spl_sortchoices[] */
-static __thread int *spl_orderindx = 0; /* array of spl_book[] indices */
+/* Cluster AP Part 2: per-env spell sort state. Were __thread. */
+#define spl_sortmode  (current_nle_ctx->s_spl_sortmode)
+#define spl_orderindx (current_nle_ctx->s_spl_orderindx)
 
 /* qsort callback routine */
 STATIC_PTR int CFDECLSPEC

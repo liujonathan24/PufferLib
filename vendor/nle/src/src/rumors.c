@@ -53,9 +53,12 @@ static unsigned long true_rumor_start, false_rumor_start;
 /* rumor end offsets are signed because they're compared with [dlb_]ftell() */
 static long true_rumor_end, false_rumor_end;
 /* oracles are handled differently from rumors... */
-static __thread int oracle_flg = 0; /* -1=>don't use, 0=>need init, 1=>init done */
-static unsigned oracle_cnt = 0;
-static __thread unsigned long *oracle_loc = 0;
+/* Cluster AP Part 2: oracle state per-env. oracle_flg/oracle_loc were __thread;
+ * oracle_cnt was a plain static (process-global) but is decremented as oracles
+ * are used — so it must be per-env too. */
+#define oracle_flg (current_nle_ctx->s_oracle_flg)
+#define oracle_loc (current_nle_ctx->s_oracle_loc)
+#define oracle_cnt (current_nle_ctx->s_oracle_cnt)
 
 STATIC_OVL void
 init_rumors(fp)

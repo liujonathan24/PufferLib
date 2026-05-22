@@ -149,7 +149,8 @@ static const struct {
                 { "", 0, 0, 0 } };
 #define TTSZ SIZE(tintxts)
 
-static __thread char *eatmbuf = 0; /* set by cpostfx() */
+/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard. */
+#define eatmbuf (current_nle_ctx->s_eatmbuf)
 
 /* called after mimicing is over */
 STATIC_PTR int

@@ -84,7 +84,8 @@ struct obj *otmp;
 
 /* starting equipment gets auto-worn at beginning of new game,
    and we don't want stealth or displacement feedback then */
-static __thread boolean initial_don = FALSE; /* manipulated in set_wear() */
+/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard. */
+#define initial_don (current_nle_ctx->s_initial_don)
 
 /* putting on or taking off an item which confers stealth;
    give feedback and discover it iff stealth state is changing */

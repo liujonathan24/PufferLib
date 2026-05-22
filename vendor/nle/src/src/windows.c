@@ -198,7 +198,12 @@ wl_addtail(struct winlink *wl)
 }
 #endif /* WINCHAIN */
 
-static __thread struct win_choices *last_winchoice = 0;
+/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard
+ * during window-system init on worker threads. */
+#define last_winchoice \
+    ((struct win_choices *) current_nle_ctx->s_last_winchoice)
+#define set_last_winchoice(v) \
+    (current_nle_ctx->s_last_winchoice = (void *)(v))
 
 boolean
 genl_can_suspend_no(VOID_ARGS)
@@ -271,7 +276,7 @@ const char *s;
                 (*last_winchoice->ini_routine)(WININIT_UNDO);
             if (winchoices[i].ini_routine)
                 (*winchoices[i].ini_routine)(WININIT);
-            last_winchoice = &winchoices[i];
+            set_last_winchoice(&winchoices[i]);
             return;
         }
     }

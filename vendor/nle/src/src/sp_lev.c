@@ -204,12 +204,17 @@ char *lev_message = 0;
 lev_region *lregions = 0;
 int num_lregions = 0;
 
-static __thread boolean splev_init_present = FALSE;
-static __thread boolean icedpools = FALSE;
+/* Cluster AP Part 2: per-env level-gen state. Were __thread; OMP coroutine-
+ * resume hazard causes worker thread to see zero/stale TLS values.
+ * NOTE: icedpools is NOT macro-replaced here because struct linfo (sp_lev.h:343)
+ * also has an icedpools field; a bare `#define icedpools` would corrupt the
+ * `linit->icedpools` struct access.  Use sp_icedpools as the per-env name. */
+#define splev_init_present (current_nle_ctx->s_splev_init_present)
+#define sp_icedpools       (current_nle_ctx->s_icedpools)
+#define container_idx      (current_nle_ctx->s_container_idx)
 static int mines_prize_count = 0, soko_prize_count = 0; /* achievements */
 
 static struct obj *container_obj[MAX_CONTAINMENT];
-static __thread int container_idx = 0;
 static struct monst *invent_carrying_monster = NULL;
 
 #define SPLEV_STACK_RESERVE 128
@@ -2793,7 +2798,7 @@ lev_init *linit;
             linit->lit = rn2(2);
         if (linit->filling > -1)
             lvlfill_solid(linit->filling, 0);
-        linit->icedpools = icedpools;
+        linit->icedpools = sp_icedpools;
         mkmap(linit);
         break;
     }
@@ -3300,7 +3305,7 @@ struct sp_coder *coder;
     if (lflags & GRAVEYARD)
         level.flags.graveyard = 1;
     if (lflags & ICEDPOOLS)
-        icedpools = TRUE;
+        sp_icedpools = TRUE;
     if (lflags & SOLIDIFY)
         coder->solidify = TRUE;
     if (lflags & CORRMAZE)
@@ -5035,7 +5040,7 @@ struct sp_coder *coder;
                 else if (levl[x][y].typ == LAVAPOOL)
                     levl[x][y].lit = 1;
                 else if (splev_init_present && levl[x][y].typ == ICE)
-                    levl[x][y].icedpool = icedpools ? ICED_POOL : ICED_MOAT;
+                    levl[x][y].icedpool = sp_icedpools ? ICED_POOL : ICED_MOAT;
             }
         if (coder->lvl_is_joined)
             remove_rooms(xstart, ystart, xstart + xsize, ystart + ysize);
@@ -5324,7 +5329,7 @@ sp_lev *lvl;
     coder->lvl_is_joined = 0;
 
     splev_init_present = FALSE;
-    icedpools = FALSE;
+    sp_icedpools = FALSE;
     /* achievement tracking; static init would suffice except we need to
        reset if #wizmakemap is used to recreate mines' end or sokoban end;
        once either level is created, these values can be forgotten */

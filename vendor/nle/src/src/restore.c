@@ -73,8 +73,11 @@ struct bucket {
 STATIC_DCL void NDECL(clear_id_mapping);
 STATIC_DCL void FDECL(add_id_mapping, (unsigned, unsigned));
 
-static __thread int n_ids_mapped = 0;
-static __thread struct bucket *id_map = 0;
+/* Cluster AP Part 2: per-env restore ID-map. Were __thread; OMP coroutine-
+ * resume on a different thread would see empty TLS during savefile restore. */
+#define n_ids_mapped (current_nle_ctx->s_n_ids_mapped)
+#define id_map       ((struct bucket *) current_nle_ctx->s_id_map)
+#define set_id_map(v) (current_nle_ctx->s_id_map = (void *)(v))
 
 #ifdef AMII_GRAPHICS
 void FDECL(amii_setpens, (int)); /* use colors from save file */
@@ -1252,7 +1255,7 @@ clear_id_mapping()
     struct bucket *curr;
 
     while ((curr = id_map) != 0) {
-        id_map = curr->next;
+        set_id_map(curr->next);
         free((genericptr_t) curr);
     }
     n_ids_mapped = 0;
@@ -1271,7 +1274,7 @@ unsigned gid, nid;
     if (idx == 0) {
         struct bucket *gnu = (struct bucket *) alloc(sizeof(struct bucket));
         gnu->next = id_map;
-        id_map = gnu;
+        set_id_map(gnu);
     }
 
     id_map->map[idx].gid = gid;
