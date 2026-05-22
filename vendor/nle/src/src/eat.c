@@ -6,6 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define ate_brains    (current_nle_ctx->s_maybe_cannibal_ate_brains)
+#define save_hs       (current_nle_ctx->s_newuhs_save_hs)
+#define saved_hs      (current_nle_ctx->s_newuhs_saved_hs)
+
 STATIC_PTR int NDECL(eatmdone);
 STATIC_PTR int NDECL(eatfood);
 STATIC_PTR struct obj *FDECL(costly_tin, (int));
@@ -645,7 +650,7 @@ maybe_cannibal(pm, allowmsg)
 int pm;
 boolean allowmsg;
 {
-    static NEARDATA long ate_brains = 0L;
+    /* Cluster AV-b4: ate_brains migrated to nle_ctx_t */
     struct permonst *fptr = &mons[pm]; /* food type */
 
     /* when poly'd into a mind flayer, multiple tentacle hits in one
@@ -2931,8 +2936,7 @@ newuhs(incr)
 boolean incr;
 {
     unsigned newhs;
-    static unsigned save_hs;
-    static boolean saved_hs = FALSE;
+    /* Cluster AV-b4: save_hs, saved_hs migrated to nle_ctx_t */
     int h = u.uhunger;
 
     newhs = (h > 1000)

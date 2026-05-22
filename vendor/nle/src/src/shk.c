@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define pickmovetime  (current_nle_ctx->s_pick_pick_pickmovetime)
+
 #define PAY_SOME 2
 #define PAY_BUY 1
 #define PAY_CANT 0 /* too poor */
@@ -726,7 +729,7 @@ struct obj *obj;
         return;
     shkp = shop_keeper(*u.ushops);
     if (shkp && inhishop(shkp)) {
-        static NEARDATA long pickmovetime = 0L;
+        /* Cluster AV-b4: pickmovetime migrated to nle_ctx_t */
 
         /* if you bring a sack of N picks into a shop to sell,
            don't repeat this N times when they're taken out */

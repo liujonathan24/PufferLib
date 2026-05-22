@@ -10,6 +10,9 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define msgmv         (current_nle_ctx->s_elemental_clog_msgmv)
 #include "mfndpos.h"
 #include <ctype.h>
 
@@ -2655,7 +2658,7 @@ elemental_clog(mon)
 struct monst *mon;
 {
     int m_lev = 0;
-    static long msgmv = 0L;
+    /* Cluster AV-b4: msgmv migrated to nle_ctx_t */
     struct monst *mtmp, *m1, *m2, *m3, *m4, *m5, *zm;
 
     if (In_endgame(&u.uz)) {

@@ -6,7 +6,6 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-<<<<<<< HEAD
 /* Cluster AU group 7 — per-env replacements for two hack.c file-statics.
  * tmp_anything is heap-allocated (forward-decl'd as `union any` in nle.h);
  * the helper below allocates on first use and is idempotent per env. */
@@ -20,10 +19,7 @@ nle_get_tmp_anything(void)
 }
 #define tmp_anything  (*nle_get_tmp_anything())
 #define wc            (current_nle_ctx->s_wc)
-=======
-/* Cluster AV-b2 — function-local statics promoted to nle_ctx_t fields.
- * Macros are file-local so they don't collide with sibling-agent macros
- * in other .c files (e.g. lastmovetime also appears in dothrow.c). */
+/* Cluster AV-b2 — function-local statics promoted to nle_ctx_t fields. */
 #define lastmovetime    (current_nle_ctx->s_moverock_lastmovetime)
 #define skates          (current_nle_ctx->s_domove_skates)
 #define spotloc_x       (current_nle_ctx->s_spoteffects_spotloc_x)
@@ -31,7 +27,6 @@ nle_get_tmp_anything(void)
 #define spotterrain     (current_nle_ctx->s_spoteffects_spotterrain)
 #define spottrap        (current_nle_ctx->s_spoteffects_spottrap)
 #define spottraptyp     (current_nle_ctx->s_spoteffects_spottraptyp)
->>>>>>> c7e23961 (Cluster AV-b2: function-local statics in hack.c/dog.c → nle_ctx_t)
 
 /* #define DEBUG */ /* uncomment for debugging */
 
@@ -2170,22 +2165,12 @@ void
 spoteffects(pick)
 boolean pick;
 {
-<<<<<<< HEAD
     /* Cluster AK: inspoteffects was a process-wide recursion guard
-     * (function-local static). Under vecenv env A's increment leaked
-     * into env B, making env B skip legitimate spot effects. */
+     * (function-local static); moved to nle_ctx_t. */
     #define inspoteffects (current_nle_ctx->s_inspoteffects)
-    static coord spotloc;
-    static int spotterrain;
-    static struct trap *spottrap = (struct trap *) 0;
-    static unsigned spottraptyp = NO_TRAP;
-=======
-    static int inspoteffects = 0;
     /* Cluster AV-b2: spotloc/spotterrain/spottrap/spottraptyp moved
-     * to nle_ctx_t (s_spoteffects_*). See macros at top of file.
-     * spotloc was 'coord' (x,y); now two signed-char fields, accessed
-     * as spotloc_x / spotloc_y. */
->>>>>>> c7e23961 (Cluster AV-b2: function-local statics in hack.c/dog.c → nle_ctx_t)
+     * to nle_ctx_t. See macros at top of file. spotloc was 'coord' (x,y);
+     * accessed as spotloc_x / spotloc_y per-component. */
 
     struct monst *mtmp;
     struct trap *trap = t_at(u.ux, u.uy);

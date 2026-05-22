@@ -10,20 +10,14 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 2 — pickup.c per-env state. Replaces four file-scope
- * statics that raced across N>=128 PufferLib envs sharing this library
- * (notably current_container, which the use_container callbacks
- * implicitly thread through). Each macro rewrites every textual use of
- * the old name in this TU to the corresponding s_<name> slot in the
- * active env's nle_ctx_t. The Icebox macro below (file-scope) expands
- * through current_container -> current_nle_ctx->s_current_container,
- * which is correct as long as Icebox is only used while a use_container
- * is in progress (true: all Icebox uses are inside loot-handling
- * functions that set current_container first). */
+/* Cluster AU group 2 — pickup.c per-env state. Four file-scope statics. */
 #define current_container   (current_nle_ctx->s_current_container)
 #define abort_looting       (current_nle_ctx->s_abort_looting)
 #define val_for_n_or_more   (current_nle_ctx->s_val_for_n_or_more)
 #define valid_menu_classes  (current_nle_ctx->s_valid_menu_classes)
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define costly        (current_nle_ctx->s_autopick_costly)
+#define oldcap        (current_nle_ctx->s_encumber_msg_oldcap)
 
 #define CONTAINED_SYM '>' /* from invent.c */
 
@@ -757,7 +751,7 @@ struct obj *otmp;
 boolean calc_costly;
 {
     struct autopickup_exception *ape;
-    static boolean costly = FALSE;
+    /* Cluster AV-b4: costly migrated to nle_ctx_t */
     const char *otypes = flags.pickup_types;
     boolean pickit;
 
@@ -1629,7 +1623,7 @@ struct obj *otmp;
 int
 encumber_msg()
 {
-    static int oldcap = UNENCUMBERED;
+    /* Cluster AV-b4: oldcap migrated to nle_ctx_t (UNENCUMBERED == 0, zero-init OK) */
     int newcap = near_capacity();
 
     if (oldcap < newcap) {

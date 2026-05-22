@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
 
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define lastchk       (current_nle_ctx->s_ck_server_admin_msg_lastchk)
+
 #ifdef MAIL
 #ifdef SIMPLE_MAIL
 # include <fcntl.h>
@@ -661,7 +664,7 @@ ck_server_admin_msg()
 {
 #ifdef SERVER_ADMIN_MSG
     static struct stat ost,nst;
-    static long lastchk = 0;
+    /* Cluster AV-b4: lastchk migrated to nle_ctx_t */
 
     if (moves < lastchk + SERVER_ADMIN_MSG_CKFREQ) return;
     lastchk = moves;

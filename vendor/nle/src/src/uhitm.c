@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define clockwise     (current_nle_ctx->s_hitum_cleave_clockwise)
+
 STATIC_DCL boolean FDECL(known_hitum, (struct monst *, struct obj *, int *,
                                        int, int, struct attack *, int));
 STATIC_DCL boolean FDECL(theft_petrifies, (struct obj *));
@@ -540,7 +543,7 @@ struct attack *uattk; /* ... but we don't enforce that here; Null works ok */
        are non-consecutive, hero will sometimes start a series of attacks
        with a backswing--that doesn't impact actual play, just spoils the
        simulation attempt a bit */
-    static boolean clockwise = FALSE;
+    /* Cluster AV-b4: clockwise migrated to nle_ctx_t */
     unsigned i;
     coord save_bhitpos;
     int count, umort, x = u.ux, y = u.uy;

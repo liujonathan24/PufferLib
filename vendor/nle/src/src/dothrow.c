@@ -8,6 +8,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+#define lastmovetime  (current_nle_ctx->s_breakobj_lastmovetime)
+#define peaceful_shk  (current_nle_ctx->s_breakobj_peaceful_shk)
+
 STATIC_DCL int FDECL(throw_obj, (struct obj *, int));
 STATIC_DCL boolean FDECL(ok_to_throw, (int *));
 STATIC_DCL void NDECL(autoquiver);
@@ -2027,8 +2031,7 @@ boolean from_invent;
             struct monst *shkp = shop_keeper(*o_shop);
 
             if (shkp) { /* (implies *o_shop != '\0') */
-                static NEARDATA long lastmovetime = 0L;
-                static NEARDATA boolean peaceful_shk = FALSE;
+                /* Cluster AV-b4: lastmovetime, peaceful_shk migrated to nle_ctx_t */
                 /*  We want to base shk actions on her peacefulness
                     at start of this turn, so that "simultaneous"
                     multiple breakage isn't drastically worse than

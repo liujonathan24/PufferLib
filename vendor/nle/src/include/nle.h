@@ -752,7 +752,6 @@ typedef struct nle_globals {
     struct entity  *s_occupants;            /* dbridge.c occupants[ENTITIES=2] (heap, lazy alloc'd) */
     int             s_sex_change_ok;        /* polyself.c sex_change_ok */
 
-<<<<<<< HEAD
     /* Cluster AV-b1 — function-local statics: rnd/trap/mkmaze */
     unsigned                     s_rn2disprng_seed;        /* rnd.c rn2_on_display_rng (non-ISAAC64) */
     boolean                      s_dotrap_recursive_mine;  /* trap.c dotrap landmine recursion guard */
@@ -773,6 +772,19 @@ typedef struct nle_globals {
     int                  s_flush_screen_flushing;       /* display.c flush_screen() recursion guard */
     int                  s_flush_screen_delay_flushing; /* display.c flush_screen() delay latch */
     struct toptenentry  *s_get_rnd_toptenentry_tt_buf;  /* topten.c get_rnd_toptenentry scratch (lazy-alloc) */
+
+    /* Cluster AV-b4 — function-local statics (medium): single-action caches */
+    long                s_breakobj_lastmovetime;          /* dothrow.c breakobj */
+    boolean             s_breakobj_peaceful_shk;          /* dothrow.c breakobj */
+    long                s_elemental_clog_msgmv;           /* mon.c elemental_clog */
+    long                s_pick_pick_pickmovetime;         /* shk.c pick_pick */
+    long                s_maybe_cannibal_ate_brains;      /* eat.c maybe_cannibal */
+    unsigned            s_newuhs_save_hs;                 /* eat.c newuhs */
+    boolean             s_newuhs_saved_hs;                /* eat.c newuhs */
+    boolean             s_autopick_costly;                /* pickup.c autopick_testobj */
+    int                 s_encumber_msg_oldcap;            /* pickup.c encumber_msg (UNENCUMBERED=0) */
+    boolean             s_hitum_cleave_clockwise;         /* uhitm.c hitum_cleave */
+    long                s_ck_server_admin_msg_lastchk;    /* mail.c ck_server_admin_msg */
 } nle_ctx_t;
 
 /*
