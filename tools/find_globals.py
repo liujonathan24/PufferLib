@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
-"""Audit NetHack source files for file-scope mutable globals.
+"""Audit NetHack source files for mutable globals (file-scope and
+function-local statics).
 
-A "global" here means a writable variable at file scope. We track brace
-depth to skip declarations inside function bodies (those are locals or
-function-statics — function-statics also leak across envs but they're
-handled separately by Cluster AK/etc.).
+A "global" here means writable state that PERSISTS across multiple calls.
+That includes both:
+  (a) file-scope mutable variables (the classic "global"), and
+  (b) function-local `static T x;` declarations — those live for the
+      lifetime of the process, are shared across all callers, and survive
+      function exit. In a multi-env single-process refactor they race the
+      same way file-scope globals do.
 
-What we report PER FILE:
-    F <file>:<line>:<kind>  <name>  // <type> <init?>
+What we report:
+    <file>:<line> [<kind>] <type> <name> [in <function>]
 
   kind ∈ {
-    "static"   — file-scope `static T x ...`
-    "extern"   — file-scope declaration `T x ...` without storage class
-                 (becomes external/linker-visible; the dual problem)
-    "STATIC"   — uses STATIC_VAR / STATIC_DCL macro
-    "thread"   — __thread (per-thread, OK for vecenv if pinned 1 env/thread)
-    "NEARDATA" — uses NEARDATA (which is empty after refactor — same as plain)
+    "static"      — file-scope `static T x ...`
+    "extern"      — file-scope declaration `T x ...` without storage class
+                    (becomes external/linker-visible; the dual problem)
+    "thread"      — __thread (per-thread; OK if 1 env/thread is pinned)
+    "E-decl"      — uses NetHack `E` macro (header forward decl)
+    "func-static" — `static T x ...` INSIDE a function body. These persist
+                    across calls and yields, same hazard as file-scope.
+                    Requires --func-statics to be reported.
   }
 
 We DO NOT flag:
@@ -24,16 +30,17 @@ We DO NOT flag:
   - `extern T x;` declarations (no storage, no body)
   - macro `#define` lines
   - function declarations / definitions
-  - anything inside a function body (brace depth > 0)
+  - non-static locals (`int i;` inside a function — not persistent)
 
 This is a heuristic, not a parser. It will miss things and over-report.
 The user should sanity-check each line. The goal is to cut the audit
 surface from ~5000 lines/file to ~tens of lines/file.
 
 Usage:
-    ./find_globals.py <file1.c> [<file2.c> ...]
     ./find_globals.py vendor/nle/src/src/*.c
     ./find_globals.py --summary vendor/nle/src/src/*.c
+    ./find_globals.py --func-statics vendor/nle/src/src/shk.c
+    ./find_globals.py --csv --func-statics vendor/nle/src/src/*.c > all.csv
 """
 from __future__ import annotations
 
@@ -115,8 +122,13 @@ def strip_comments(line: str, in_block_comment: bool) -> tuple[str, bool]:
     return "".join(out), False
 
 
-def find_globals(path: str) -> list[dict]:
-    """Scan a single C file and return a list of suspected globals."""
+def find_globals(path: str, include_func_statics: bool = False) -> list[dict]:
+    """Scan a single C file and return a list of suspected globals.
+
+    If `include_func_statics` is True, also report `static T x;` lines
+    inside function bodies (they persist across calls and races same as
+    file-scope state).
+    """
     with open(path, "rb") as f:
         data = f.read()
     text = data.decode("utf-8", errors="replace")
@@ -131,6 +143,12 @@ def find_globals(path: str) -> list[dict]:
     # When we see `name(...)` at depth 0 without semicolon, the lines that
     # follow until `{` are K&R parameter declarations — skip them.
     in_knr_params = False
+    # Track the most recent function name we entered (best-effort).
+    # Updated when we see `T name(...)` at depth 0 (start of K&R or ANSI
+    # function definition). Cleared back to "" when brace_depth returns
+    # to 0 from > 0.
+    current_function = ""
+    pending_function = ""  # set when we see the signature, committed on `{`
 
     for lineno, raw in enumerate(lines, start=1):
         stripped, in_block_comment = strip_comments(raw, in_block_comment)
@@ -153,6 +171,10 @@ def find_globals(path: str) -> list[dict]:
                 if ch == "{":
                     brace_depth += 1
                     in_knr_params = False
+                    # Commit pending function name on entering its body.
+                    if pending_function:
+                        current_function = pending_function
+                        pending_function = ""
                 elif ch == "}":
                     brace_depth = max(0, brace_depth - 1)
                 elif ch == "(":
@@ -163,17 +185,53 @@ def find_globals(path: str) -> list[dict]:
 
         # Update brace depth from the stripped line (ignoring strings/chars).
         # Simple: count { and } not preceded by backslash.
+        prev_depth = brace_depth
         for ch in re.findall(r"[{}()]", s):
             if ch == "{":
                 brace_depth += 1
+                # Commit any pending function-name on first brace open.
+                if brace_depth == 1 and pending_function:
+                    current_function = pending_function
+                    pending_function = ""
             elif ch == "}":
                 brace_depth = max(0, brace_depth - 1)
+                if brace_depth == 0:
+                    current_function = ""
             elif ch == "(":
                 paren_depth += 1
             elif ch == ")":
                 paren_depth = max(0, paren_depth - 1)
 
-        # Only look at file-scope (depth 0) lines
+        # === Function-local statics: only when explicitly enabled ===
+        if include_func_statics and brace_depth > 0 and paren_depth == 0:
+            # Be strict: only consider lines that START with `static` (with
+            # optional NEARDATA/STATIC_VAR prefix), to avoid false positives
+            # on regular locals. Also skip `static const`.
+            if re.match(r"^\s*(NEARDATA\s+)?(STATIC_VAR\s+)?static\s+", s) \
+                    and not re.match(r"^\s*static\s+const\b", s):
+                m = DECL_RE.match(s)
+                if m:
+                    head = m.group("head") or ""
+                    name = m.group("name") or ""
+                    if name not in KEYWORDS_NOT_VARS:
+                        head_tokens = re.findall(r"[A-Za-z_]\w*", head)
+                        storage_set = {t for t in head_tokens if t in STORAGE_TOKENS}
+                        type_tokens = [t for t in head_tokens
+                                       if t not in STORAGE_TOKENS]
+                        if type_tokens and "const" not in type_tokens \
+                                and "const" not in storage_set:
+                            findings.append({
+                                "file": path,
+                                "line": lineno,
+                                "kind": "func-static",
+                                "type": " ".join(type_tokens),
+                                "name": name,
+                                "rest": m.group("rest").strip(),
+                                "function": current_function or "?",
+                            })
+            continue
+
+        # Only look at file-scope (depth 0) lines for non-func-static reporting
         if brace_depth != 0:
             continue
         if paren_depth != 0:
@@ -188,6 +246,11 @@ def find_globals(path: str) -> list[dict]:
             # followed by K&R param declarations — switch state.
             if not s.rstrip().endswith(";") and not s.rstrip().endswith(","):
                 in_knr_params = True
+                # Capture the function name (last identifier before the `(`).
+                pre_paren = s.split("(")[0]
+                ids = re.findall(r"[A-Za-z_]\w*", pre_paren)
+                if ids:
+                    pending_function = ids[-1]
             continue
 
         # Skip typedef/struct/union/enum/const-only declarations
@@ -265,6 +328,10 @@ def main(argv: list[str]) -> int:
                     help="Don't report __thread vars (already per-thread).")
     ap.add_argument("--csv", action="store_true",
                     help="Emit machine-readable CSV.")
+    ap.add_argument("--func-statics", action="store_true",
+                    help="Also report `static T x;` inside function bodies. "
+                         "These persist across calls and yields, same hazard "
+                         "as file-scope globals under multi-env vecenv.")
     args = ap.parse_args(argv)
 
     counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -273,7 +340,7 @@ def main(argv: list[str]) -> int:
     for path in args.files:
         if not os.path.isfile(path):
             continue
-        finds = find_globals(path)
+        finds = find_globals(path, include_func_statics=args.func_statics)
         for f in finds:
             if args.exclude_thread and "thread" in f["kind"]:
                 continue
@@ -281,16 +348,19 @@ def main(argv: list[str]) -> int:
             all_findings.append(f)
 
     if args.csv:
-        print("file,line,kind,type,name,rest")
+        print("file,line,kind,type,name,rest,function")
         for f in all_findings:
             r = f["rest"].replace(",", ";").replace("\n", " ")
-            print(f"{f['file']},{f['line']},{f['kind']},{f['type']},{f['name']},{r}")
+            fn = f.get("function", "")
+            print(f"{f['file']},{f['line']},{f['kind']},{f['type']},"
+                  f"{f['name']},{r},{fn}")
         return 0
 
     if args.summary:
         # Print one line per file with counts
-        print(f"{'FILE':50s} {'static':>7s} {'extern':>7s} {'thread':>7s} {'E-decl':>7s} {'total':>7s}")
-        print("-" * 90)
+        print(f"{'FILE':50s} {'static':>7s} {'extern':>7s} "
+              f"{'thread':>7s} {'E-decl':>7s} {'func':>7s} {'total':>7s}")
+        print("-" * 95)
         files_sorted = sorted(counts.keys(),
                               key=lambda p: -sum(counts[p].values()))
         for p in files_sorted:
@@ -298,7 +368,8 @@ def main(argv: list[str]) -> int:
             tot = sum(c.values())
             print(f"{p:50s} {c.get('static',0):>7d} "
                   f"{c.get('extern',0):>7d} {c.get('thread',0):>7d} "
-                  f"{c.get('E-decl',0):>7d} {tot:>7d}")
+                  f"{c.get('E-decl',0):>7d} {c.get('func-static',0):>7d} "
+                  f"{tot:>7d}")
         return 0
 
     # Default: verbose per-finding output, grouped by file
@@ -309,8 +380,10 @@ def main(argv: list[str]) -> int:
         print(f"\n=== {path} === ({len(finds)} potential globals)")
         for f in finds:
             kind = f["kind"]
+            fn_suffix = f"  in {f['function']}()" if f.get("function") else ""
             print(f"  {path}:{f['line']:5d} [{kind:14s}] "
-                  f"{f['type']:25s} {f['name']}{(' ' + f['rest']) if f['rest'] else ''}")
+                  f"{f['type']:25s} {f['name']}"
+                  f"{(' ' + f['rest']) if f['rest'] else ''}{fn_suffix}")
     return 0
 
 
