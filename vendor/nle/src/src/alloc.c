@@ -38,13 +38,19 @@ extern void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2);
 /* Arena: virtual address space, lazily backed by physical pages on first
  * touch. Bump-allocated. Aligned 16 bytes per allocation.
  *
- * Cluster AS: bumped from 4 GB to 64 GB. Under multi-env training with
+ * Cluster AS: 16 GB with MAP_NORESERVE. Under multi-env training with
  * NETHACK_FAST_RESET=0 (the only safe config for N>=2), nle_end does NOT
  * rewind the arena bump pointer — arena allocations are leaked-by-design
- * until process exit. With 256 envs * thousands of episodes, 4 GB fills
- * up. mmap is lazy: only touched pages cost RAM, so 64 GB virtual is free.
+ * until process exit. The 4 GB original cap fills up under N=64+ long
+ * training. MAP_NORESERVE keeps the kernel from over-counting commit and
+ * (critically) keeps the *un-touched* tail out of core dumps if the
+ * process crashes — without it cores were ~64 GB each. Override at build
+ * time with -DNLE_ARENA_SIZE_GB=N if you need more.
  */
-#define NLE_ARENA_SIZE ((size_t) 64 * 1024 * 1024 * 1024)
+#ifndef NLE_ARENA_SIZE_GB
+#define NLE_ARENA_SIZE_GB 16
+#endif
+#define NLE_ARENA_SIZE ((size_t) NLE_ARENA_SIZE_GB * 1024 * 1024 * 1024)
 #define NLE_ARENA_ALIGN 16
 
 /* Exported so nle_fast_reset.c can snapshot the live portion. */
@@ -58,11 +64,18 @@ nle_arena_init(void)
     if (nle_arena_base)
         return;
     void *p = mmap(NULL, NLE_ARENA_SIZE, PROT_READ | PROT_WRITE,
-                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
     if (p == MAP_FAILED) {
         fprintf(stderr, "nle_arena: mmap(%zu) failed\n", NLE_ARENA_SIZE);
         abort();
     }
+    /* Keep core dumps small: tell the kernel not to dump the un-touched
+     * tail of the arena. Touched pages still dump (so we can see what
+     * libnethack actually wrote), but the multi-GB unused virtual range
+     * is excluded. */
+#ifdef MADV_DONTDUMP
+    (void) madvise(p, NLE_ARENA_SIZE, MADV_DONTDUMP);
+#endif
     nle_arena_base = (char *) p;
     nle_arena_used = 0;
     nle_arena_cap  = NLE_ARENA_SIZE;

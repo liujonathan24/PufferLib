@@ -18,6 +18,8 @@
 #include <cstdio>
 #include <cstddef>
 
+#pragma GCC visibility push(hidden)
+
 extern "C" {
     extern char  *nle_arena_base;
     extern size_t nle_arena_used;
@@ -39,23 +41,32 @@ static inline void *arena_alloc_cpp(std::size_t sz)
     return p;
 }
 
+/* Hidden visibility is CRITICAL: without it the dynamic loader interposes
+ * these overrides onto the entire process, so torch / pybind11 / Python's
+ * own C++ allocations all funnel through libnethack's bump arena. Then at
+ * Python finalize-time, free() / delete on those pointers takes them to
+ * libc which doesn't recognize them → 'free(): invalid pointer' abort. */
+#define NLE_ALLOC_HIDDEN __attribute__((visibility("hidden")))
+
 /* Throwing forms */
-void *operator new(std::size_t sz)            { return arena_alloc_cpp(sz); }
-void *operator new[](std::size_t sz)          { return arena_alloc_cpp(sz); }
+NLE_ALLOC_HIDDEN void *operator new(std::size_t sz)            { return arena_alloc_cpp(sz); }
+NLE_ALLOC_HIDDEN void *operator new[](std::size_t sz)          { return arena_alloc_cpp(sz); }
 
 /* nothrow forms */
-void *operator new(std::size_t sz, const std::nothrow_t &) noexcept
+NLE_ALLOC_HIDDEN void *operator new(std::size_t sz, const std::nothrow_t &) noexcept
 { return arena_alloc_cpp(sz); }
-void *operator new[](std::size_t sz, const std::nothrow_t &) noexcept
+NLE_ALLOC_HIDDEN void *operator new[](std::size_t sz, const std::nothrow_t &) noexcept
 { return arena_alloc_cpp(sz); }
 
 static inline void dbg_del(void *p, const char *tag) {
     (void) tag;
     nle_arena_free(p);
 }
-void operator delete(void *p) noexcept                 { dbg_del(p,"d"); }
-void operator delete[](void *p) noexcept               { dbg_del(p,"da"); }
-void operator delete(void *p, std::size_t) noexcept    { dbg_del(p,"ds"); }
-void operator delete[](void *p, std::size_t) noexcept  { dbg_del(p,"das"); }
-void operator delete(void *p, const std::nothrow_t &) noexcept    { dbg_del(p,"dnt"); }
-void operator delete[](void *p, const std::nothrow_t &) noexcept  { dbg_del(p,"dant"); }
+NLE_ALLOC_HIDDEN void operator delete(void *p) noexcept                 { dbg_del(p,"d"); }
+NLE_ALLOC_HIDDEN void operator delete[](void *p) noexcept               { dbg_del(p,"da"); }
+NLE_ALLOC_HIDDEN void operator delete(void *p, std::size_t) noexcept    { dbg_del(p,"ds"); }
+NLE_ALLOC_HIDDEN void operator delete[](void *p, std::size_t) noexcept  { dbg_del(p,"das"); }
+NLE_ALLOC_HIDDEN void operator delete(void *p, const std::nothrow_t &) noexcept    { dbg_del(p,"dnt"); }
+NLE_ALLOC_HIDDEN void operator delete[](void *p, const std::nothrow_t &) noexcept  { dbg_del(p,"dant"); }
+
+#pragma GCC visibility pop

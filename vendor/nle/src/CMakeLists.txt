@@ -133,7 +133,20 @@ target_compile_definitions(nethack PRIVATE NLE_USE_ARENA_FREE=1)
 # -z muldefs: tolerate the tentative-vs-strong duplicate of current_nle_ctx
 # that gcc 10+ otherwise rejects under -fno-common (this is preexisting in
 # the codebase; previous builds dodged it differently).
-target_link_options(nethack PRIVATE "LINKER:-z,muldefs")
+target_link_options(nethack PRIVATE
+    "LINKER:-z,muldefs"
+    # -Bsymbolic-functions binds libnethack's intra-DSO function calls to its
+    # own copies (operator new/delete overrides in nle_arena_cpp.cc).
+    "LINKER:-Bsymbolic-functions"
+    # GCC won't hide operator new/delete via visibility attributes
+    # (compiler implicit external linkage overrides #pragma visibility).
+    # Use a version script to mark them `local` so the dynamic loader can't
+    # interpose them on torch / pybind11 / Python allocations. Without this
+    # fix Python's free() at finalize-time aborts with
+    # "free(): invalid pointer" because some libc allocations were routed
+    # through libnethack's bump arena.  Cluster AS.
+    "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/nethack.ver"
+)
 
 target_link_libraries(nethack PUBLIC m fcontext bz2 tmt)
 
