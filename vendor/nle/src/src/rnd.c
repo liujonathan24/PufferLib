@@ -3,10 +3,10 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "nle.h" /* Cluster AV-b1: current_nle_ctx access for both RNG paths. */
 
 #ifdef USE_ISAAC64
 #include "isaac64.h"
-#include "nle.h" /* nle_rng_state / nle_rng_init_flag — per-instance storage. */
 
 /* nle_state refactor stage 1: RNG state moved out of static storage and
  * into per-instance nle_ctx_t. The (constant) function-pointer side of
@@ -85,9 +85,12 @@ int
 rn2_on_display_rng(x)
 register int x;
 {
-    static unsigned seed = 1;
-    seed *= 2739110765;
-    return (int)((seed >> 16) % (unsigned)x);
+    /* Cluster AV-b1: function-local `static unsigned seed = 1;` migrated
+     * to current_nle_ctx->s_rn2disprng_seed (initialized to 1 in init_nle).
+     * Direct access here rather than a #define seed macro because `seed`
+     * collides with init_isaac64's parameter name above. */
+    current_nle_ctx->s_rn2disprng_seed *= 2739110765;
+    return (int)((current_nle_ctx->s_rn2disprng_seed >> 16) % (unsigned)x);
 }
 #endif  /* USE_ISAAC64 */
 

@@ -179,6 +179,13 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* RNG state cleared by calloc; init_isaac64 will populate it via the
      * set_random() / init_random() chain during NetHack's early setup. */
 
+    /* Cluster AV-b1: function-local statics migrated to nle_ctx_t.
+     * rn2_on_display_rng (non-ISAAC64 path) seeded its `static unsigned
+     * seed = 1` at file scope; calloc gives 0 which would freeze the LCG,
+     * so restore the original init here. recursive_mine/up start FALSE,
+     * which calloc already gives us. */
+    nle->s_rn2disprng_seed = 1;
+
     /* Stage 4 player state: allocate the struct you on the heap so the
      * `u` macro in decl.h can resolve to (*current_nle_ctx->u_ptr). */
     nle->u_ptr = (struct you *) calloc(1, sizeof(struct you));

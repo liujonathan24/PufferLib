@@ -1428,7 +1428,11 @@ movebubbles()
                                          0, 0, 0, 0, 0, 0 };
     static const struct rm air_pos = { cmap_to_glyph(S_cloud), AIR, 0, 0, 0,
                                        1, 0, 0, 0, 0 };
-    static boolean up = FALSE;
+    /* Cluster AV-b1: `static boolean up = FALSE;` migrated to per-env
+     * current_nle_ctx->s_movebubbles_up (calloc zero = FALSE). Renamed
+     * to nle_mb_up to avoid shadowing/colliding with generic `up`
+     * identifiers in headers. */
+#define up (current_nle_ctx->s_movebubbles_up)
     struct bubble *b;
     struct container *cons;
     struct trap *btrap;
@@ -1563,6 +1567,7 @@ movebubbles()
         lift_covet_and_placebc(bcpin);
     vision_full_recalc = 1;
 }
+#undef up /* Cluster AV-b1: scope of macro limited to movebubbles. */
 
 /* when moving in water, possibly (1 in 3) alter the intended destination */
 void

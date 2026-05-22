@@ -6,8 +6,14 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+<<<<<<< HEAD
 /* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
 #define force_mintrap (current_nle_ctx->s_force_mintrap)
+=======
+/* Cluster AV-b1 — function-local static `recursive_mine` in dotrap()
+ * migrated to per-env nle_ctx_t field. */
+#define recursive_mine  (current_nle_ctx->s_dotrap_recursive_mine)
+>>>>>>> 18258635 (Cluster AV-b1: migrate 3 function-local statics to nle_ctx_t)
 
 extern const char *const destroy_strings[][3]; /* from zap.c */
 
@@ -1506,7 +1512,9 @@ unsigned trflags;
              * the ground, and you being affected again by the same
              * mine because it hasn't been deleted yet
              */
-            static boolean recursive_mine = FALSE;
+            /* Cluster AV-b1: `static boolean recursive_mine = FALSE;`
+             * migrated to current_nle_ctx->s_dotrap_recursive_mine (calloc
+             * zeroes the field = FALSE). See top-of-file #define. */
 
             if (recursive_mine)
                 break;

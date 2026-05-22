@@ -749,6 +749,11 @@ typedef struct nle_globals {
     long            s_true_rumor_size;      /* rumors.c true_rumor_size */
     struct entity  *s_occupants;            /* dbridge.c occupants[ENTITIES=2] (heap, lazy alloc'd) */
     int             s_sex_change_ok;        /* polyself.c sex_change_ok */
+
+    /* Cluster AV-b1 — function-local statics: rnd/trap/mkmaze */
+    unsigned                     s_rn2disprng_seed;        /* rnd.c rn2_on_display_rng (non-ISAAC64) */
+    boolean                      s_dotrap_recursive_mine;  /* trap.c dotrap landmine recursion guard */
+    boolean                      s_movebubbles_up;         /* mkmaze.c movebubbles up/down latch */
 } nle_ctx_t;
 
 /*
