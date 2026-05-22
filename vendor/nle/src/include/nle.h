@@ -499,6 +499,14 @@ typedef struct nle_globals {
     /* windows.c last_winchoice — __thread; window-system choice during init;
      * used only at startup, but must be per-env if envs init concurrently. */
     void                *s_last_winchoice;   /* struct win_choices * */
+    /* Cluster AQ: makemon.c align_shift() per-env cache.
+     * oldmoves and lev were `static NEARDATA` (plain process-global) inside
+     * align_shift(). Two OMP threads in makemon() simultaneously race on
+     * the oldmoves/lev update, corrupting lev and causing a SIGSEGV when
+     * one thread dereferences the other env's stale s_level pointer.
+     * NOTE: `s_level` is not declared in nle.h; use void* + cast in .c. */
+    long                 s_align_shift_oldmoves; /* makemon.c align_shift oldmoves */
+    void                *s_align_shift_lev;      /* makemon.c align_shift lev (s_level*) */
 } nle_ctx_t;
 
 /*

@@ -902,6 +902,10 @@ nle_end(nle_ctx_t *nle)
     tmt_close(nle->vterminal);
 
     destroy_fcontext_stack(&nle->stack);
+    /* Clear TLS cache to prevent use-after-free when the next nle_end evicts
+     * this (now-freed) env pointer from nle_tls_loaded in nle_swap_in. */
+    if (nle_tls_loaded == nle)
+        nle_tls_loaded = NULL;
     free(nle);
 }
 

@@ -1486,15 +1486,22 @@ STATIC_OVL int
 align_shift(ptr)
 register struct permonst *ptr;
 {
-    static NEARDATA long oldmoves = 0L; /* != 1, starting value of moves */
-    static NEARDATA s_level *lev;
+    /* Cluster AQ: was `static NEARDATA long oldmoves = 0L` and
+     * `static NEARDATA s_level *lev`. Two OMP threads in makemon() could
+     * race on the update (one updates oldmoves/lev while the other reads),
+     * corrupting the stale lev pointer and causing SIGSEGV.
+     * Now per-env via nle_ctx_t. Initial value 0L matches the old initializer;
+     * calloc zero-init is correct for oldmoves. lev is a void* cast. */
+#define oldmoves    (current_nle_ctx->s_align_shift_oldmoves)
+#define lev_cached  ((s_level *) current_nle_ctx->s_align_shift_lev)
+#define set_lev_cached(v) (current_nle_ctx->s_align_shift_lev = (void *)(v))
     register int alshift;
 
     if (oldmoves != moves) {
-        lev = Is_special(&u.uz);
+        set_lev_cached(Is_special(&u.uz));
         oldmoves = moves;
     }
-    switch ((lev) ? lev->flags.align : dungeons[u.uz.dnum].flags.align) {
+    switch ((lev_cached) ? lev_cached->flags.align : dungeons[u.uz.dnum].flags.align) {
     default: /* just in case */
     case AM_NONE:
         alshift = 0;
@@ -1511,6 +1518,11 @@ register struct permonst *ptr;
     }
     return alshift;
 }
+/* Cluster AQ: undefine local macros after align_shift to avoid leaking
+ * them into subsequent functions in this translation unit. */
+#undef oldmoves
+#undef lev_cached
+#undef set_lev_cached
 
 /* rndmonst_state — per-env random-monster choice cache. Migrated to
  * nle_ctx_t. Initial value (choice_count = -1) re-applied in init_nle. */

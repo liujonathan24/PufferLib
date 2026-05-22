@@ -71,12 +71,20 @@ register unsigned int lth;
     size_t need = (lth + NLE_ARENA_ALIGN - 1) & ~(size_t)(NLE_ARENA_ALIGN - 1);
     if (need == 0)
         need = NLE_ARENA_ALIGN;
-    if (nle_arena_used + need > nle_arena_cap) {
+    /* Cluster AQ: make the bump-pointer atomic so concurrent OMP envs don't
+     * race on nle_arena_used.  All envs share one arena (by design: fast-reset
+     * snapshot/restore uses the whole contiguous region).  Without atomics,
+     * two threads calling alloc() simultaneously both read the same 'used'
+     * value, compute the same base ptr, and write overlapping objects →
+     * heap corruption → SIGSEGV anywhere in makemon/dogmove/etc.
+     * __sync_fetch_and_add is a full barrier; it returns the OLD value
+     * (pre-increment), which is the start address of this env's slice. */
+    size_t offset = __sync_fetch_and_add(&nle_arena_used, need);
+    if (offset + need > nle_arena_cap) {
         panic("nle_arena: out of memory (used=%zu + req=%zu > cap=%zu)",
-              nle_arena_used, need, nle_arena_cap);
+              offset, need, nle_arena_cap);
     }
-    void *ptr = nle_arena_base + nle_arena_used;
-    nle_arena_used += need;
+    void *ptr = nle_arena_base + offset;
     return (long *) ptr;
 }
 
