@@ -6,6 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+<<<<<<< HEAD
 /* Cluster AU group 7 — per-env replacements for two hack.c file-statics.
  * tmp_anything is heap-allocated (forward-decl'd as `union any` in nle.h);
  * the helper below allocates on first use and is idempotent per env. */
@@ -19,6 +20,18 @@ nle_get_tmp_anything(void)
 }
 #define tmp_anything  (*nle_get_tmp_anything())
 #define wc            (current_nle_ctx->s_wc)
+=======
+/* Cluster AV-b2 — function-local statics promoted to nle_ctx_t fields.
+ * Macros are file-local so they don't collide with sibling-agent macros
+ * in other .c files (e.g. lastmovetime also appears in dothrow.c). */
+#define lastmovetime    (current_nle_ctx->s_moverock_lastmovetime)
+#define skates          (current_nle_ctx->s_domove_skates)
+#define spotloc_x       (current_nle_ctx->s_spoteffects_spotloc_x)
+#define spotloc_y       (current_nle_ctx->s_spoteffects_spotloc_y)
+#define spotterrain     (current_nle_ctx->s_spoteffects_spotterrain)
+#define spottrap        (current_nle_ctx->s_spoteffects_spottrap)
+#define spottraptyp     (current_nle_ctx->s_spoteffects_spottraptyp)
+>>>>>>> c7e23961 (Cluster AV-b2: function-local statics in hack.c/dog.c → nle_ctx_t)
 
 /* #define DEBUG */ /* uncomment for debugging */
 
@@ -307,13 +320,8 @@ moverock()
             }
 
             {
-#ifdef LINT /* static long lastmovetime; */
-                long lastmovetime;
-                lastmovetime = 0;
-#else
-                /* note: reset to zero after save/restore cycle */
-                static NEARDATA long lastmovetime;
-#endif
+                /* Cluster AV-b2: lastmovetime moved to nle_ctx_t
+                 * (s_moverock_lastmovetime). See macro at top of file. */
  dopush:
                 if (!u.usteed) {
                     if (moves > lastmovetime + 2 || moves < lastmovetime)
@@ -1436,7 +1444,8 @@ domove_core()
         /* check slippery ice */
         on_ice = !Levitation && is_ice(u.ux, u.uy);
         if (on_ice) {
-            static int skates = 0;
+            /* Cluster AV-b2: skates moved to nle_ctx_t (s_domove_skates).
+             * See macro at top of file. */
 
             if (!skates)
                 skates = find_skates();
@@ -2161,6 +2170,7 @@ void
 spoteffects(pick)
 boolean pick;
 {
+<<<<<<< HEAD
     /* Cluster AK: inspoteffects was a process-wide recursion guard
      * (function-local static). Under vecenv env A's increment leaked
      * into env B, making env B skip legitimate spot effects. */
@@ -2169,6 +2179,13 @@ boolean pick;
     static int spotterrain;
     static struct trap *spottrap = (struct trap *) 0;
     static unsigned spottraptyp = NO_TRAP;
+=======
+    static int inspoteffects = 0;
+    /* Cluster AV-b2: spotloc/spotterrain/spottrap/spottraptyp moved
+     * to nle_ctx_t (s_spoteffects_*). See macros at top of file.
+     * spotloc was 'coord' (x,y); now two signed-char fields, accessed
+     * as spotloc_x / spotloc_y. */
+>>>>>>> c7e23961 (Cluster AV-b2: function-local statics in hack.c/dog.c → nle_ctx_t)
 
     struct monst *mtmp;
     struct trap *trap = t_at(u.ux, u.uy);
@@ -2177,7 +2194,7 @@ boolean pick;
     /* prevent recursion from affecting the hero all over again
        [hero poly'd to iron golem enters water here, drown() inflicts
        damage that triggers rehumanize() which calls spoteffects()...] */
-    if (inspoteffects && u.ux == spotloc.x && u.uy == spotloc.y
+    if (inspoteffects && u.ux == spotloc_x && u.uy == spotloc_y
         /* except when reason is transformed terrain (ice -> water) */
         && spotterrain == levl[u.ux][u.uy].typ
         /* or transformed trap (land mine -> pit) */
@@ -2186,7 +2203,7 @@ boolean pick;
 
     ++inspoteffects;
     spotterrain = levl[u.ux][u.uy].typ;
-    spotloc.x = u.ux, spotloc.y = u.uy;
+    spotloc_x = u.ux, spotloc_y = u.uy;
 
     /* moving onto different terrain might cause Lev or Fly to toggle */
     if (spotterrain != levl[u.ux0][u.uy0].typ || !on_level(&u.uz, &u.uz0))
@@ -2302,7 +2319,7 @@ boolean pick;
  spotdone:
     if (!--inspoteffects) {
         spotterrain = STONE; /* 0 */
-        spotloc.x = spotloc.y = 0;
+        spotloc_x = spotloc_y = 0;
     }
     return;
 }

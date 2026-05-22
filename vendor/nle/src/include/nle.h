@@ -754,6 +754,16 @@ typedef struct nle_globals {
     unsigned                     s_rn2disprng_seed;        /* rnd.c rn2_on_display_rng (non-ISAAC64) */
     boolean                      s_dotrap_recursive_mine;  /* trap.c dotrap landmine recursion guard */
     boolean                      s_movebubbles_up;         /* mkmaze.c movebubbles up/down latch */
+
+    /* Cluster AV-b2 — function-local statics: hack/dog */
+    long                          s_moverock_lastmovetime;     /* hack.c moverock */
+    int                           s_domove_skates;             /* hack.c domove_core */
+    signed char                   s_spoteffects_spotloc_x;     /* hack.c spoteffects (coord.x) */
+    signed char                   s_spoteffects_spotloc_y;     /* hack.c spoteffects (coord.y) */
+    int                           s_spoteffects_spotterrain;   /* hack.c spoteffects */
+    struct trap                  *s_spoteffects_spottrap;      /* hack.c spoteffects */
+    unsigned                      s_spoteffects_spottraptyp;   /* hack.c spoteffects (NO_TRAP==0) */
+    int                           s_makedog_petname_used;      /* dog.c makedog */
 } nle_ctx_t;
 
 /*
