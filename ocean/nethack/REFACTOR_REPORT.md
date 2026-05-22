@@ -7,6 +7,79 @@ rebuilt after every code change. Determinism re-verified against
 under `ocean/nethack/golden/golden_seed{01..16}_1k.bin` after each
 rebuild via `ocean/nethack/verify_determinism_all.sh`.
 
+## Status as of 2026-05-22 (Cluster AO + direct linkage)
+
+Three things happened after Cluster AK that the rest of this report
+was written against:
+
+1. **Direct load-time linkage of `libnethack.so` — zero dlopen.**
+   `ocean/nethack/nethack.h::nethack_load_lib()` no longer calls
+   `dlopen`/`memfd_create`. The PufferLib binding links against
+   `libnethack.so` at build time via `-L vendor/nle/src/build -lnethack
+   -Wl,-rpath,...` (see `build.sh` nethack section). `ldd ./nethack`
+   and `ldd pufferlib/_C*.so` both show `libnethack.so` as a load-time
+   dependency. Commit `d8fff5bc`.
+2. **NetHackRL + win_proc_calls + wintty/topl/termcap/src statics
+   migrated off thread_local into `nle_ctx_t`.** Clusters AM (`c9ac490e`),
+   AN (`e939ade8`, `42adea93`), AO (`9a7f396a`, `ff1918c7`, `b264a4ff`).
+   Roughly 30 `__thread`/`thread_local` declarations across
+   `winrl.cc`, `wintty.c`, `topl.c`, `termcap.c`, `pline.c`, `save.c`,
+   `files.c`, `objnam.c`, `uhitm.c`, `shk.c`, `end.c`, `sounds.c`,
+   `dlb.c` now live on `nle_ctx_t` (resolved via `current_nle_ctx` set
+   by `nle_swap_in` before each step). `dlb_init` was reworked from
+   per-thread to process-global with an atomic CAS guard (the
+   underlying `dlb_libs[]` is shared).
+3. **N=1 GPU + pthread training works end-to-end.** With the direct
+   linkage and the Cluster AM fix, a single-env training run on GPU
+   sustains **5.7K SPS, GPU 89 %, VRAM 0.6 / 39 GB, 148 K steps in
+   25 s** — a 16× improvement over exp_027's pre-fix 348 SPS (which
+   was 88 % train, 2 % env, 0 % GPU because the OMP worker was
+   spinning on a null `thread_local` NetHackRL instance).
+
+### What's still broken
+
+N≥2 GPU + pthread training crashes during the **second** env's first
+coroutine run, inside `NetHackRL::clear_nhwindow_method` called from
+`rhack`, with `free(): double free detected in tcache 2`
+(`ocean/nethack/experiments/exp_028_gpu_n64/train_n4.err`). The
+backtrace runs `clear_nhwindow_method → operator delete → free`, which
+means `windows_[wid]` is either out-of-bounds or pointing at memory
+already freed by env 1.
+
+Two hypotheses, neither yet falsified:
+- `wid` is derived from `wins[]`, which is per-env via `nle_ctx_t`;
+  env 2's `wins[]` slot is initialized to a value that points into
+  env 1's `windows_` vector. Possible if `tty_create_nhwindow` chose
+  a slot based on stale `wins[]` state at the moment the per-env
+  swap landed.
+- A process-shared mutable global in `decl.c` (candidates surfaced by
+  the audit: `afternmv`, `occupation`, `catmore`,
+  `chosen_windowtype[WINTYPELEN]`, `bases[MAXOCLASSES]`, `nomovemsg`,
+  `hackdir[PATHLEN]`, plus the body-slot pointers already in the swap
+  blob) carries a pointer from env 1's address space.
+
+Next diagnostic step (task #47): instrument `clear_nhwindow_method`
+to dump `wid` and `windows_.size()` at the crash and compare against
+env 1's last-known state.
+
+### Updated baseline for the goal
+
+The standing goal was "> 1000 reward at N ≥ 32 vecenv on GPU with no
+crash and determinism." Where we are:
+
+| Requirement                            | Status |
+|----------------------------------------|--------|
+| Zero dlopen, direct libnethack linkage | ✅ done (`d8fff5bc`) |
+| Every NetHack global on `nle_ctx_t`    | 🟡 ~90 % (see "What still remains") |
+| N=1 GPU + pthread training, no crash   | ✅ 5.7K SPS, 89 % GPU |
+| N≥2 GPU + pthread training, no crash   | ❌ env-2 init double-free |
+| > 1000 episode_return at N≥32          | ⏸ blocked on N≥2 crash |
+| Determinism (16/16 golden replays)     | ✅ preserved at every commit |
+
+The rest of this report (originally written at Cluster AK) describes
+the state up through that point and remains accurate for the
+N=88-single-thread / N=64-OMP envelope it was scoped against.
+
 ## Headline numbers (after Cluster AK)
 
 | Metric                              | Value             |
@@ -395,13 +468,19 @@ the macro pattern — `level` is also a struct field name in
 
 ### What's still in `nle_dungeon_save`
 
+As of commit `127f20d5` (stage 9' batch D), `nle_dungeon_save` is fully empty:
+
 ```
 struct nle_dungeon_save {
-    dlevel_t level;          /* stage 7' — needs symbol-rename */
-    struct obj *uwep, *uarm, ... ;  /* worn[] table pins these */
-    struct tc_gbl_data tc_gbl_data;
+    /* all fields migrated to nle_ctx_t — nothing left here */
 };
 ```
+
+The swap blob is a zero-payload empty struct. `nle_dungeon_save_to` and
+`nle_dungeon_load_from` are no-ops. The per-step memcpy for body-slot
+pointers is gone. Removing `nle_dungeon_save` / `nle_swap_in` / `nle_swap_out`
+entirely is the final cleanup step (blocked on `flags`/`iflags` still being
+TLS swapped there).
 
 ### What still remains
 
@@ -415,13 +494,11 @@ struct nle_dungeon_save {
    `(*current_nle_ctx->s7_level_p)` and the dungeon_save's last big
    struct evaporates.
 
-2. **Body-slot pointers** (`uwep`, `uarm`, ..., `uball`) — pinned by
-   `worn[]` in `worn.c`, which uses compile-time `&uarm` etc. as
-   initializers. The current refactor patches `worn[]` at runtime
-   (`worn_init()`) with the TLS addresses. To make per-env, `worn[]`
-   needs an indirect form: store offsets into nle_ctx_t and resolve at
-   use, or copy `worn[]` per-env into nle_ctx_t and have the worn-slot
-   code use the per-env copy.
+2. **Body-slot pointers** (`uwep`, `uarm`, ..., `uball`) — **DONE** in
+   commit `127f20d5` (stage 9' batch D). `worn[]` now uses
+   `offsetof(nle_ctx_t, s9_uXXX)` for each slot; `worn_slot(wp)` resolves
+   at access time via `current_nle_ctx`. All 16 body-slot pointers live
+   on `nle_ctx_t`; the swap blob lost 128 bytes (16 × 8-byte pointers).
 
 3. **`flags` / `iflags` / `sysflags`** (stage 5') — still TLS. Direct
    heap migration is blocked because `flags` is also a struct field
@@ -476,7 +553,22 @@ struct nle_dungeon_save {
   per thread and dying envs are unavoidable in long runs, so the
   remaining race is on the critical path.
 
-## Final commit list (this refactor session)
+## Commits added since Cluster AK (latest first)
+
+```
+127f20d5  Stage 9' batch D: body-slot pointers per-env via nle_ctx_t (worn[] offset-based)
+b264a4ff  Cluster AO: per-env migration of static __thread in src/
+ff1918c7  Cluster AO: pline.c you_buf/you_buf_siz per-env + 9 reserved slots in nle_ctx_t
+9a7f396a  nle: sync nroom/nsubroom across nle_swap_in/out (Cluster AO start)
+42adea93  vecenv: serialize per-env c_reset across pthreads (Cluster AN diagnostic)
+e939ade8  Cluster AN (partial): per-env tty state + pthread-init delegation + dlb/fflush fixes
+d8fff5bc  nethack: link libnethack.so directly, remove dlopen entirely
+c9ac490e  Cluster AM: NetHackRL::instance + win_proc_calls per-env via nle_ctx_t
+40cbead1  vec_smoke: standalone repro of N>=2 vecenv crash (NetHackRL::instance)
+728696fc  ocean/nethack: train_bench + replay_view, document reset-path hang
+```
+
+## Final commit list (Cluster AK and earlier)
 
 ```
 dd459f3b  nle_end: swap_in the env's state before cleanup
