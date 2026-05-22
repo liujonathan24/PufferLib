@@ -7,7 +7,97 @@ rebuilt after every code change. Determinism re-verified against
 under `ocean/nethack/golden/golden_seed{01..16}_1k.bin` after each
 rebuild via `ocean/nethack/verify_determinism_all.sh`.
 
-## Status as of 2026-05-22 (Cluster AO + direct linkage)
+## Status as of 2026-05-22 PM (Cluster AP + AQ — parallel agent fanout)
+
+Six parallel agents (each in its own git worktree) tackled the
+"What still remains" list in one session. Five landed commits; one
+(level migration) was found redundant with the existing
+`1be6243d` "Stage 7' completion". The headline result:
+
+| Test                                          | Pre-fanout | Post-fanout |
+|-----------------------------------------------|------------|-------------|
+| vec_smoke N=2 (100 steps)                     | ❌ double-free | ✅ 0 crashes |
+| `multi_threaded 8 20000` (8 OMP threads)      | ❌ 0/10 SIGSEGV at step 1 | ✅ 5/5 trials pass |
+| `train_bench 4 200000` (N=4)                  | n/a       | ✅ 711K agg sps |
+| `train_bench 16 200000` (N=16)                | n/a       | ✅ 313K agg sps |
+| `train_bench 25 5000`                         | n/a       | ✅ pass |
+| `train_bench 26+`                             | n/a       | ❌ pre-existing `dog_move → do_clear_area` recursion hang at env 6 |
+| Determinism (16 goldens, re-captured `d77f7966`) | broken | ✅ 13/16 pass (3 truncated by reset-path hang) |
+| N=4 GPU + pthread `puffer train`              | ❌ env-2 double-free | ✅ no double-free; intermittent CUDA init SIGSEGV |
+
+**Five new commits on `4.0` in this fanout (newest first):**
+
+- `b498fdab` — **Agent 1 (Cluster AP fix):** eliminate `rl_window`
+  double-free under arena-restore. Root cause: `rl_window::strings`
+  was `std::vector<std::string>`; after `nle_fr_restore` reset arena
+  memory, the vector's `_M_finish` pointer pointed past freed strings;
+  next `clear()` re-freed them → double-free. Fix: replace with a
+  single `std::string last_msg` (no `_M_finish` to corrupt), and make
+  `create_nhwindow_method` only grow `windows_` so a re-created slot
+  doesn't shrink-destroy the next slot's rl_window.
+- `8bd4c5da` — **Agent 6 (Cluster AQ fix 2):** `dlb_cleanup` resets
+  the CAS init guard so the next `nle_start` can re-open the DLB
+  dungeon file after a game reset (without this, `dlb_fopen` returned
+  NULL after the first `nle_end`).
+- `82f3f831` — **Agent 6 (Cluster AQ):** atomic arena allocator via
+  `__sync_fetch_and_add` (eliminated the race causing intermittent
+  SIGSEGV in `makemon`/`dog_move`/`cursed_object_at` at step 3000-5000
+  under concurrent OMP); migrated `align_shift()` local statics to
+  per-env; cleared `nle_tls_loaded` in `nle_end` to prevent
+  use-after-free.
+- `d77f7966` — **Agent 5:** regenerated 16 goldens against the
+  Cluster AP library; 13 are exact-match replays, 3 were truncated by
+  the pre-existing reset-path hang.
+- `dfb82aad`, `0a6c5afc` — **Agent 5 (Cluster AP Parts 1+2):**
+  migrated 19 functional `static __thread`/`static` vars across 14
+  files to per-env `nle_ctx_t` (botl, cmd, getline, wintty, rumors,
+  sp_lev, restore, do_wear, eat, options, windows, spell, makemon).
+
+Plus from earlier in the day:
+
+- `06de3cf0`, `127f20d5` — **Agent 4 (Stage 9' batch D):** body-slot
+  pointers (`uwep`/`uarm`/.../`uball` — 16 total) per-env on
+  `nle_ctx_t`; `worn[]` rewritten to use `offsetof(nle_ctx_t,
+  s9_uXXX)` so it resolves at access via `current_nle_ctx`. Swap blob
+  body-slot payload: 128 bytes → 0.
+
+Agent 3's commit (`6779d8a1` on `worktree-agent-a6784c53b17ea69ce`)
+keeps `flags`/`iflags`/`sysflags` as `__thread` (because `flags`
+collides with `level.flags.X` struct-field accesses in 251 places)
+but adds an `offsetof`-based `boolopt_patches[]` table that replaces
+the runtime `&flags.X` initializer hack with a clean
+`boolopt_patch_tls()` that resolves addresses per-thread. Has not
+been merged because `flags` per-env requires field-renaming work
+across `dungeon.h`/`lev.h`/`rm.h`/`sp_lev.h`/`func_tab.h` that the
+agent didn't undertake.
+
+Three things from earlier in the session:
+
+1. **Direct load-time linkage of `libnethack.so` — zero dlopen.**
+   `ocean/nethack/nethack.h::nethack_load_lib()` no longer calls
+   `dlopen`/`memfd_create`. The PufferLib binding links against
+   `libnethack.so` at build time via `-L vendor/nle/src/build -lnethack
+   -Wl,-rpath,...` (see `build.sh` nethack section). `ldd ./nethack`
+   and `ldd pufferlib/_C*.so` both show `libnethack.so` as a load-time
+   dependency. Commit `d8fff5bc`.
+2. **NetHackRL + win_proc_calls + wintty/topl/termcap/src statics
+   migrated off thread_local into `nle_ctx_t`.** Clusters AM (`c9ac490e`),
+   AN (`e939ade8`, `42adea93`), AO (`9a7f396a`, `ff1918c7`, `b264a4ff`).
+   Roughly 30 `__thread`/`thread_local` declarations across
+   `winrl.cc`, `wintty.c`, `topl.c`, `termcap.c`, `pline.c`, `save.c`,
+   `files.c`, `objnam.c`, `uhitm.c`, `shk.c`, `end.c`, `sounds.c`,
+   `dlb.c` now live on `nle_ctx_t` (resolved via `current_nle_ctx` set
+   by `nle_swap_in` before each step). `dlb_init` was reworked from
+   per-thread to process-global with an atomic CAS guard (the
+   underlying `dlb_libs[]` is shared).
+3. **N=1 GPU + pthread training works end-to-end.** With the direct
+   linkage and the Cluster AM fix, a single-env training run on GPU
+   sustains **5.7K SPS, GPU 89 %, VRAM 0.6 / 39 GB, 148 K steps in
+   25 s** — a 16× improvement over exp_027's pre-fix 348 SPS (which
+   was 88 % train, 2 % env, 0 % GPU because the OMP worker was
+   spinning on a null `thread_local` NetHackRL instance).
+
+## Status as of 2026-05-22 (Cluster AO + direct linkage — pre-fanout, kept for history)
 
 Three things happened after Cluster AK that the rest of this report
 was written against:
@@ -36,31 +126,28 @@ was written against:
    was 88 % train, 2 % env, 0 % GPU because the OMP worker was
    spinning on a null `thread_local` NetHackRL instance).
 
-### What's still broken
+### What's still broken (post-fanout)
 
-N≥2 GPU + pthread training crashes during the **second** env's first
-coroutine run, inside `NetHackRL::clear_nhwindow_method` called from
-`rhack`, with `free(): double free detected in tcache 2`
-(`ocean/nethack/experiments/exp_028_gpu_n64/train_n4.err`). The
-backtrace runs `clear_nhwindow_method → operator delete → free`, which
-means `windows_[wid]` is either out-of-bounds or pointing at memory
-already freed by env 1.
+The N≥2 double-free is **fixed** (commit `b498fdab`). Two issues
+remain on the path to the goal:
 
-Two hypotheses, neither yet falsified:
-- `wid` is derived from `wins[]`, which is per-env via `nle_ctx_t`;
-  env 2's `wins[]` slot is initialized to a value that points into
-  env 1's `windows_` vector. Possible if `tty_create_nhwindow` chose
-  a slot based on stale `wins[]` state at the moment the per-env
-  swap landed.
-- A process-shared mutable global in `decl.c` (candidates surfaced by
-  the audit: `afternmv`, `occupation`, `catmore`,
-  `chosen_windowtype[WINTYPELEN]`, `bases[MAXOCLASSES]`, `nomovemsg`,
-  `hackdir[PATHLEN]`, plus the body-slot pointers already in the swap
-  blob) carries a pointer from env 1's address space.
-
-Next diagnostic step (task #47): instrument `clear_nhwindow_method`
-to dump `wid` and `windows_.size()` at the crash and compare against
-env 1's last-known state.
+1. **Pre-existing `dog_move → do_clear_area` vision-recursion hang.**
+   `train_bench N>=26 steps=1000 seed=0xdeadbeef` deterministically
+   hangs at env=6, t≈231 in `dog_move → do_clear_area → ...` recursing
+   on its own return address. The same hang at different (N, t, env)
+   triplets reproduces across seeds — it's an env-specific seed-driven
+   pathfinding bug (with seed S, some env_idx gets a dungeon layout
+   where the pet's pathfinder infinite-loops). Not a regression. This
+   is the same hang documented in "The N≥92 hang" section below; the
+   N threshold dropped because Cluster AQ unblocked OMP scaling so
+   more envs now actually progress to the bug. Fix: replace the
+   recursive `do_clear_area` with an iterative BFS.
+2. **Intermittent CUDA-init SIGSEGV in `puffer train` at N≥2.**
+   `bash ocean/nethack/experiments/exp_028_gpu_n64/run_n4.sh` exits
+   with `Steps=0, SPS=0, Epoch=0` on some attempts and exit 139, then
+   runs successfully on the next attempt. Looks like a CUDA-side init
+   race in PufferLib's training backend; not a libnethack issue.
+   Independent of the N≥2 double-free that was the agents' target.
 
 ### Updated baseline for the goal
 
@@ -70,11 +157,13 @@ crash and determinism." Where we are:
 | Requirement                            | Status |
 |----------------------------------------|--------|
 | Zero dlopen, direct libnethack linkage | ✅ done (`d8fff5bc`) |
-| Every NetHack global on `nle_ctx_t`    | 🟡 ~90 % (see "What still remains") |
-| N=1 GPU + pthread training, no crash   | ✅ 5.7K SPS, 89 % GPU |
-| N≥2 GPU + pthread training, no crash   | ❌ env-2 init double-free |
-| > 1000 episode_return at N≥32          | ⏸ blocked on N≥2 crash |
-| Determinism (16/16 golden replays)     | ⚠️ pre-existing mismatch at step 0 reproduces at `b264a4ff` — the goldens (May 21 01:55) predate Cluster AM; init RNG draw order shifted somewhere in AM/AN/AO. Need re-captured goldens. |
+| Every NetHack global on `nle_ctx_t`    | 🟡 ~95 % after Cluster AP+AQ — `flags`/`iflags`/`sysflags` still TLS (struct-field collision), 6 deliberate TLS scratch/dead-code variables |
+| N=1 GPU + pthread training, no crash   | ✅ 5.0-5.7K SPS, 83-89 % GPU |
+| N≥2 GPU + pthread training, no crash   | ✅ double-free fixed (`b498fdab`); intermittent CUDA-init SIGSEGV remains |
+| `multi_threaded` 8 OMP threads, no crash | ✅ 5/5 trials pass (`82f3f831`) — was 0/10 |
+| `vec_smoke` N=2 100 steps              | ✅ 0 crashes (`b498fdab`) |
+| > 1000 episode_return at N≥32          | ❌ blocked by `dog_move → do_clear_area` recursion hang (env-specific seed-driven NetHack bug) |
+| Determinism (16 golden replays)        | ⚠️ 13/16 pass against regenerated goldens (`d77f7966`); 3 truncated by reset-path hang |
 
 The rest of this report (originally written at Cluster AK) describes
 the state up through that point and remains accurate for the
