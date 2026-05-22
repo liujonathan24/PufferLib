@@ -124,6 +124,13 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
+/* Cluster AU group 7 — per-env replacements for display.c file-statics.
+ * `nul_gbuf` was a struct initializer with a function-macro call
+ * (cmap_to_glyph(S_stone)) in its initializer list. It's effectively const
+ * after first use, so we store the two fields on nle_ctx_t and reconstruct
+ * the struct at the one use site. Initialized in init_nle (nle.c). */
+#define bad_count  (current_nle_ctx->s_bad_count)
+
 STATIC_DCL void FDECL(show_mon_or_warn, (int, int, int));
 STATIC_DCL void FDECL(display_monster,
                       (XCHAR_P, XCHAR_P, struct monst *, int, XCHAR_P));
@@ -1587,7 +1594,10 @@ int x, y, glyph;
         }                              \
     }
 
-static gbuf_entry nul_gbuf = { 0, cmap_to_glyph(S_stone) };
+/* nul_gbuf moved into nle_ctx_t.{s_nul_gbuf_new,s_nul_gbuf_glyph}
+ * (Cluster AU group 7). Initialized in init_nle (nle.c) since
+ * cmap_to_glyph(S_stone) is a constant expression but requires display.h
+ * macros, which init_nle has via hack.h. */
 /*
  * Turn the 3rd screen into stone.
  */
@@ -1596,7 +1606,15 @@ clear_glyph_buffer()
 {
     register int x, y;
     register gbuf_entry *gptr;
+    gbuf_entry nul_gbuf;
 
+    /* Cluster AU group 7 — lazy init for the per-env nul_gbuf payload.
+     * Original was a static struct initializer using cmap_to_glyph(S_stone).
+     * GLYPH_CMAP_OFF is always nonzero, so a 0 glyph means uninitialized. */
+    if (current_nle_ctx->s_nul_gbuf_glyph == 0)
+        current_nle_ctx->s_nul_gbuf_glyph = cmap_to_glyph(S_stone);
+    nul_gbuf.new = (xchar) current_nle_ctx->s_nul_gbuf_new;
+    nul_gbuf.glyph = current_nle_ctx->s_nul_gbuf_glyph;
     for (y = 0; y < ROWNO; y++) {
         gptr = &gbuf[y][0];
         for (x = COLNO; x; x--) {
@@ -1965,7 +1983,10 @@ xchar x, y;
 static const char *FDECL(type_to_name, (int));
 static void FDECL(error4, (int, int, int, int, int, int));
 
-static int bad_count[MAX_TYPE]; /* count of positions flagged as bad */
+/* bad_count moved into nle_ctx_t.s_bad_count[36] (Cluster AU group 7).
+ * MAX_TYPE == 36 enforced below; macro above redirects to current_nle_ctx. */
+_Static_assert(MAX_TYPE == 36,
+               "nle_ctx_t.s_bad_count size must match MAX_TYPE");
 static const char *type_names[MAX_TYPE] = {
     "STONE", "VWALL", "HWALL", "TLCORNER", "TRCORNER", "BLCORNER", "BRCORNER",
     "CROSSWALL", "TUWALL", "TDWALL", "TLWALL", "TRWALL", "DBWALL", "TREE",

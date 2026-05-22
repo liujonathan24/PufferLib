@@ -6,6 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
+/* Cluster AU group 7 — per-env replacements for three do_name.c file-statics. */
+#define gloc_filter_map                      (current_nle_ctx->s_gloc_filter_map)
+#define gloc_filter_floodfill_match_glyph    (current_nle_ctx->s_gloc_filter_floodfill_match_glyph)
+#define via_naming                           (current_nle_ctx->s_via_naming)
+
 STATIC_DCL char *NDECL(nextmbuf);
 STATIC_DCL void FDECL(getpos_help, (BOOLEAN_P, const char *));
 STATIC_DCL int FDECL(CFDECLSPEC cmp_coord_distu, (const void *, const void *));
@@ -245,13 +250,14 @@ const void *b;
      && glyph_to_cmap(levl[(x)][(y)].glyph) == S_stone  \
      && !levl[(x)][(y)].seenv)
 
-static struct opvar *gloc_filter_map = (struct opvar *) 0;
+/* gloc_filter_map moved into nle_ctx_t (Cluster AU group 7) — macro above.
+ * Default is NULL via calloc; matches original (struct opvar *) 0. */
 
 #define GLOC_SAME_AREA(x,y)                                     \
     (isok((x), (y))                                             \
      && (selection_getpoint((x),(y), gloc_filter_map)))
 
-static int gloc_filter_floodfill_match_glyph;
+/* gloc_filter_floodfill_match_glyph moved into nle_ctx_t (Cluster AU group 7). */
 
 int
 gloc_filter_classify_glyph(glyph)
@@ -1196,7 +1202,8 @@ do_mname()
         (void) christen_monst(mtmp, buf);
 }
 
-STATIC_VAR int via_naming = 0;
+/* via_naming moved into nle_ctx_t (Cluster AU group 7) — macro above.
+ * Default 0 via calloc. */
 
 /*
  * This routine used to change the address of 'obj' so be unsafe if not

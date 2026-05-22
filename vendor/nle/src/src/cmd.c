@@ -8,6 +8,20 @@
 #include "lev.h"
 #include "func_tab.h"
 
+/* Cluster AU group 7 — per-env replacements for two cmd.c file-statics.
+ * clicklook_cc is heap-allocated via nle_get_clicklook_cc() (forward-decl'd
+ * as `struct nhcoord` in nle.h); first-use idempotent init per env. */
+static struct nhcoord *
+nle_get_clicklook_cc(void)
+{
+    if (!current_nle_ctx->s_clicklook_cc)
+        current_nle_ctx->s_clicklook_cc =
+            (struct nhcoord *) calloc(1, sizeof(coord));
+    return current_nle_ctx->s_clicklook_cc;
+}
+#define alt_esc       (current_nle_ctx->s_alt_esc)
+#define clicklook_cc  (*nle_get_clicklook_cc())
+
 /* Macros for meta and ctrl modifiers:
  *   M and C return the meta/ctrl code for the given character;
  *     e.g., (C('c') is ctrl-c
@@ -27,9 +41,7 @@
 #define unctrl(c) ((c) <= C('z') ? (0x60 | (c)) : (c))
 #define unmeta(c) (0x7f & (c))
 
-#ifdef ALTMETA
-STATIC_VAR boolean alt_esc = FALSE;
-#endif
+/* alt_esc moved into nle_ctx_t (Cluster AU group 7) — macro above. */
 
 /* Cmd — migrated to nle_ctx_t (per-env). */
 
@@ -206,7 +218,7 @@ STATIC_DCL void FDECL(show_direction_keys, (winid, CHAR_P, BOOLEAN_P));
 STATIC_DCL boolean FDECL(help_dir, (CHAR_P, int, const char *));
 
 static const char *readchar_queue = "";
-static coord clicklook_cc;
+/* clicklook_cc moved into nle_ctx_t (Cluster AU group 7) — macro above. */
 /* for rejecting attempts to use wizard mode commands */
 static const char unavailcmd[] = "Unavailable command '%s'.";
 /* for rejecting #if !SHELL, !SUSPEND */

@@ -8,6 +8,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
+
+/* Cluster AU group 7 — per-env replacement for vanq_sortmode (end.c).
+ * VANQ_MLVL_MNDX == 0, so the calloc default matches the original
+ * static initializer. */
+#define vanq_sortmode (current_nle_ctx->s_vanq_sortmode)
 #ifndef NO_SIGNAL
 #include <signal.h>
 #endif
@@ -1790,7 +1795,7 @@ static const char *vanqorders[NUM_VANQ_ORDER_MODES] = {
     "by count, high to low, by internal index within tied count",
     "by count, low to high, by internal index within tied count",
 };
-static int vanq_sortmode = VANQ_MLVL_MNDX;
+/* vanq_sortmode moved into nle_ctx_t (Cluster AU group 7) — macro above. */
 
 STATIC_PTR int CFDECLSPEC
 vanqsort_cmp(vptr1, vptr2)

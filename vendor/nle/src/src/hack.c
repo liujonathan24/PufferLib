@@ -6,6 +6,20 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster AU group 7 — per-env replacements for two hack.c file-statics.
+ * tmp_anything is heap-allocated (forward-decl'd as `union any` in nle.h);
+ * the helper below allocates on first use and is idempotent per env. */
+static union any *
+nle_get_tmp_anything(void)
+{
+    if (!current_nle_ctx->s_tmp_anything)
+        current_nle_ctx->s_tmp_anything =
+            (union any *) calloc(1, sizeof(anything));
+    return current_nle_ctx->s_tmp_anything;
+}
+#define tmp_anything  (*nle_get_tmp_anything())
+#define wc            (current_nle_ctx->s_wc)
+
 /* #define DEBUG */ /* uncomment for debugging */
 
 STATIC_DCL void NDECL(maybe_wail);
@@ -27,7 +41,7 @@ STATIC_DCL void NDECL(domove_core);
 #define TRAVP_GUESS  1
 #define TRAVP_VALID  2
 
-static anything tmp_anything;
+/* tmp_anything moved into nle_ctx_t (Cluster AU group 7) — macro above. */
 
 anything *
 uint_to_any(ui)
@@ -3078,7 +3092,8 @@ weight_cap()
     return (int) carrcap;
 }
 
-static int wc; /* current weight_cap(); valid after call to inv_weight() */
+/* wc moved into nle_ctx_t (Cluster AU group 7) — macro above.
+ * inv_weight()'s last weight_cap() value; valid after call to inv_weight(). */
 
 /* returns how far beyond the normal capacity the player is currently. */
 /* inv_weight() is negative if the player is below normal capacity. */

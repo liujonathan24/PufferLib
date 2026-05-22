@@ -6,6 +6,14 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
+
+/* Cluster AU group 7 — per-env replacements for two topten.c file-statics.
+ * `toptenwin` collides with `iflags.toptenwin` (flag.h boolean field), so
+ * the macro is named `nle_toptenwin` and the call sites in this TU were
+ * rewritten manually. `final_fpos` is under #ifdef UPDATE_RECORD_IN_PLACE
+ * (VMS-only) — dead on UNIX, migrated for completeness. */
+#define nle_toptenwin   (current_nle_ctx->s_toptenwin)
+#define final_fpos      (current_nle_ctx->s_final_fpos)
 #ifdef SHORT_FILENAMES
 #include "patchlev.h"
 #else
@@ -24,9 +32,9 @@
  * way to truncate it).  The trailing junk is harmless and the code
  * which reads the scores will ignore it.
  */
-#ifdef UPDATE_RECORD_IN_PLACE
-static long final_fpos;
-#endif
+/* final_fpos moved into nle_ctx_t (Cluster AU group 7) — macro above.
+ * Storage is unconditional on nle_ctx_t but only referenced under
+ * #ifdef UPDATE_RECORD_IN_PLACE (not defined on UNIX builds). */
 
 #define done_stopprint current_nle_ctx->program_state.stopprint
 
@@ -86,7 +94,12 @@ STATIC_DCL void FDECL(nsb_mung_line, (char *));
 STATIC_DCL void FDECL(nsb_unmung_line, (char *));
 #endif
 
-static winid toptenwin = WIN_ERR;
+/* toptenwin moved into nle_ctx_t.s_toptenwin (Cluster AU group 7).
+ * Cannot use a `toptenwin` macro here because `iflags.toptenwin` is a
+ * separate boolean field in struct instance_flags and would be clobbered
+ * by token replacement. All `toptenwin` references in this TU rewritten
+ * to `nle_toptenwin`. The WIN_ERR default is set in init_nle (nle.c)
+ * since calloc would leave it 0, not -1. */
 
 /* "killed by",&c ["an"] 'killer.name' */
 void
@@ -165,20 +178,20 @@ STATIC_OVL void
 topten_print(x)
 const char *x;
 {
-    if (toptenwin == WIN_ERR)
+    if (nle_toptenwin == WIN_ERR)
         raw_print(x);
     else
-        putstr(toptenwin, ATR_NONE, x);
+        putstr(nle_toptenwin, ATR_NONE, x);
 }
 
 STATIC_OVL void
 topten_print_bold(x)
 const char *x;
 {
-    if (toptenwin == WIN_ERR)
+    if (nle_toptenwin == WIN_ERR)
         raw_print_bold(x);
     else
-        putstr(toptenwin, ATR_BOLD, x);
+        putstr(nle_toptenwin, ATR_BOLD, x);
 }
 
 int
@@ -524,8 +537,15 @@ time_t when;
     if (current_nle_ctx->program_state.panicking)
         return;
 
+    /* Cluster AU group 7 — first-use idempotent init. Original was
+     * `static winid toptenwin = WIN_ERR;`. calloc gives 0 (== BASE_WINDOW)
+     * which would mis-route topten_print() output through putstr() instead
+     * of raw_print(). Set WIN_ERR at entry; the iflags.toptenwin branch
+     * below overrides via create_nhwindow. Idempotent: rerunning topten()
+     * after destroywin re-resets correctly. */
+    nle_toptenwin = WIN_ERR;
     if (iflags.toptenwin) {
-        toptenwin = create_nhwindow(NHW_TEXT);
+        nle_toptenwin = create_nhwindow(NHW_TEXT);
     }
 
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
@@ -777,13 +797,13 @@ time_t when;
 
 showwin:
     if (iflags.toptenwin && !done_stopprint)
-        display_nhwindow(toptenwin, 1);
+        display_nhwindow(nle_toptenwin, 1);
 destroywin:
     if (!t0_used)
         dealloc_ttentry(t0);
     if (iflags.toptenwin) {
-        destroy_nhwindow(toptenwin);
-        toptenwin = WIN_ERR;
+        destroy_nhwindow(nle_toptenwin);
+        nle_toptenwin = WIN_ERR;
     }
 }
 

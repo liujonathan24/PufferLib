@@ -4,6 +4,16 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+#include <stdlib.h> /* calloc */
+
+/* Cluster AU group 7 — close_dy/far_dy are arrays of pointers into the
+ * generated close_table[]/far_table[] vis_tab.h tables. Per-env storage
+ * lives on nle_ctx_t as void * (size depends on CLOSE_MAX_BC_DY /
+ * FAR_MAX_BC_DY which come from the generated header — not visible to
+ * nle.h). The macros below cast to the real typed pointer-array.
+ * view_init() allocates lazily on first call per env. */
+#define close_dy ((close2d **) current_nle_ctx->s_close_dy)
+#define far_dy   ((far2d   **) current_nle_ctx->s_far_dy)
 
 /* Circles
  * ==================================================================*/
@@ -1617,9 +1627,8 @@ cleardone:
  */
 #include "vis_tab.h"
 
-/* 3D table pointers. */
-static close2d *close_dy[CLOSE_MAX_BC_DY];
-static far2d *far_dy[FAR_MAX_BC_DY];
+/* 3D table pointers moved into nle_ctx_t.{s_close_dy,s_far_dy}
+ * (Cluster AU group 7). Allocated lazily in view_init() per env. */
 
 STATIC_DCL void FDECL(right_side,  (int, int, int, int, int,
                                     int, int, char *));
@@ -1635,6 +1644,18 @@ STATIC_OVL void
 view_init()
 {
     int i;
+
+    /* Cluster AU group 7 — allocate per-env close_dy/far_dy on demand.
+     * Re-entry on a re-init is safe: free + alloc keeps tables fresh in
+     * case vis_tab.h is ever regenerated with new sizes. */
+    if (current_nle_ctx->s_close_dy)
+        free(current_nle_ctx->s_close_dy);
+    if (current_nle_ctx->s_far_dy)
+        free(current_nle_ctx->s_far_dy);
+    current_nle_ctx->s_close_dy =
+        calloc(CLOSE_MAX_BC_DY, sizeof(close2d *));
+    current_nle_ctx->s_far_dy =
+        calloc(FAR_MAX_BC_DY, sizeof(far2d *));
 
     for (i = 0; i < CLOSE_MAX_BC_DY; i++)
         close_dy[i] = &close_table[i];

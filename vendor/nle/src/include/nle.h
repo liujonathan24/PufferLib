@@ -60,6 +60,8 @@ struct dlb_handle;       /* include/dlb.h   — Cluster AU group 5 (questpgr.c m
 struct engr;             /* include/engrave.h — Cluster AU group 6 (engrave.c head_engr) */
 struct litmon;           /* defined locally in src/read.c — Cluster AU group 6 (read.c gremlins) */
 struct nle_lev_region_s; /* Cluster AU group 3 (mkmaze.c bughack); tag added in include/sp_lev.h */
+union any;               /* include/wintype.h (`typedef union any anything;`) — Cluster AU group 7 (hack.c tmp_anything) */
+struct opvar;            /* include/sp_lev.h — Cluster AU group 7 (do_name.c gloc_filter_map) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -692,6 +694,39 @@ typedef struct nle_globals {
     int           s_dieroll_mhitu;    /* mhitu.c dieroll */
     int           s_mesg_given;       /* mthrowu.c mesg_given */
     boolean       s_zap_oseen;        /* muse.c zap_oseen */
+
+    /* Cluster AU group 7 — misc-1 per-env. 14 file-scope statics scraped
+     * out of cmd.c, hack.c, display.c, vision.c, do_name.c, topten.c, end.c.
+     * Direct ctx fields (no swap). Macros at the top of each .c file rewrite
+     * accesses to current_nle_ctx->s_<name>. Pointers used where the type
+     * needs hack.h headers that are too heavy for nle.h (coord, opvar, the
+     * generated close2d/far2d tables); inline scalars otherwise. */
+    /* cmd.c */
+    boolean                       s_alt_esc;           /* readchar() ESC<->META switch */
+    struct nhcoord               *s_clicklook_cc;      /* last click-look coord (alloc in init_nle) */
+    /* hack.c */
+    union any                    *s_tmp_anything;      /* uint_to_any/long_to_any/... scratch */
+    int                           s_wc;                /* inv_weight()'s last weight_cap() */
+    /* display.c */
+    int                           s_nul_gbuf_new;      /* nul_gbuf.new — zero glyph fill */
+    int                           s_nul_gbuf_glyph;    /* nul_gbuf.glyph — cmap_to_glyph(S_stone) */
+    int                           s_bad_count[36];     /* WA_VERBOSE; MAX_TYPE == 36 in rm.h */
+    /* vision.c — close_dy/far_dy are arrays-of-pointers into the generated
+     * close_table[]/far_table[] (vis_tab.h). Hold as opaque void * here and
+     * memcpy the array contents in init_nle via a vision.c helper. */
+    void                         *s_close_dy;          /* close2d *close_dy[CLOSE_MAX_BC_DY] */
+    void                         *s_far_dy;            /* far2d   *far_dy[FAR_MAX_BC_DY] */
+    /* do_name.c */
+    struct opvar                 *s_gloc_filter_map;
+    int                           s_gloc_filter_floodfill_match_glyph;
+    int                           s_via_naming;
+    /* topten.c — `toptenwin` collides with `iflags.toptenwin` (flag.h field).
+     * Macro renamed to `nle_toptenwin` inside topten.c; the field is still
+     * stored as s_toptenwin to keep the cluster-wide naming convention. */
+    long                          s_final_fpos;        /* UPDATE_RECORD_IN_PLACE — dead on UNIX */
+    int                           s_toptenwin;         /* winid (typedef'd int) — TT scroll window */
+    /* end.c */
+    int                           s_vanq_sortmode;     /* VANQ_MLVL_MNDX default == 0, calloc OK */
 } nle_ctx_t;
 
 /*
