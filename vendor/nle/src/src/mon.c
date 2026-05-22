@@ -13,6 +13,10 @@
 #include "mfndpos.h"
 #include <ctype.h>
 
+/* Cluster AU group 8 — misc-2 per-env redirects (mon.c) */
+#define animal_list       (current_nle_ctx->s_animal_list)
+#define animal_list_count (current_nle_ctx->s_animal_list_count)
+
 STATIC_VAR boolean vamp_rise_msg, disintegested;
 
 STATIC_DCL void FDECL(sanity_check_single_mon, (struct monst *, BOOLEAN_P,
@@ -3253,12 +3257,9 @@ struct monst *mon;
     }
 }
 
-/* Cluster AF: animal_list / animal_list_count were per-thread __thread
- * (shared across envs in vecenv). With const mons[], the list is
- * identical across all envs, so we initialize it process-wide once
- * (idempotent malloc-leak — never freed) and skip the per-env teardown. */
-static short *animal_list = 0;       /* shared across envs (deterministic, const data) */
-static int    animal_list_count = 0;
+/* animal_list / animal_list_count migrated to nle_ctx_t.s_animal_list[_count]
+ * (Cluster AU group 8). The buffer is allocated lazily by mon_animal_list.
+ * Macros at the top of this file rewrite both names to current_nle_ctx fields. */
 
 void
 mon_animal_list(construct)

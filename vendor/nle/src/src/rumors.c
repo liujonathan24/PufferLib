@@ -8,6 +8,9 @@
 #include "lev.h"
 #include "dlb.h"
 
+/* Cluster AU group 8 — misc-2 per-env redirect (rumors.c) */
+#define true_rumor_size (current_nle_ctx->s_true_rumor_size)
+
 /*      [note: this comment is fairly old, but still accurate for 3.1]
  * Rumors have been entirely rewritten to speed up the access.  This is
  * essential when working from floppies.  Using fseek() the way that's done
@@ -46,8 +49,10 @@ STATIC_DCL void FDECL(init_rumors, (dlb *));
 STATIC_DCL void FDECL(init_oracles, (dlb *));
 STATIC_DCL void FDECL(couldnt_open_file, (const char *));
 
-/* rumor size variables are signed so that value -1 can be used as a flag */
-static long true_rumor_size = 0L, false_rumor_size;
+/* rumor size variables are signed so that value -1 can be used as a flag.
+ * true_rumor_size migrated to nle_ctx_t.s_true_rumor_size (Cluster AU group 8);
+ * false_rumor_size remains a process-static for now (not in group 8 scope). */
+static long false_rumor_size;
 /* rumor start offsets are unsigned because they're handled via %lx format */
 static unsigned long true_rumor_start, false_rumor_start;
 /* rumor end offsets are signed because they're compared with [dlb_]ftell() */

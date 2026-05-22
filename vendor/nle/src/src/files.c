@@ -9,6 +9,12 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 
+/* Cluster AU group 8 — misc-2 per-env redirects (files.c) */
+#define wizkit                 (current_nle_ctx->s_wizkit)
+#define lockptr                (current_nle_ctx->s_lockptr)
+#define config_section_chosen  (current_nle_ctx->s_config_section_chosen)
+#define config_section_current (current_nle_ctx->s_config_section_current)
+
 #ifdef TTY_GRAPHICS
 #include "wintty.h" /* more() */
 #endif
@@ -131,14 +137,14 @@ struct level_ftrack {
 #endif /*HOLD_LOCKFILE_OPEN*/
 
 #define WIZKIT_MAX 128
-static char wizkit[WIZKIT_MAX];
+/* wizkit[WIZKIT_MAX] migrated to nle_ctx_t.s_wizkit (Cluster AU group 8) */
 STATIC_DCL FILE *NDECL(fopen_wizkit_file);
 STATIC_DCL void FDECL(wizkit_addinv, (struct obj *));
 
 #ifdef AMIGA
 extern char PATH[]; /* see sys/amiga/amidos.c */
 extern char bbs_id[];
-static int lockptr;
+/* lockptr migrated to nle_ctx_t.s_lockptr (Cluster AU group 8) */
 #ifdef __SASC_60
 #include <proto/dos.h>
 #endif
@@ -148,7 +154,7 @@ extern void FDECL(amii_set_text_font, (char *, int));
 #endif
 
 #if defined(WIN32) || defined(MSDOS)
-static int lockptr;
+/* lockptr migrated to nle_ctx_t.s_lockptr (Cluster AU group 8) */
 #ifdef MSDOS
 #define Delay(a) msleep(a)
 #endif
@@ -226,8 +232,8 @@ STATIC_DCL int FDECL(open_levelfile_exclusively, (const char *, int, int));
 #endif
 
 
-static char *config_section_chosen = (char *) 0;
-static char *config_section_current = (char *) 0;
+/* config_section_chosen / config_section_current migrated to nle_ctx_t
+ * (Cluster AU group 8). calloc zero-init handles the (char *) 0 default. */
 
 /*
  * fname_encode()

@@ -63,6 +63,11 @@ struct nle_lev_region_s; /* Cluster AU group 3 (mkmaze.c bughack); tag added in 
 union any;               /* include/wintype.h (`typedef union any anything;`) — Cluster AU group 7 (hack.c tmp_anything) */
 struct opvar;            /* include/sp_lev.h — Cluster AU group 7 (do_name.c gloc_filter_map) */
 
+/* Cluster AU group 8 — misc-2 forward decls. Pointers in nle_ctx_t, real
+ * struct definitions remain local to their .c files (extralev.c, dbridge.c). */
+struct rogueroom;        /* src/extralev.c */
+struct entity;           /* src/dbridge.c */
+
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
  * a per-instance copy. The original macro storm in decl.h is replaced
@@ -727,6 +732,23 @@ typedef struct nle_globals {
     int                           s_toptenwin;         /* winid (typedef'd int) — TT scroll window */
     /* end.c */
     int                           s_vanq_sortmode;     /* VANQ_MLVL_MNDX default == 0, calloc OK */
+
+    /* Cluster AU group 8 — misc-2 per-env state.
+     * Migrated from file-statics in files.c, mon.c, extralev.c, rect.c,
+     * rumors.c, dbridge.c, polyself.c. All are persistent per-env scratch
+     * for level building / config parsing / polymorph cycles. */
+    char            s_wizkit[128];          /* files.c wizkit[WIZKIT_MAX] (WIZKIT_MAX=128) */
+    int             s_lockptr;              /* files.c lockptr (AMIGA / WIN32 / MSDOS) */
+    char           *s_config_section_chosen;  /* files.c config_section_chosen */
+    char           *s_config_section_current; /* files.c config_section_current */
+    short          *s_animal_list;          /* mon.c animal_list (heap, lazy alloc'd) */
+    int             s_animal_list_count;    /* mon.c animal_list_count */
+    struct rogueroom *s_extralev_r;         /* extralev.c r[3][3] (heap, lazy alloc'd) */
+    void           *s_rect;                 /* rect.c rect[MAXRECT+1]; void* to avoid pulling rect.h */
+    int             s_rect_cnt;             /* rect.c rect_cnt */
+    long            s_true_rumor_size;      /* rumors.c true_rumor_size */
+    struct entity  *s_occupants;            /* dbridge.c occupants[ENTITIES=2] (heap, lazy alloc'd) */
+    int             s_sex_change_ok;        /* polyself.c sex_change_ok */
 } nle_ctx_t;
 
 /*

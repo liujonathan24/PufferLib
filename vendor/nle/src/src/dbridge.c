@@ -20,6 +20,13 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for Unaware macro */
 
+/* Cluster AU group 8 — misc-2: occupants[ENTITIES] migrated to
+ * nle_ctx_t.s_occupants. struct entity is forward-declared in nle.h; full
+ * definition is local to this file (below), so we use lazy heap alloc.
+ * The helper is declared (not defined) here; definition follows struct entity. */
+static struct entity *_au8_get_occupants(void);
+#define occupants (_au8_get_occupants())
+
 STATIC_DCL void FDECL(get_wall_for_db, (int *, int *));
 STATIC_DCL struct entity *FDECL(e_at, (int, int));
 STATIC_DCL void FDECL(m_to_e, (struct monst *, int, int, struct entity *));
@@ -291,7 +298,15 @@ struct entity {
 
 #define ENTITIES 2
 
-static NEARDATA struct entity occupants[ENTITIES];
+/* Cluster AU group 8 — misc-2: occupants[ENTITIES] now per-env on heap. */
+static struct entity *
+_au8_get_occupants(void)
+{
+    if (!current_nle_ctx->s_occupants)
+        current_nle_ctx->s_occupants =
+            (struct entity *) calloc(ENTITIES, sizeof(struct entity));
+    return current_nle_ctx->s_occupants;
+}
 
 STATIC_OVL
 struct entity *
