@@ -1058,6 +1058,13 @@ struct mkroom *croom;
     /* also skip if this is non-rectangular (it _must_ be done already) */
     if ((int) levl[lowx][lowy].roomno == roomno || croom->irregular)
         return;
+    /* Cluster AT: guard against degenerate room dimensions that would make
+     * the "sides" and "edges" loops below (which use `+= (h - lo + 2)` as
+     * the step) advance by zero or negative — observed under multi-env
+     * level generation with certain seeds. NetHack core assumes lowx<=hix
+     * and lowy<=hiy but doesn't enforce it. */
+    if (hix < lowx || hiy < lowy)
+        return;
 #ifdef SPECIALIZATION
     if (Is_rogue_level(&u.uz))
         do_ordinary = TRUE; /* vision routine helper */
