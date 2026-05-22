@@ -100,9 +100,9 @@ void
 sort_rooms()
 {
 #if defined(SYSV) || defined(DGUX)
-#define CAST_nroom (unsigned) current_nle_ctx->nroom
+#define CAST_nroom (unsigned) nroom
 #else
-#define CAST_nroom current_nle_ctx->nroom /*as-is*/
+#define CAST_nroom nroom /*as-is*/
 #endif
     qsort((genericptr_t) rooms, CAST_nroom, sizeof (struct mkroom), do_comp);
 #undef CAST_nroom
@@ -193,12 +193,12 @@ boolean special;
 {
     register struct mkroom *croom;
 
-    croom = &rooms[current_nle_ctx->nroom];
+    croom = &rooms[nroom];
     do_room_or_subroom(croom, lowx, lowy, hix, hiy, lit, rtype, special,
                        (boolean) TRUE);
     croom++;
     croom->hx = -1;
-    current_nle_ctx->nroom++;
+    nroom++;
 }
 
 void
@@ -211,13 +211,13 @@ boolean special;
 {
     register struct mkroom *croom;
 
-    croom = &subrooms[current_nle_ctx->nsubroom];
+    croom = &subrooms[nsubroom];
     do_room_or_subroom(croom, lowx, lowy, hix, hiy, lit, rtype, special,
                        (boolean) FALSE);
     proom->sbrooms[proom->nsubrooms++] = croom;
     croom++;
     croom->hx = -1;
-    current_nle_ctx->nsubroom++;
+    nsubroom++;
 }
 
 STATIC_OVL void
@@ -227,13 +227,13 @@ makerooms()
 
     /* make rooms until satisfied */
     /* rnd_rect() will returns 0 if no more rects are available... */
-    while (current_nle_ctx->nroom < MAXNROFROOMS && rnd_rect()) {
-        if (current_nle_ctx->nroom >= (MAXNROFROOMS / 6) && rn2(2) && !tried_vault) {
+    while (nroom < MAXNROFROOMS && rnd_rect()) {
+        if (nroom >= (MAXNROFROOMS / 6) && rn2(2) && !tried_vault) {
             tried_vault = TRUE;
             if (create_vault()) {
-                vault_x = rooms[current_nle_ctx->nroom].lx;
-                vault_y = rooms[current_nle_ctx->nroom].ly;
-                rooms[current_nle_ctx->nroom].hx = -1;
+                vault_x = rooms[nroom].lx;
+                vault_y = rooms[nroom].ly;
+                rooms[nroom].hx = -1;
             }
         } else if (!create_room(-1, -1, -1, -1, -1, -1, OROOM, -1))
             return;
@@ -322,26 +322,26 @@ makecorridors()
     int a, b, i;
     boolean any = TRUE;
 
-    for (a = 0; a < current_nle_ctx->nroom - 1; a++) {
+    for (a = 0; a < nroom - 1; a++) {
         join(a, a + 1, FALSE);
         if (!rn2(50))
             break; /* allow some randomness */
     }
-    for (a = 0; a < current_nle_ctx->nroom - 2; a++)
+    for (a = 0; a < nroom - 2; a++)
         if (smeq[a] != smeq[a + 2])
             join(a, a + 2, FALSE);
-    for (a = 0; any && a < current_nle_ctx->nroom; a++) {
+    for (a = 0; any && a < nroom; a++) {
         any = FALSE;
-        for (b = 0; b < current_nle_ctx->nroom; b++)
+        for (b = 0; b < nroom; b++)
             if (smeq[a] != smeq[b]) {
                 join(a, b, FALSE);
                 any = TRUE;
             }
     }
-    if (current_nle_ctx->nroom > 2)
-        for (i = rn2(current_nle_ctx->nroom) + 4; i; i--) {
-            a = rn2(current_nle_ctx->nroom);
-            b = rn2(current_nle_ctx->nroom - 2);
+    if (nroom > 2)
+        for (i = rn2(nroom) + 4; i; i--) {
+            a = rn2(nroom);
+            b = rn2(nroom - 2);
             if (b >= a)
                 b += 2;
             join(a, b, TRUE);
@@ -365,12 +365,12 @@ register struct mkroom *aroom;
     for (tmp = doorindex; tmp > aroom->fdoor; tmp--)
         doors[tmp] = doors[tmp - 1];
 
-    for (i = 0; i < current_nle_ctx->nroom; i++) {
+    for (i = 0; i < nroom; i++) {
         broom = &rooms[i];
         if (broom != aroom && broom->doorct && broom->fdoor >= aroom->fdoor)
             broom->fdoor++;
     }
-    for (i = 0; i < current_nle_ctx->nsubroom; i++) {
+    for (i = 0; i < nsubroom; i++) {
         broom = &subrooms[i];
         if (broom != aroom && broom->doorct && broom->fdoor >= aroom->fdoor)
             broom->fdoor++;
@@ -493,7 +493,7 @@ int trap_type;
 
     if (doorindex < DOORMAX) {
         while (vct--) {
-            aroom = &rooms[rn2(current_nle_ctx->nroom)];
+            aroom = &rooms[rn2(nroom)];
             if (aroom->rtype != OROOM)
                 continue; /* not an ordinary room */
             if (aroom->doorct == 1 && rn2(5))
@@ -549,7 +549,7 @@ int trap_type;
 STATIC_OVL void
 make_niches()
 {
-    int ct = rnd((current_nle_ctx->nroom >> 1) + 1), dep = depth(&u.uz);
+    int ct = rnd((nroom >> 1) + 1), dep = depth(&u.uz);
     boolean ltptr = (!level.flags.noteleport && dep > 15),
             vamp = (dep > 5 && dep < 25);
 
@@ -632,9 +632,9 @@ clear_level_structures()
     level.flags.wizard_bones = 0;
     level.flags.corrmaze = 0;
 
-    current_nle_ctx->nroom = 0;
+    nroom = 0;
     rooms[0].hx = -1;
-    current_nle_ctx->nsubroom = 0;
+    nsubroom = 0;
     subrooms[0].hx = -1;
     doorindex = 0;
     init_rect();
@@ -708,12 +708,12 @@ makelevel()
     sort_rooms();
 
     /* construct stairs (up and down in different rooms if possible) */
-    croom = &rooms[rn2(current_nle_ctx->nroom)];
+    croom = &rooms[rn2(nroom)];
     if (!Is_botlevel(&u.uz))
         mkstairs(somex(croom), somey(croom), 0, croom); /* down */
-    if (current_nle_ctx->nroom > 1) {
+    if (nroom > 1) {
         troom = croom;
-        croom = &rooms[rn2(current_nle_ctx->nroom - 1)];
+        croom = &rooms[rn2(nroom - 1)];
         if (croom == troom)
             croom++;
     }
@@ -748,17 +748,17 @@ makelevel()
                      TRUE, VAULT, FALSE);
             level.flags.has_vault = 1;
             ++room_threshold;
-            fill_room(&rooms[current_nle_ctx->nroom - 1], FALSE);
+            fill_room(&rooms[nroom - 1], FALSE);
             mk_knox_portal(vault_x + w, vault_y + h);
             if (!level.flags.noteleport && !rn2(3))
                 makevtele();
         } else if (rnd_rect() && create_vault()) {
-            vault_x = rooms[current_nle_ctx->nroom].lx;
-            vault_y = rooms[current_nle_ctx->nroom].ly;
+            vault_x = rooms[nroom].lx;
+            vault_y = rooms[nroom].ly;
             if (check_room(&vault_x, &w, &vault_y, &h, TRUE))
                 goto fill_vault;
             else
-                rooms[current_nle_ctx->nroom].hx = -1;
+                rooms[nroom].hx = -1;
         }
     }
 
@@ -768,7 +768,7 @@ makelevel()
         if (wizard && nle_getenv("SHOPTYPE"))
             mkroom(SHOPBASE);
         else if (u_depth > 1 && u_depth < depth(&medusa_level)
-                 && current_nle_ctx->nroom >= room_threshold && rn2(u_depth) < 3)
+                 && nroom >= room_threshold && rn2(u_depth) < 3)
             mkroom(SHOPBASE);
         else if (u_depth > 4 && !rn2(6))
             mkroom(COURT);
@@ -851,7 +851,7 @@ makelevel()
          *  of rooms; about 5 - 7.5% for 2 boxes, least likely
          *  when few rooms; chance for 3 or more is negligible.
          */
-        if (!rn2(current_nle_ctx->nroom * 5 / 2))
+        if (!rn2(nroom * 5 / 2))
             (void) mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, somex(croom),
                              somey(croom), TRUE, FALSE);
 
@@ -1012,7 +1012,7 @@ mklev()
     if (level.flags.has_morgue)
         level.flags.graveyard = 1;
     if (!level.flags.is_maze_lev) {
-        for (croom = &rooms[0]; croom != &rooms[current_nle_ctx->nroom]; croom++)
+        for (croom = &rooms[0]; croom != &rooms[nroom]; croom++)
 #ifdef SPECIALIZATION
             topologize(croom, FALSE);
 #else
@@ -1108,19 +1108,19 @@ coord *mp;
 {
     struct mkroom *croom = 0;
 
-    if (current_nle_ctx->nroom == 0) {
+    if (nroom == 0) {
         mazexy(mp); /* already verifies location */
     } else {
         /* not perfect - there may be only one stairway */
-        if (current_nle_ctx->nroom > 2) {
+        if (nroom > 2) {
             int tryct = 0;
 
             do
-                croom = &rooms[rn2(current_nle_ctx->nroom)];
+                croom = &rooms[rn2(nroom)];
             while ((croom == dnstairs_room || croom == upstairs_room
                     || croom->rtype != OROOM) && (++tryct < 100));
         } else
-            croom = &rooms[rn2(current_nle_ctx->nroom)];
+            croom = &rooms[rn2(nroom)];
 
         do {
             if (!somexy(croom, mp))
@@ -1140,7 +1140,7 @@ xchar x, y;
     int i;
     struct mkroom *curr;
 
-    for (curr = rooms, i = 0; i < current_nle_ctx->nroom; curr++, i++)
+    for (curr = rooms, i = 0; i < nroom; curr++, i++)
         if (inside_room(curr, x, y))
             return curr;
     ;

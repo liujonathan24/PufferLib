@@ -786,6 +786,13 @@ nle_swap_in(nle_ctx_t *nle)
         if (out->sysflags_ptr)
             memcpy(out->sysflags_ptr, &sysflags, sizeof(sysflags));
 #endif
+        /* Cluster AO: pull the plain NEARDATA __thread globals that
+         * weren't macro-redirected into the env's nle_ctx_t slot before
+         * eviction, so the next thread to step this env sees the right
+         * value. Without this, env A's nroom leaks into env B's NEARDATA
+         * when they share an OS thread. */
+        out->nroom = nroom;
+        out->nsubroom = nsubroom;
         if (!out->dungeon_save)
             out->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
         if (out->dungeon_save)
@@ -799,6 +806,9 @@ nle_swap_in(nle_ctx_t *nle)
     if (nle->sysflags_ptr)
         memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
 #endif
+    /* Cluster AO: restore nroom/nsubroom into TLS from this env's slot. */
+    nroom = nle->nroom;
+    nsubroom = nle->nsubroom;
     if (nle->dungeon_save)
         nle_dungeon_load_from((struct nle_dungeon_save *) nle->dungeon_save);
     nle_tls_loaded = nle;
