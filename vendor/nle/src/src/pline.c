@@ -267,9 +267,28 @@ VA_DECL(const char *, line)
     return;
 }
 
-/* work buffer for You(), &c and verbalize() */
-static __thread char *you_buf = 0;
-static __thread int you_buf_siz = 0;
+/* Cluster AO: per-env work buffer for You(), &c and verbalize().
+ * Was `static __thread char *you_buf` + `int you_buf_siz`. Across envs
+ * sharing a pthread, env A's heap pointer survived in TLS and env B's
+ * You_buf() could free env A's buffer. Now stored per-env. */
+struct nle_pline_state {
+    char *_you_buf;
+    int   _you_buf_siz;
+};
+static struct nle_pline_state *
+nle_pline(void)
+{
+    if (!current_nle_ctx)
+        return NULL;
+    struct nle_pline_state *s = (struct nle_pline_state *) current_nle_ctx->s_pline_state;
+    if (!s) {
+        s = (struct nle_pline_state *) calloc(1, sizeof(struct nle_pline_state));
+        current_nle_ctx->s_pline_state = s;
+    }
+    return s;
+}
+#define you_buf     (nle_pline()->_you_buf)
+#define you_buf_siz (nle_pline()->_you_buf_siz)
 
 static char *
 You_buf(siz)

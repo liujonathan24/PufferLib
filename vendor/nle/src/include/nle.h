@@ -400,6 +400,19 @@ typedef struct nle_globals {
     void                *s_wintty_state;
     void                *s_topl_state;
     void                *s_termcap_state;
+    /* Cluster AO: per-env src-file local state. Each `void*` is owned by
+     * the corresponding .c file; lazy-alloced through a file-local
+     * accessor that resolves via current_nle_ctx. Same pattern as the
+     * tty group above. Frees in nle_end. */
+    void                *s_pline_state;       /* pline.c: you_buf / you_buf_siz */
+    void                *s_save_state;        /* save.c: bw_fd / buffering */
+    void                *s_files_state;       /* files.c: nesting / lockfd / config_error_data / symset_* */
+    void                *s_objnam_state;      /* objnam.c: obufidx / distantname */
+    void                *s_uhitm_state;       /* uhitm.c: override_confirmation */
+    void                *s_shk_state;         /* shk.c: auto_credit */
+    void                *s_end_state;         /* end.c: Schroedingers_cat */
+    void                *s_sounds_state;      /* sounds.c: soundmap */
+    void                *s_fast_reset_state;  /* nle_fast_reset.c: nle_arena_base */
 } nle_ctx_t;
 
 /*
