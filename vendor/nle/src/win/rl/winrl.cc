@@ -1,6 +1,7 @@
 /* Copyright (c) Facebook, Inc. and its affiliates. */
 #include <array>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <iostream>
@@ -10,6 +11,8 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+
+#include "libc_allocator.h"
 
 extern "C" {
 #include "hack.h"
@@ -23,6 +26,14 @@ extern "C" {
 extern "C" {
 #include "nleobs.h"
 }
+
+/* Cluster AZ: include/global.h defines `#define free(p) nle_arena_free(...)`
+ * which would otherwise rewrite the std::free calls inside this file and the
+ * libc_allocator.h template instantiations into arena frees — the exact
+ * thing we are trying to avoid. Undef it here so the rest of this TU sees
+ * libc free. Libnethack C code that #include's hack.h still gets the
+ * arena-aware free. */
+#undef free
 
 #define USE_DEBUG_API 0
 
@@ -63,20 +74,56 @@ const int nul_glyph = cmap_to_glyph(S_stone);
 
 namespace nethack_rl
 {
+/* Cluster AZ: route per-env STL containers off the shared NLE bump arena
+ * and onto libc malloc / free. See libc_allocator.h for the rationale.
+ *
+ * All STL types that own heap memory and live (transitively) under
+ * nle_ctx_t->s_win_proc_calls or nle_ctx_t->s_netHackRL_instance use these
+ * libc-backed aliases. The global `new` override in nle_arena_cpp.cc would
+ * otherwise put their nodes in the arena where another env's libnethack
+ * activity can zero them out from underneath us. */
+using LibcString =
+    std::basic_string<char, std::char_traits<char>, LibcAllocator<char> >;
+
+template <class T>
+using LibcVector = std::vector<T, LibcAllocator<T> >;
+
+template <class T>
+using LibcDeque = std::deque<T, LibcAllocator<T> >;
+
+using WinProcDeque = LibcDeque<LibcString>;
+
+/* Helper: build a LibcString from a C string without relying on a converting
+ * constructor that might be ambiguous with the per-allocator overload set. */
+static inline LibcString
+make_libc_string(const char *s)
+{
+    return LibcString(s ? s : "", LibcAllocator<char>());
+}
+
 /* Cluster AM: per-env via nle_ctx_t->s_win_proc_calls. The `win_proc_calls`
  * symbol is a free function below that returns a reference to the current
  * env's deque, allocated lazily on first use. Previously this was
  * `thread_local std::deque<std::string>`, which crashed when ScopedStack
  * was pushed on the init thread and popped on the OMP step-worker thread
- * after a coroutine resume on the worker. */
-static std::deque<std::string> &
+ * after a coroutine resume on the worker.
+ *
+ * Cluster AZ: deque object and its node storage now come from libc, not
+ * the arena. We allocate a raw buffer with std::malloc and placement-new
+ * the deque into it so the deque control block ALSO lives outside the
+ * arena (default `new WinProcDeque()` would route through the arena
+ * operator-new override). The matching teardown in destroy_for_ctx /
+ * rl_exit_nhwindows runs the dtor explicitly then std::free's the buffer. */
+static WinProcDeque &
 win_proc_calls()
 {
-    static thread_local std::deque<std::string> fallback_deque;
+    static thread_local WinProcDeque fallback_deque;
     if (!current_nle_ctx) return fallback_deque;
-    auto *d = static_cast<std::deque<std::string>*>(current_nle_ctx->s_win_proc_calls);
+    auto *d = static_cast<WinProcDeque *>(current_nle_ctx->s_win_proc_calls);
     if (!d) {
-        d = new std::deque<std::string>();
+        void *mem = std::malloc(sizeof(WinProcDeque));
+        if (!mem) std::abort();
+        d = new (mem) WinProcDeque();
         current_nle_ctx->s_win_proc_calls = d;
     }
     return *d;
@@ -107,10 +154,9 @@ shuffled_glyph(int glyph)
 class ScopedStack
 {
   public:
-    ScopedStack(std::deque<std::string> &deque, std::string &&s)
-        : deque_(deque)
+    ScopedStack(WinProcDeque &deque, const char *s) : deque_(deque)
     {
-        deque_.push_back(s);
+        deque_.emplace_back(make_libc_string(s));
     }
 
     ~ScopedStack()
@@ -119,7 +165,7 @@ class ScopedStack
     }
 
   private:
-    std::deque<std::string> &deque_;
+    WinProcDeque &deque_;
 };
 
 class NetHackRL
@@ -181,19 +227,19 @@ class NetHackRL
 
   private:
     struct rl_menu_item {
-        int glyph;           /* character glyph */
-        anything identifier; /* user identifier */
-        long count;          /* user count */
-        std::string str;     /* description string */
-        int attr;            /* string attribute */
-        boolean selected;    /* TRUE if selected by user */
-        char selector;       /* keyboard accelerator */
-        char gselector;      /* group accelerator */
+        int glyph;            /* character glyph */
+        anything identifier;  /* user identifier */
+        long count;           /* user count */
+        LibcString str;       /* description string (Cluster AZ: libc-backed) */
+        int attr;             /* string attribute */
+        boolean selected;     /* TRUE if selected by user */
+        char selector;        /* keyboard accelerator */
+        char gselector;       /* group accelerator */
     };
 
     struct rl_window {
         int type;
-        std::vector<rl_menu_item> menu_items;
+        LibcVector<rl_menu_item> menu_items;
         /* Cluster AP fix: replaced std::vector<std::string> strings with a
          * single last_msg string.  The vector's _M_finish pointer lived in
          * the arena (operator new → arena alloc), so nle_fr_restore would
@@ -201,18 +247,19 @@ class NetHackRL
          * _M_finish, making strings.size() > 0 at the next clear and causing
          * glibc to detect a double-free of an already-tcache'd _M_p.
          * A single string is sufficient because fill_obs only reads the LAST
-         * pushed message (back()) for the yn_function case. */
-        std::string last_msg;
+         * pushed message (back()) for the yn_function case.
+         * Cluster AZ: also use a libc-backed string so its heap buffer is
+         * never zeroed by another env's libnethack activity. */
+        LibcString last_msg;
     };
 
     struct rl_inventory_item {
         int glyph;
-        // TODO: Don't heap allocate this stuff.
-        std::string str;
+        /* Cluster AZ: libc-backed strings instead of std::string. */
+        LibcString str;
         char letter;
         char object_class;
-        // TODO: Don't heap allocate this stuff.
-        std::string object_class_name;
+        LibcString object_class_name;
     };
 
     /* Cluster AM: per-env (not per-thread). The previous incarnation was
@@ -235,22 +282,67 @@ class NetHackRL
         if (current_nle_ctx) current_nle_ctx->s_netHackRL_instance = p;
     }
   public:
+    /* Cluster AZ: allocate the NetHackRL instance through libc malloc and
+     * placement-new so the NetHackRL object itself does NOT live in the
+     * arena. Without this, `new NetHackRL(...)` routes through the
+     * libnethack operator-new override and the instance bytes (including
+     * the heap pointers inside windows_, inventory_, status_, ...) sit in
+     * the arena and are vulnerable to another env's libnethack writes. */
+    static NetHackRL *
+    create_libc(int &argc, char **argv)
+    {
+        void *mem = std::malloc(sizeof(NetHackRL));
+        if (!mem) std::abort();
+        return new (mem) NetHackRL(argc, argv);
+    }
+
+    static void
+    destroy_libc(NetHackRL *p) noexcept
+    {
+        if (!p) return;
+        p->~NetHackRL();
+        std::free(p);
+    }
+
     /* Called from nle_end (C). */
     static void destroy_for_ctx(nle_ctx_t *nle) {
         if (!nle) return;
         if (nle->s_netHackRL_instance) {
-            delete static_cast<NetHackRL*>(nle->s_netHackRL_instance);
+            destroy_libc(static_cast<NetHackRL*>(nle->s_netHackRL_instance));
             nle->s_netHackRL_instance = nullptr;
         }
         if (nle->s_win_proc_calls) {
-            delete static_cast<std::deque<std::string>*>(nle->s_win_proc_calls);
+            auto *d = static_cast<WinProcDeque *>(nle->s_win_proc_calls);
+            d->~WinProcDeque();
+            std::free(d);
             nle->s_win_proc_calls = nullptr;
         }
     }
   private:
 
-    // TODO: Don't heap allocate this stuff.
-    std::vector<std::unique_ptr<rl_window> > windows_;
+    /* Cluster AZ: libc-backed vector of libc-allocated rl_window objects.
+     * The custom deleter runs the rl_window dtor (so inner libc strings /
+     * vectors free their nodes) then std::free's the buffer, so the
+     * rl_window itself never visits the arena either. */
+    struct LibcRlWindowDeleter {
+        void
+        operator()(rl_window *p) const noexcept
+        {
+            if (!p) return;
+            p->~rl_window();
+            std::free(p);
+        }
+    };
+    using LibcRlWindowPtr = std::unique_ptr<rl_window, LibcRlWindowDeleter>;
+    LibcVector<LibcRlWindowPtr> windows_;
+
+    static LibcRlWindowPtr
+    make_libc_rl_window(int type)
+    {
+        void *mem = std::malloc(sizeof(rl_window));
+        if (!mem) std::abort();
+        return LibcRlWindowPtr(new (mem) rl_window{ type, {}, {} });
+    }
 
     std::array<int16_t, (COLNO - 1) * ROWNO> glyphs_;
 
@@ -270,7 +362,7 @@ class NetHackRL
     void fill_obs(nle_obs *);
     int getch_method();
 
-    std::array<std::string, MAXBLSTATS> status_;
+    std::array<LibcString, MAXBLSTATS> status_;
     long condition_bits_;
 
     void update_blstats();
@@ -282,7 +374,7 @@ class NetHackRL
 
     void putstr_method(winid wid, int attr, const char *str);
 
-    std::vector<rl_inventory_item> inventory_;
+    LibcVector<rl_inventory_item> inventory_;
 
     void start_menu_method(winid wid);
     void add_menu_method(winid wid, int glyph, const anything *identifier,
@@ -301,7 +393,7 @@ NetHackRL::NetHackRL(int &argc, char **argv) : glyphs_(), blstats_{}
     // create base window
     // (done in tty_init_nhwindows before this NetHackRL object got created).
     assert(BASE_WINDOW == 0);
-    windows_.emplace_back(new rl_window({ NHW_BASE }));
+    windows_.emplace_back(make_libc_rl_window(NHW_BASE));
     glyphs_.fill(nul_glyph);
 }
 
@@ -513,8 +605,8 @@ NetHackRL::update_inventory_method()
     for (otmp = invent; otmp; otmp = otmp->nobj) {
         inventory_.emplace_back(rl_inventory_item{
             shuffled_glyph(obj_to_glyph(otmp, rn2_on_display_rng)),
-            doname(otmp), otmp->invlet, otmp->oclass,
-            let_to_name(otmp->oclass, false, false) });
+            make_libc_string(doname(otmp)), otmp->invlet, otmp->oclass,
+            make_libc_string(let_to_name(otmp->oclass, false, false)) });
     }
 }
 
@@ -639,20 +731,20 @@ NetHackRL::status_update_method(int fldidx, genericptr_t ptr, int,
     }
 
     char *text = (char *) ptr;
-    std::string status(text);
+    const char *src = text;
+    char buf[BUFSZ];
     if (fldidx == BL_GOLD) {
         // Handle gold glyph.
-        char buf[BUFSZ];
-        status = decode_mixed(buf, text);
+        src = decode_mixed(buf, text);
     }
-    status_[fldidx] = status;
+    status_[fldidx] = make_libc_string(src);
 }
 
 void
 NetHackRL::putstr_method(winid wid, int attr, const char *str)
 {
     DEBUG_API("About to set strings on " << wid << std::endl);
-    windows_[wid]->last_msg = str;
+    windows_[wid]->last_msg = make_libc_string(str);
 }
 
 winid
@@ -699,7 +791,7 @@ NetHackRL::create_nhwindow_method(int type)
 
     DEBUG_API("ABOUT TO RESET " << wid << std::endl;);
 
-    windows_[wid].reset(new rl_window{ type });
+    windows_[wid] = make_libc_rl_window(type);
     return wid;
 }
 
@@ -775,7 +867,8 @@ NetHackRL::add_menu_method(
        try to inspect tty's own menu items instead? */
 
     windows_[wid]->menu_items.emplace_back(rl_menu_item{
-        glyph, *identifier, -1L, str, attr, preselected, ch, gch });
+        glyph, *identifier, -1L, make_libc_string(str), attr, preselected, ch,
+        gch });
 }
 
 void
@@ -784,7 +877,8 @@ NetHackRL::rl_init_nhwindows(int *argc, char **argv)
     DEBUG_API("rl_init_nhwindows" << std::endl);
     ScopedStack s(win_proc_calls(), "init_nhwindows");
     tty_init_nhwindows(argc, argv);
-    instance_set(new NetHackRL(*argc, argv));
+    /* Cluster AZ: allocate via libc, not the arena. */
+    instance_set(create_libc(*argc, argv));
 }
 
 void
@@ -818,7 +912,7 @@ NetHackRL::rl_exit_nhwindows(const char *c)
     DEBUG_API("rl_exit_nhwindows" << std::endl);
     ScopedStack s(win_proc_calls(), "exit_nhwindows");
     if (current_nle_ctx && current_nle_ctx->s_netHackRL_instance) {
-        delete static_cast<NetHackRL*>(current_nle_ctx->s_netHackRL_instance);
+        destroy_libc(static_cast<NetHackRL*>(current_nle_ctx->s_netHackRL_instance));
         current_nle_ctx->s_netHackRL_instance = nullptr;
     }
     tty_exit_nhwindows(c);
@@ -1152,7 +1246,7 @@ NetHackRL::rl_end_screen()
         // Unfortunately, ZQM doesn't close properly when destructed via
         // global objects. So we do it here.
         if (current_nle_ctx) {
-            delete static_cast<NetHackRL*>(current_nle_ctx->s_netHackRL_instance);
+            destroy_libc(static_cast<NetHackRL*>(current_nle_ctx->s_netHackRL_instance));
             current_nle_ctx->s_netHackRL_instance = nullptr;
         }
     }
