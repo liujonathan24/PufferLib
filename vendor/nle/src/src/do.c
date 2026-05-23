@@ -68,7 +68,7 @@ boolean pushing;
                 levl[rx][ry].drawbridgemask &= ~DB_UNDER; /* clear lava */
                 levl[rx][ry].drawbridgemask |= DB_FLOOR;
             } else
-                levl[rx][ry].typ = ROOM, levl[rx][ry].flags = 0;
+                levl[rx][ry].typ = ROOM, levl[rx][ry].rmflags = 0;
 
             if (ttmp)
                 (void) delfloortrap(ttmp);

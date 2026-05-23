@@ -4791,7 +4791,7 @@ struct sp_coder *coder;
 
     if (!IS_DOOR(levl[x][y].typ)) {
         levl[x][y].typ = OV_i(ftyp);
-        levl[x][y].flags = 0;
+        levl[x][y].rmflags = 0;
     }
 
     /*
@@ -4807,7 +4807,7 @@ struct sp_coder *coder;
 
         /* no need for IS_DOOR check; out of map bounds */
         levl[x][y].typ = OV_i(ftyp);
-        levl[x][y].flags = 0;
+        levl[x][y].rmflags = 0;
     }
 
     if (!(y % 2)) {
@@ -5034,7 +5034,7 @@ struct sp_coder *coder;
                 levl[x][y].typ = mptyp;
                 levl[x][y].lit = FALSE;
                 /* clear out levl: load_common_data may set them */
-                levl[x][y].flags = 0;
+                levl[x][y].rmflags = 0;
                 levl[x][y].horizontal = 0;
                 levl[x][y].roomno = 0;
                 levl[x][y].edge = 0;

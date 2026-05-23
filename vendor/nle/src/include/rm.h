@@ -419,7 +419,7 @@ struct rm {
     int glyph;               /* what the hero thinks is there */
     schar typ;               /* what is really there */
     uchar seenv;             /* seen vector */
-    Bitfield(flags, 5);      /* extra information for typ */
+    Bitfield(rmflags, 5);    /* extra information for typ (XXX AW-full: was 'flags') */
     Bitfield(horizontal, 1); /* wall/door/etc is horiz. (more typ info) */
     Bitfield(lit, 1);        /* speed hack for lit rooms */
     Bitfield(waslit, 1);     /* remember if a location was lit */
@@ -524,13 +524,16 @@ struct rm {
 #define SV7   0x80
 #define SVALL 0xFF
 
-#define doormask flags
-#define altarmask flags
-#define wall_info flags
-#define ladder flags
-#define drawbridgemask flags
-#define looted flags
-#define icedpool flags
+/* XXX AW-full: these 7 aliases used to point at struct rm.flags; the field
+ * was renamed to rmflags to free the `flags` token for the per-env global
+ * `#define flags (*current_nle_ctx->s_flags_v)` macro. */
+#define doormask rmflags
+#define altarmask rmflags
+#define wall_info rmflags
+#define ladder rmflags
+#define drawbridgemask rmflags
+#define looted rmflags
+#define icedpool rmflags
 
 #define blessedftn horizontal /* a fountain that grants attribs */
 #define disturbed horizontal  /* a grave that has been disturbed */

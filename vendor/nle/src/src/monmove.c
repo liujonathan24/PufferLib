@@ -1505,7 +1505,7 @@ dissolve_bars(x, y)
 register int x, y;
 {
     levl[x][y].typ = (Is_special(&u.uz) || *in_rooms(x, y, 0)) ? ROOM : CORR;
-    levl[x][y].flags = 0;
+    levl[x][y].rmflags = 0;
     newsym(x, y);
 }
 
