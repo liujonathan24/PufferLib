@@ -734,20 +734,35 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
 
-/* Stage 5 context-switch: copy per-env flags/iflags/sysflags state in
- * from nle_ctx_t before resuming NetHack, then back out after.
+/* Stage 5 context-switch: copy per-env `flags` state in from nle_ctx_t
+ * before resuming NetHack, then back out after.
  *
- * Why memcpy and not macros: `flags` (and `iflags`) are also used as
- * STRUCT FIELD NAMES in dungeon.h/lev.h/rm.h/sp_lev.h/func_tab.h.
- * A `#define flags (*ptr)` clobbers `someobj.flags` everywhere. Keeping
- * them as process-globals and swapping the contents around each step is
- * less elegant but keeps NetHack's source unchanged. Cost: 2 memcpys of
- * sizeof(struct flag)+sizeof(struct instance_flags) per c_step ≈
- * sub-microsecond on modern CPUs.
+ * iflags / sysflags: now macro-redirected to (*current_nle_ctx->X_ptr)
+ * in include/flag.h. The macro indirection routes each access to the
+ * per-env storage, so no memcpy is needed for them. (Earlier versions
+ * of this file did `memcpy(&iflags, ...)` which, after macro expansion,
+ * was a self-copy — dead code; removed.)
  *
- * Caveat: this serializes within-process multi-env stepping — all envs
- * share one global. For parallel scaling we still need either multi-
- * process OR thread-local storage on `flags` (a future refinement). */
+ * `flags` is the lone holdout: it is also used as a STRUCT FIELD NAME
+ * in dungeon.h/lev.h/rm.h/sp_lev.h/func_tab.h/wintty.h. A bare
+ * `#define flags (*ptr)` clobbers `someobj.flags` everywhere. To retire
+ * this swap entirely the struct-field collisions must be renamed first
+ * (see XXX AW: TODO comment below). For now `flags` stays as a process
+ * global with memcpy-based context switching.
+ *
+ * Cost: 1 memcpy of sizeof(struct flag) per c_step on env-switch (the
+ * nle_tls_loaded fast-path skips the copy on same-env repeats).
+ *
+ * Caveat: this still serializes within-process multi-env stepping on
+ * the `flags` global. For full parallel scaling we need either multi-
+ * process OR per-thread/per-env storage on `flags`. */
+/* XXX AW: TODO — retire the `flags` swap by renaming the struct-field
+ * `flags` collisions across rm.h (`struct levelflags flags`,
+ * `Bitfield(flags, 5)` in struct rm), dungeon.h (d_flags flags x2,
+ * `unsigned char flags` in struct linfo, mapseen_flags), sp_lev.h
+ * (lev_init), func_tab.h (ext_func_tab), lev.h (ls_t), wintty.h
+ * (WinDesc), dgn_file.h. Then `#define flags (*flags_ptr)` becomes
+ * unambiguous and `nle_tls_loaded` + this whole swap_in/out can go. */
 /* Per-thread "what's currently loaded into my TLS globals" cache.
  * Skips the 50KB load_from memcpy when the same env is stepping on this
  * thread repeatedly. Critical for OMP scaling: bind 1 env per thread and
@@ -787,12 +802,9 @@ nle_swap_in(nle_ctx_t *nle)
         nle_ctx_t *out = nle_tls_loaded;
         if (out->flags_ptr)
             memcpy(out->flags_ptr, &flags, sizeof(flags));
-        if (out->iflags_ptr)
-            memcpy(out->iflags_ptr, &iflags, sizeof(iflags));
-#ifdef SYSFLAGS
-        if (out->sysflags_ptr)
-            memcpy(out->sysflags_ptr, &sysflags, sizeof(sysflags));
-#endif
+        /* iflags / sysflags: macro-redirected to (*current_nle_ctx->X_ptr)
+         * in include/flag.h — no memcpy needed; the macro indirection
+         * already routes each access to the per-env storage. */
         /* Cluster AO: pull the plain NEARDATA __thread globals that
          * weren't macro-redirected into the env's nle_ctx_t slot before
          * eviction, so the next thread to step this env sees the right
@@ -807,12 +819,9 @@ nle_swap_in(nle_ctx_t *nle)
     }
     if (nle->flags_ptr)
         memcpy(&flags, nle->flags_ptr, sizeof(flags));
-    if (nle->iflags_ptr)
-        memcpy(&iflags, nle->iflags_ptr, sizeof(iflags));
-#ifdef SYSFLAGS
-    if (nle->sysflags_ptr)
-        memcpy(&sysflags, nle->sysflags_ptr, sizeof(sysflags));
-#endif
+    /* iflags / sysflags: macro-redirected to (*current_nle_ctx->X_ptr)
+     * in include/flag.h — no memcpy needed. The new env's pointer is
+     * picked up automatically via the macro indirection. */
     /* Cluster AO: restore nroom/nsubroom into TLS from this env's slot. */
     nroom = nle->nroom;
     nsubroom = nle->nsubroom;
@@ -837,12 +846,7 @@ nle_swap_out(nle_ctx_t *nle)
         if (nle->dungeon_save) {
             if (nle->flags_ptr)
                 memcpy(nle->flags_ptr, &flags, sizeof(flags));
-            if (nle->iflags_ptr)
-                memcpy(nle->iflags_ptr, &iflags, sizeof(iflags));
-#ifdef SYSFLAGS
-            if (nle->sysflags_ptr)
-                memcpy(nle->sysflags_ptr, &sysflags, sizeof(sysflags));
-#endif
+            /* iflags / sysflags: macro-redirected, no copy needed. */
             nle_dungeon_save_to((struct nle_dungeon_save *) nle->dungeon_save);
         }
     }
