@@ -302,6 +302,22 @@ typedef struct Nethack {
     int episode_length;
     unsigned int rng;   // required by vecenv.h (seeded with env index)
 
+    // ----- Per-instance reward shaping coefficients -----
+    // Each reward term is independently toggleable: set its coef to 0.0 to
+    // disable. Set from kwargs in my_init (binding.c). Plumb through
+    // `[env]` in config/nethack.ini → CLI `--env.<key>` flags.
+    //
+    // reward = score_coef    * (score - prev_score)               [always >=0]
+    //        + descent_coef  * max(0, depth - prev_depth)         [descent only]
+    //        + scout_coef    * (1 if new tile this step else 0)
+    //        + illegal_pen   * (1 if action triggered sub-prompt else 0)
+    // Defaults below are also the fallbacks when the kwargs key is missing
+    // (so the build still runs if config/nethack.ini hasn't been updated).
+    float score_coef;       // default 0.01f  (R_SCORE)
+    float descent_coef;     // default 1.0f   (R_DESCENT)
+    float scout_coef;       // default NETHACK_SCOUT_BONUS (legacy)
+    float illegal_penalty;  // default NETHACK_ILLEGAL_PENALTY (legacy, negative)
+
     // Per-env explicit RNG seed for nle_start. Without this, NetHack uses
     // its own internal seeding and some seeds hit infinite loops in level
     // generation (mklev/topologize). Seed bases known to work at N=32/64/96:
@@ -514,6 +530,16 @@ void init(Nethack* env) {
     env->fn_fr_restore = NULL;
     env->fn_fr_destroy = NULL;
     env->fr_snapshot = NULL;
+
+    // Default reward shaping coefficients. Overridable from kwargs in my_init
+    // (binding.c) before any reset/step occurs. If a binding chooses not to
+    // populate these (e.g. standalone train_bench, replay_view), the defaults
+    // below preserve the legacy compile-time behavior for descent + scout +
+    // illegal, and use R_SCORE=0.01 per ocean/nethack/REWARDS.md.
+    env->score_coef      = 0.01f;
+    env->descent_coef    = NETHACK_DEPTH_BONUS;     // 1.0f
+    env->scout_coef      = NETHACK_SCOUT_BONUS;     // 0.1f
+    env->illegal_penalty = NETHACK_ILLEGAL_PENALTY; // -0.5f
 
     // Pick per-env seeds derived from env->rng (vecenv sets this to env index)
     // and a process-wide base. Same construction train_bench uses at N=64,
@@ -832,14 +858,22 @@ void c_step(Nethack* env) {
     px = env->hook_blstats[NLE_BL_X];
     py = env->hook_blstats[NLE_BL_Y];
 #endif
-    float reward = (float)(score - env->prev_score);
+    // ---- Reward shaping (each term independently toggleable) ----
+    // See ocean/nethack/REWARDS.md for the recipe to add more terms.
+    // score-delta term: positive whenever NetHack's score increases (kills,
+    // depth, gold pickup, etc.). Score is monotonic non-decreasing modulo
+    // some rare deaths/penalties; set score_coef=0 to disable entirely.
+    float reward = env->score_coef * (float)(score - env->prev_score);
 
     // Depth-changed bonus + reset exploration bitmap.
     if (depth != env->visited_level) {
         memset(env->visited, 0, sizeof(env->visited));
         env->visited_level = depth;
     }
-    if (depth > env->prev_depth) reward += NETHACK_DEPTH_BONUS;
+    // Descent term: one-shot bonus on each new max-depth step (positive only
+    // — we never charge the agent for going back up, so it cannot game the
+    // signal by yo-yo'ing between levels via score-delta on score loss).
+    if (depth > env->prev_depth) reward += env->descent_coef * (float)(depth - env->prev_depth);
 
     // Scout bonus: reward each new (row,col) entered this level.
     // px is column (0..79), py is row (0..21). Clamp defensively.
@@ -849,12 +883,12 @@ void c_step(Nethack* env) {
         unsigned char mask = (unsigned char)(1 << (bit_idx & 7));
         if (!(*b & mask)) {
             *b |= mask;
-            reward += NETHACK_SCOUT_BONUS;
+            reward += env->scout_coef;
             env->episode_new_tiles++;
         }
     }
 
-    if (illegal) reward += NETHACK_ILLEGAL_PENALTY;
+    if (illegal) reward += env->illegal_penalty;
     env->prev_score = score;
     env->prev_depth = depth;
 
