@@ -7,6 +7,10 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster BA: per-env return buffer for dowipe() (renamed from `buf` to
+ * avoid clobbering other `buf` locals in this TU). */
+#define dowipe_buf (current_nle_ctx->s_do_dowipe_buf)
 #include "lev.h"
 
 STATIC_DCL void FDECL(trycall, (struct obj *));
@@ -1956,10 +1960,10 @@ int
 dowipe()
 {
     if (u.ucreamed) {
-        static NEARDATA char buf[39];
+        /* Cluster BA: dowipe_buf (was `buf`) migrated to nle_ctx_t */
 
-        Sprintf(buf, "wiping off your %s", body_part(FACE));
-        set_occupation(wipeoff, buf, 0);
+        Sprintf(dowipe_buf, "wiping off your %s", body_part(FACE));
+        set_occupation(wipeoff, dowipe_buf, 0);
         /* Not totally correct; what if they change back after now
          * but before they're finished wiping?
          */

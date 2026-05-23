@@ -6,6 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
+/* Cluster BA: per-env return buffers for two functions that previously held
+ * function-local `static char buf[…]`. Renamed to unique tags so the
+ * file-level macros don't collide with the many other `buf` locals here. */
+#define dxdy_buf      (current_nle_ctx->s_do_name_dxdy_buf)
+#define rndmonnam_buf (current_nle_ctx->s_do_name_rndmonnam_buf)
+
 /* Cluster AU group 7 — per-env replacements for three do_name.c file-statics. */
 #define gloc_filter_map                      (current_nle_ctx->s_gloc_filter_map)
 #define gloc_filter_floodfill_match_glyph    (current_nle_ctx->s_gloc_filter_floodfill_match_glyph)
@@ -466,36 +472,36 @@ dxdy_to_dist_descr(dx, dy, fulldir)
 int dx, dy;
 boolean fulldir;
 {
-    static char buf[30];
+    /* Cluster BA: dxdy_buf (was `buf`) migrated to nle_ctx_t */
     int dst;
 
     if (!dx && !dy) {
-        Sprintf(buf, "here");
+        Sprintf(dxdy_buf, "here");
     } else if ((dst = xytod(dx, dy)) != -1) {
         /* explicit direction; 'one step' is implicit */
-        Sprintf(buf, "%s", directionname(dst));
+        Sprintf(dxdy_buf, "%s", directionname(dst));
     } else {
         static const char *dirnames[4][2] = {
             { "n", "north" },
             { "s", "south" },
             { "w", "west" },
             { "e", "east" } };
-        buf[0] = '\0';
-        /* 9999: protect buf[] against overflow caused by invalid values */
+        dxdy_buf[0] = '\0';
+        /* 9999: protect dxdy_buf[] against overflow caused by invalid values */
         if (dy) {
             if (abs(dy) > 9999)
                 dy = sgn(dy) * 9999;
-            Sprintf(eos(buf), "%d%s%s", abs(dy), dirnames[(dy > 0)][fulldir],
+            Sprintf(eos(dxdy_buf), "%d%s%s", abs(dy), dirnames[(dy > 0)][fulldir],
                     dx ? "," : "");
         }
         if (dx) {
             if (abs(dx) > 9999)
                 dx = sgn(dx) * 9999;
-            Sprintf(eos(buf), "%d%s", abs(dx),
+            Sprintf(eos(dxdy_buf), "%d%s", abs(dx),
                     dirnames[2 + (dx > 0)][fulldir]);
         }
     }
-    return buf;
+    return dxdy_buf;
 }
 
 /* coordinate formatting for 'whatis_coord' option */
@@ -2050,7 +2056,7 @@ char *
 rndmonnam(code)
 char *code;
 {
-    static char buf[BUFSZ];
+    /* Cluster BA: rndmonnam_buf (was `buf`) migrated to nle_ctx_t */
     char *mname;
     int name;
 #define BOGUSMONSIZE 100 /* arbitrary */
@@ -2064,9 +2070,9 @@ char *code;
              && (type_is_pname(&mons[name]) || (mons[name].geno & G_NOGEN)));
 
     if (name >= SPECIAL_PM) {
-        mname = bogusmon(buf, code);
+        mname = bogusmon(rndmonnam_buf, code);
     } else {
-        mname = strcpy(buf, mons[name].mname);
+        mname = strcpy(rndmonnam_buf, mons[name].mname);
     }
     return mname;
 #undef BOGUSMONSIZE

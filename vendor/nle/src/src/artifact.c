@@ -5,6 +5,9 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
+
+/* Cluster BA: per-env return buffer */
+#define resbuf (current_nle_ctx->s_artifact_resbuf)
 #include "artifact.h"
 #include "artilist.h"
 
@@ -1911,7 +1914,7 @@ glow_verb(count, ingsfx)
 int count; /* 0 means blind rather than no applicable creatures */
 boolean ingsfx;
 {
-    static char resbuf[20];
+    /* Cluster BA: resbuf migrated to nle_ctx_t */
 
     Strcpy(resbuf, glow_verbs[glow_strength(count)]);
     /* ing_suffix() will double the last consonant for all the words

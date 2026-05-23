@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster BA: per-env return buffer */
+#define tnbuf (current_nle_ctx->s_trap_tnbuf)
+
 /* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
 #define force_mintrap (current_nle_ctx->s_force_mintrap)
 /* Cluster AV-b1 — function-local static `recursive_mine` in dotrap()
@@ -1576,7 +1579,7 @@ trapnote(trap, noprefix)
 struct trap *trap;
 boolean noprefix;
 {
-    static char tnbuf[12];
+    /* Cluster BA: tnbuf migrated to nle_ctx_t */
     const char *tn,
         *tnnames[12] = { "C note",  "D flat", "D note",  "E flat",
                          "E note",  "F note", "F sharp", "G note",

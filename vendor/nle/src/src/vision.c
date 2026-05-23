@@ -4,6 +4,11 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster BA: per-env scratch array — colbump is written/read across
+ * the vision_recalc body and bracketed by zero-fills at function entry
+ * and exit, so per-env storage matches the original lifetime. */
+#define colbump (current_nle_ctx->s_vision_colbump)
 #include <stdlib.h> /* calloc */
 
 /* Cluster AU group 7 — close_dy/far_dy are arrays of pointers into the
@@ -526,7 +531,7 @@ int control;
     register struct rm *lev; /* pointer to current pos */
     struct rm *flev; /* pointer to position in "front" of current pos */
     extern unsigned char seenv_matrix[3][3]; /* from display.c */
-    static unsigned char colbump[COLNO + 1]; /* cols to bump sv */
+    /* Cluster BA: colbump migrated to nle_ctx_t */
     unsigned char *sv;                       /* ptr to seen angle bits */
     int oldseenv;                            /* previous seenv value */
 

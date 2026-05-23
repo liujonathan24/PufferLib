@@ -4,6 +4,10 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster BA: per-env return buffer for piousness() (renamed from `buf`
+ * to avoid collision with the `char buf[BUFSZ]` local elsewhere in this TU). */
+#define piousness_buf (current_nle_ctx->s_priest_piousness_buf)
 #include "mfndpos.h"
 
 /* these match the categorizations shown by enlightenment */
@@ -895,7 +899,7 @@ piousness(showneg, suffix)
 boolean showneg;
 const char *suffix;
 {
-    static char buf[32]; /* bigger than "insufficiently neutral" */
+    /* Cluster BA: piousness_buf (was `buf[32]`) migrated to nle_ctx_t */
     const char *pio;
 
     /* note: piousness 20 matches MIN_QUEST_ALIGN (quest.h) */
@@ -922,13 +926,13 @@ const char *suffix;
     else
         pio = "transgressed";
 
-    Sprintf(buf, "%s", pio);
+    Sprintf(piousness_buf, "%s", pio);
     if (suffix && (!showneg || u.ualign.record >= 0)) {
         if (u.ualign.record != 3)
-            Strcat(buf, " ");
-        Strcat(buf, suffix);
+            Strcat(piousness_buf, " ");
+        Strcat(piousness_buf, suffix);
     }
-    return buf;
+    return piousness_buf;
 }
 
 /* stethoscope or probing applied to monster -- one-line feedback */

@@ -6,6 +6,17 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h" /* for config.h+extern.h */
+#include "nle.h" /* current_nle_ctx — Cluster BA per-env return buffers */
+
+/* Cluster BA: per-env return buffers. ing_suffix_buf was named `buf` in
+ * ing_suffix(); yyyymmddhhmmss_datestr was named `datestr` in
+ * yyyymmddhhmmss(). Renamed to unique tags so the file-level macros don't
+ * collide with the other locals/statics in this TU (esp. `buf` is used in
+ * many other helpers, and `datestr` also appears inside an #if-0 block). */
+#define ing_suffix_buf         (current_nle_ctx->s_hacklib_ing_suffix_buf)
+#define yyyymmddhhmmss_datestr (current_nle_ctx->s_hacklib_datestr_yyyymmddhhmmss)
+#define visctrl_nbuf           (current_nle_ctx->s_hacklib_visctrl_nbuf)
+#define visctrl_bufs           (current_nle_ctx->s_hacklib_visctrl_bufs)
 /*=
     Assorted 'small' utility routines.  They're virtually independent of
     NetHack, except that rounddiv may call panic().  setrandom calls one
@@ -326,34 +337,34 @@ ing_suffix(s)
 const char *s;
 {
     static const char vowel[] = "aeiouwy";
-    static char buf[BUFSZ];
+    /* Cluster BA: ing_suffix_buf (was `buf`) migrated to nle_ctx_t */
     char onoff[10];
     char *p;
 
-    Strcpy(buf, s);
-    p = eos(buf);
+    Strcpy(ing_suffix_buf, s);
+    p = eos(ing_suffix_buf);
     onoff[0] = *p = *(p + 1) = '\0';
-    if ((p >= &buf[3] && !strcmpi(p - 3, " on"))
-        || (p >= &buf[4] && !strcmpi(p - 4, " off"))
-        || (p >= &buf[5] && !strcmpi(p - 5, " with"))) {
-        p = rindex(buf, ' ');
+    if ((p >= &ing_suffix_buf[3] && !strcmpi(p - 3, " on"))
+        || (p >= &ing_suffix_buf[4] && !strcmpi(p - 4, " off"))
+        || (p >= &ing_suffix_buf[5] && !strcmpi(p - 5, " with"))) {
+        p = rindex(ing_suffix_buf, ' ');
         Strcpy(onoff, p);
         *p = '\0';
     }
-    if (p >= &buf[3] && !index(vowel, *(p - 1))
+    if (p >= &ing_suffix_buf[3] && !index(vowel, *(p - 1))
         && index(vowel, *(p - 2)) && !index(vowel, *(p - 3))) {
         /* tip -> tipp + ing */
         *p = *(p - 1);
         *(p + 1) = '\0';
-    } else if (p >= &buf[2] && !strcmpi(p - 2, "ie")) { /* vie -> vy + ing */
+    } else if (p >= &ing_suffix_buf[2] && !strcmpi(p - 2, "ie")) { /* vie -> vy + ing */
         *(p - 2) = 'y';
         *(p - 1) = '\0';
-    } else if (p >= &buf[1] && *(p - 1) == 'e') /* grease -> greas + ing */
+    } else if (p >= &ing_suffix_buf[1] && *(p - 1) == 'e') /* grease -> greas + ing */
         *(p - 1) = '\0';
-    Strcat(buf, "ing");
+    Strcat(ing_suffix_buf, "ing");
     if (onoff[0])
-        Strcat(buf, onoff);
-    return buf;
+        Strcat(ing_suffix_buf, onoff);
+    return ing_suffix_buf;
 }
 
 /* trivial text encryption routine (see makedefs) */
@@ -419,11 +430,12 @@ char *
 visctrl(c)
 char c;
 {
-    Static char visctrl_bufs[VISCTRL_NBUF][5];
-    static int nbuf = 0;
+    /* Cluster BA: visctrl_bufs (pool) + visctrl_nbuf (rotating idx, was
+     * `nbuf`) migrated to nle_ctx_t. Both fields are zero-initialized in
+     * fresh ctxs, matching the original `static int nbuf = 0;` semantics. */
     register int i = 0;
-    char *ccc = visctrl_bufs[nbuf];
-    nbuf = (nbuf + 1) % VISCTRL_NBUF;
+    char *ccc = visctrl_bufs[visctrl_nbuf];
+    visctrl_nbuf = (visctrl_nbuf + 1) % VISCTRL_NBUF;
 
     if ((uchar) c & 0200) {
         ccc[i++] = 'M';
@@ -1004,7 +1016,7 @@ yyyymmddhhmmss(date)
 time_t date;
 {
     long datenum;
-    static char datestr[15];
+    /* Cluster BA: yyyymmddhhmmss_datestr (was `datestr`) migrated to nle_ctx_t */
     struct tm *lt;
 
     if (date == 0)
@@ -1022,10 +1034,10 @@ time_t date;
         datenum = (long) lt->tm_year + 2000L;
     else
         datenum = (long) lt->tm_year + 1900L;
-    Sprintf(datestr, "%04ld%02d%02d%02d%02d%02d", datenum, lt->tm_mon + 1,
-            lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
-    debugpline1("yyyymmddhhmmss() produced date string %s", datestr);
-    return datestr;
+    Sprintf(yyyymmddhhmmss_datestr, "%04ld%02d%02d%02d%02d%02d", datenum,
+            lt->tm_mon + 1, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+    debugpline1("yyyymmddhhmmss() produced date string %s", yyyymmddhhmmss_datestr);
+    return yyyymmddhhmmss_datestr;
 }
 
 time_t

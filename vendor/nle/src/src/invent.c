@@ -6,6 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
+/* Cluster BA: per-env return buffers */
+#define armcat (current_nle_ctx->s_invent_armcat)
+#define li     (current_nle_ctx->s_invent_li)
+#define altbuf (current_nle_ctx->s_invent_altbuf)
+
 /* Cluster AU group 2 — invent.c per-env state. The old `static T name;`
  * file-statics raced across N>=128 PufferLib envs sharing this library.
  * Each macro below rewrites every textual use of `name` in this TU to
@@ -83,7 +88,7 @@ struct obj *obj;
         SCROLL_CLASS, SPBOOK_CLASS, GEM_CLASS, FOOD_CLASS, TOOL_CLASS,
         WEAPON_CLASS, ARMOR_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, 0,
     };
-    static char armcat[8];
+    /* Cluster BA: armcat migrated to nle_ctx_t */
     const char *classorder;
     char *p;
     int k, otyp = obj->otyp, oclass = obj->oclass;
@@ -2473,11 +2478,9 @@ boolean dot;     /* append period; (dot && cost => Iu) */
 long cost;       /* cost (for inventory of unpaid or expended items) */
 long quan;       /* if non-0, print this quantity, not obj->quan */
 {
-#ifdef LINT /* handle static char li[BUFSZ]; */
-    char li[BUFSZ];
-#else
-    static char li[BUFSZ];
-#endif
+    /* Cluster BA: li migrated to nle_ctx_t (was `static char li[BUFSZ]`,
+     * formerly with an #ifdef LINT alias to a stack array — both branches
+     * obsolete now that storage lives in the per-env ctx). */
     boolean use_invlet = (flags.invlet_constant
                           && let != CONTAINED_SYM && let != HANDS_SYM);
     long savequan = 0;
@@ -3323,7 +3326,7 @@ char *buf;
     struct rm *lev = &levl[x][y];
     int ltyp = lev->typ, cmap = -1;
     const char *dfeature = 0;
-    static char altbuf[BUFSZ];
+    /* Cluster BA: altbuf migrated to nle_ctx_t */
 
     if (IS_DOOR(ltyp)) {
         switch (lev->doormask) {

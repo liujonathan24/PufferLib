@@ -827,6 +827,45 @@ typedef struct nle_globals {
     int                  s_vmc_count;          /* pickup.c add_valid_menu_class */
     int                  s_topl_nxtidx;        /* topl.c tty_getmsghistory cursor */
     boolean              s_topl_initd;         /* topl.c tty_putmsghistory init flag */
+
+    /* Cluster BA — per-env return buffers for ~22 "returns pointer to
+     * internal static" functions. Each was a function-local static char buf:
+     * racy under N>=2 vecenv when env A's mid-call buffer would be clobbered
+     * by env B in the time between the function returning and the caller
+     * consuming the pointer. Direct ctx fields (no swap); file-level macros
+     * in each .c rewrite bare-name references to current_nle_ctx->s_<...>.
+     * Where the original variable name collides with locals/parameters
+     * elsewhere in the same TU (e.g. `buf` in hack.c, priest.c, do_name.c),
+     * the source was renamed to a unique tag so the macro is conflict-free. */
+    char                 s_allmain_pbar[80 /* COLNO */];           /* allmain.c do_positionbar */
+    char                 s_artifact_resbuf[20];                    /* artifact.c glow_verb */
+    char                 s_attrib_from_what_buf[256 /* BUFSZ */];  /* attrib.c from_what (renamed from buf) */
+    char                 s_botl_strength_buf[32];                  /* botl.c get_strength_str (renamed from buf) */
+    char                 s_dbridge_wholebuf[80];                   /* dbridge.c E_phrase */
+    char                 s_do_dowipe_buf[39];                      /* do.c dowipe (renamed from buf) */
+    char                 s_do_name_dxdy_buf[30];                   /* do_name.c dxdy_to_dist_descr (renamed from buf) */
+    char                 s_do_name_rndmonnam_buf[256];             /* do_name.c rndmonnam (BUFSZ; renamed from buf) */
+    char                 s_do_wear_offdelaybuf[60];                /* do_wear.c armoroff */
+    char                 s_hack_in_rooms_buf[5];                   /* hack.c in_rooms (renamed from buf) */
+    char                 s_hacklib_ing_suffix_buf[256];            /* hacklib.c ing_suffix (BUFSZ; renamed from buf) */
+    int                  s_hacklib_visctrl_nbuf;                   /* hacklib.c visctrl rotating idx */
+    char                 s_hacklib_visctrl_bufs[5][5];             /* hacklib.c visctrl pool [VISCTRL_NBUF][5] */
+    char                 s_hacklib_datestr_yyyymmddhhmmss[15];     /* hacklib.c yyyymmddhhmmss (renamed from datestr) */
+    char                 s_invent_armcat[8];                       /* invent.c sortloot_cmp */
+    char                 s_invent_li[256];                         /* invent.c xprname (BUFSZ) */
+    char                 s_invent_altbuf[256];                     /* invent.c lookup_feature_name (BUFSZ) */
+    char                 s_mapglyph_encbuf[20];                    /* mapglyph.c encglyph */
+    char                 s_mkobj_unknown[32];                      /* mkobj.c where_name */
+    /* mkroom.c shrine_pos — was `static coord buf;`. nle.h forward-decls
+     * struct nhcoord but cannot include coord.h, so store as two xchar
+     * (signed char) fields instead and let the .c reconstitute a coord. */
+    signed char          s_mkroom_shrine_buf_x;
+    signed char          s_mkroom_shrine_buf_y;
+    char                 s_priest_piousness_buf[32];               /* priest.c piousness (renamed from buf) */
+    char                 s_shk_empty_shops[5];                     /* shk.c u_entered_shop */
+    char                 s_trap_tnbuf[12];                         /* trap.c trapnote */
+    char                 s_uhitm_msgbuf[256];                      /* uhitm.c gulpum (BUFSZ) */
+    unsigned char        s_vision_colbump[81 /* COLNO+1 = 80+1 */]; /* vision.c vision_recalc */
 } nle_ctx_t;
 
 /*

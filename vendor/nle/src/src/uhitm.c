@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster BA: per-env return buffer */
+#define msgbuf (current_nle_ctx->s_uhitm_msgbuf)
+
 /* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
 #define clockwise     (current_nle_ctx->s_hitum_cleave_clockwise)
 
@@ -2128,11 +2131,9 @@ gulpum(mdef, mattk)
 register struct monst *mdef;
 register struct attack *mattk;
 {
-#ifdef LINT /* static char msgbuf[BUFSZ]; */
-    char msgbuf[BUFSZ];
-#else
-    static char msgbuf[BUFSZ]; /* for nomovemsg */
-#endif
+    /* Cluster BA: msgbuf migrated to nle_ctx_t (per-env). nomovemsg stores
+     * a pointer into msgbuf; with per-env storage that pointer is stable
+     * for the env's own subsequent step (it was racy across envs before). */
     register int tmp;
     register int dam = d((int) mattk->damn, (int) mattk->damd);
     boolean fatal_gulp;

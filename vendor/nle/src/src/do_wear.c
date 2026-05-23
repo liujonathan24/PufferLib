@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster BA: per-env return buffer */
+#define offdelaybuf (current_nle_ctx->s_do_wear_offdelaybuf)
+
 static const char see_yourself[] = "see yourself";
 static const char unknown_type[] = "Unknown type of %s (%d)";
 static const char c_armor[] = "armor", c_suit[] = "suit",
@@ -1579,7 +1582,7 @@ int
 armoroff(otmp)
 struct obj *otmp;
 {
-    static char offdelaybuf[60];
+    /* Cluster BA: offdelaybuf migrated to nle_ctx_t */
     int delay = -objects[otmp->otyp].oc_delay;
     const char *what = 0;
 

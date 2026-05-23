@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
+/* Cluster BA: per-env return buffer for where_name() */
+#define unknown (current_nle_ctx->s_mkobj_unknown)
+
 STATIC_DCL void FDECL(mkbox_cnts, (struct obj *));
 STATIC_DCL unsigned FDECL(nextoid, (struct obj *, struct obj *));
 STATIC_DCL void FDECL(maybe_adjust_light, (struct obj *, int));
@@ -2431,7 +2434,7 @@ STATIC_OVL const char *
 where_name(obj)
 struct obj *obj;
 {
-    static char unknown[32]; /* big enough to handle rogue 64-bit int */
+    /* Cluster BA: unknown migrated to nle_ctx_t */
     int where;
 
     if (!obj)

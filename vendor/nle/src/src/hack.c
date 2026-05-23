@@ -6,6 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster BA: per-env return buffer for in_rooms() (renamed from `buf` so
+ * the file-level macro doesn't collide with the dozens of other `buf`
+ * locals in this TU). */
+#define in_rooms_buf (current_nle_ctx->s_hack_in_rooms_buf)
+
 /* Cluster AU group 7 — per-env replacements for two hack.c file-statics.
  * tmp_anything is heap-allocated (forward-decl'd as `union any` in nle.h);
  * the helper below allocates on first use and is idempotent per env. */
@@ -2332,8 +2337,8 @@ in_rooms(x, y, typewanted)
 register xchar x, y;
 register int typewanted;
 {
-    static char buf[5];
-    char rno, *ptr = &buf[4];
+    /* Cluster BA: in_rooms_buf (was `buf`) migrated to nle_ctx_t */
+    char rno, *ptr = &in_rooms_buf[4];
     int typefound, min_x, min_y, max_x, max_y_offset, step;
     register struct rm *lev;
 

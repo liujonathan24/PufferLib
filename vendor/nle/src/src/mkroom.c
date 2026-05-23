@@ -18,6 +18,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster BA: shrine_pos()'s `static coord buf;` migrated to two xchar
+ * fields in nle_ctx_t (coord.h can't be included by nle.h). The function
+ * reconstitutes a coord in a thread-local return slot for caller use. */
+
 STATIC_DCL boolean FDECL(isbig, (struct mkroom *));
 STATIC_DCL struct mkroom *FDECL(pick_room, (BOOLEAN_P));
 STATIC_DCL void NDECL(mkshop), FDECL(mkzoo, (int)), NDECL(mkswamp);
@@ -554,7 +558,11 @@ STATIC_OVL coord *
 shrine_pos(roomno)
 int roomno;
 {
-    static coord buf;
+    /* Cluster BA: the original `static coord buf;` is now two xchar fields
+     * in nle_ctx_t (coord.h can't be pulled into nle.h, hence the split).
+     * We expose them via a per-thread return slot — short-lived; the caller
+     * consumes the pointer in-place, never across a step boundary. */
+    static __thread coord shrine_buf_ret;
     int delta;
     struct mkroom *troom = &rooms[roomno - ROOMOFFSET];
 
@@ -562,14 +570,16 @@ int roomno;
        if either or both are even, center point is a hypothetical spot
        between map locations and placement will be adjacent to that */
     delta = troom->hx - troom->lx;
-    buf.x = troom->lx + delta / 2;
+    current_nle_ctx->s_mkroom_shrine_buf_x = troom->lx + delta / 2;
     if ((delta % 2) && rn2(2))
-        buf.x++;
+        current_nle_ctx->s_mkroom_shrine_buf_x++;
     delta = troom->hy - troom->ly;
-    buf.y = troom->ly + delta / 2;
+    current_nle_ctx->s_mkroom_shrine_buf_y = troom->ly + delta / 2;
     if ((delta % 2) && rn2(2))
-        buf.y++;
-    return &buf;
+        current_nle_ctx->s_mkroom_shrine_buf_y++;
+    shrine_buf_ret.x = current_nle_ctx->s_mkroom_shrine_buf_x;
+    shrine_buf_ret.y = current_nle_ctx->s_mkroom_shrine_buf_y;
+    return &shrine_buf_ret;
 }
 
 STATIC_OVL void

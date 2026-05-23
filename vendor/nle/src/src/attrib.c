@@ -6,6 +6,10 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster BA: per-env return buffer (renamed from `buf` to avoid collisions
+ * with the many local `buf` variables elsewhere in this TU). */
+#define from_what_buf (current_nle_ctx->s_attrib_from_what_buf)
 #include <ctype.h>
 
 /* part of the output on gain or loss of attribute */
@@ -834,9 +838,9 @@ char *
 from_what(propidx)
 int propidx; /* special cases can have negative values */
 {
-    static char buf[BUFSZ];
+    /* Cluster BA: from_what_buf (was `buf`) migrated to nle_ctx_t */
 
-    buf[0] = '\0';
+    from_what_buf[0] = '\0';
     /*
      * Restrict the source of the attributes just to debug mode for now
      */
@@ -863,19 +867,19 @@ int propidx; /* special cases can have negative values */
              * takes priority over knight's innate but limited jumping.
              */
             if (propidx == BLINDED && u.uroleplay.blind)
-                Sprintf(buf, " from birth");
+                Sprintf(from_what_buf, " from birth");
             else if (innateness == FROM_ROLE || innateness == FROM_RACE)
-                Strcpy(buf, " innately");
+                Strcpy(from_what_buf, " innately");
             else if (innateness == FROM_INTR) /* [].intrinsic & FROMOUTSIDE */
-                Strcpy(buf, " intrinsically");
+                Strcpy(from_what_buf, " intrinsically");
             else if (innateness == FROM_EXP)
-                Strcpy(buf, " because of your experience");
+                Strcpy(from_what_buf, " because of your experience");
             else if (innateness == FROM_LYCN)
-                Strcpy(buf, " due to your lycanthropy");
+                Strcpy(from_what_buf, " due to your lycanthropy");
             else if (innateness == FROM_FORM)
-                Strcpy(buf, " from current creature form");
+                Strcpy(from_what_buf, " from current creature form");
             else if (propidx == FAST && Very_fast)
-                Sprintf(buf, because_of,
+                Sprintf(from_what_buf, because_of,
                         ((HFast & TIMEOUT) != 0L) ? "a potion or spell"
                           : ((EFast & W_ARMF) != 0L && uarmf->dknown
                              && objects[uarmf->otyp].oc_name_known)
@@ -884,17 +888,17 @@ int propidx; /* special cases can have negative values */
                                   : something);
             else if (wizard
                      && (obj = what_gives(&u.uprops[propidx].extrinsic)) != 0)
-                Sprintf(buf, because_of, obj->oartifact
+                Sprintf(from_what_buf, because_of, obj->oartifact
                                              ? bare_artifactname(obj)
                                              : ysimple_name(obj));
             else if (propidx == BLINDED && Blindfolded_only)
-                Sprintf(buf, because_of, ysimple_name(ublindf));
+                Sprintf(from_what_buf, because_of, ysimple_name(ublindf));
 
             /* remove some verbosity and/or redundancy */
-            if ((p = strstri(buf, " pair of ")) != 0)
+            if ((p = strstri(from_what_buf, " pair of ")) != 0)
                 copynchars(p + 1, p + 9, BUFSZ); /* overlapping buffers ok */
             else if (propidx == STRANGLED
-                     && (p = strstri(buf, " of strangulation")) != 0)
+                     && (p = strstri(from_what_buf, " of strangulation")) != 0)
                 *p = '\0';
 
         } else { /* negative property index */
@@ -904,23 +908,23 @@ int propidx; /* special cases can have negative values */
             case BLINDED:
                 if (ublindf
                     && ublindf->oartifact == ART_EYES_OF_THE_OVERWORLD)
-                    Sprintf(buf, because_of, bare_artifactname(ublindf));
+                    Sprintf(from_what_buf, because_of, bare_artifactname(ublindf));
                 break;
             case INVIS:
                 if (u.uprops[INVIS].blocked & W_ARMC)
-                    Sprintf(buf, because_of,
+                    Sprintf(from_what_buf, because_of,
                             ysimple_name(uarmc)); /* mummy wrapping */
                 break;
             case CLAIRVOYANT:
                 if (wizard && (u.uprops[CLAIRVOYANT].blocked & W_ARMH))
-                    Sprintf(buf, because_of,
+                    Sprintf(from_what_buf, because_of,
                             ysimple_name(uarmh)); /* cornuthaum */
                 break;
             }
         }
 
     } /*wizard*/
-    return buf;
+    return from_what_buf;
 }
 
 void

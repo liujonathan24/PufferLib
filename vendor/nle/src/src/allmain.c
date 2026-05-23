@@ -7,6 +7,9 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+
+/* Cluster BA: per-env return buffer */
+#define pbar (current_nle_ctx->s_allmain_pbar)
 #include <ctype.h>
 
 #ifndef NO_SIGNAL
@@ -696,7 +699,7 @@ boolean new_game; /* false => current_nle_ctx->restoring an old game */
 STATIC_DCL void
 do_positionbar()
 {
-    static char pbar[COLNO];
+    /* Cluster BA: pbar migrated to nle_ctx_t */
     char *p;
 
     p = pbar;

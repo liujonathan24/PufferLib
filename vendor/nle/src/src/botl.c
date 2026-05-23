@@ -5,6 +5,10 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
+
+/* Cluster BA: per-env return buffer for get_strength_str() (renamed from
+ * `buf` to avoid clobbering other `buf` locals in this TU). */
+#define strength_buf (current_nle_ctx->s_botl_strength_buf)
 #ifndef LONG_MAX
 #include <limits.h>
 #endif
@@ -22,20 +26,20 @@ STATIC_DCL void NDECL(stat_update_time);
 static char *
 get_strength_str()
 {
-    static char buf[32];
+    /* Cluster BA: strength_buf (was `buf`) migrated to nle_ctx_t */
     int st = ACURR(A_STR);
 
     if (st > 18) {
         if (st > STR18(100))
-            Sprintf(buf, "%2d", st - 100);
+            Sprintf(strength_buf, "%2d", st - 100);
         else if (st < STR18(100))
-            Sprintf(buf, "18/%02d", st - 18);
+            Sprintf(strength_buf, "18/%02d", st - 18);
         else
-            Sprintf(buf, "18/**");
+            Sprintf(strength_buf, "18/**");
     } else
-        Sprintf(buf, "%-1d", st);
+        Sprintf(strength_buf, "%-1d", st);
 
-    return buf;
+    return strength_buf;
 }
 
 void

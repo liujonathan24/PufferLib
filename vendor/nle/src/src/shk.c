@@ -6,6 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster BA: per-env return buffer */
+#define empty_shops (current_nle_ctx->s_shk_empty_shops)
+
 /* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
 #define pickmovetime  (current_nle_ctx->s_pick_pick_pickmovetime)
 
@@ -578,7 +581,7 @@ char *enterstring;
     register int rt;
     register struct monst *shkp;
     register struct eshk *eshkp;
-    static char empty_shops[5];
+    /* Cluster BA: empty_shops migrated to nle_ctx_t */
 
     if (!*enterstring)
         return;
