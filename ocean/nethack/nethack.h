@@ -625,7 +625,20 @@ static void nethack_reset_bookkeeping(Nethack* env) {
 
 // Slow path: dlopen + nle_start + drain welcome. Called on first c_reset
 // (and on every reset when NETHACK_FAST_RESET is disabled).
+//
+// Cluster AX root fix: this function mutates many libnethack `.data` globals
+// (windowprocs via choose_windows, dlb_libs[] via dlb_cleanup/dlb_init,
+// nle_baseline test-and-set, etc.) — all of which OTHER pthreads can read
+// from inside their own c_step. With num_buffers >= 2 these races fire as
+// intermittent NULL-deref crashes in polymon / mineralize / libc memcpy.
+// Serialize the entire slow-reset path through a process-wide mutex. The
+// reset is rare (once per episode) and short relative to the rollout, so
+// the contention cost is minimal and the safety guarantee is total.
+#include <pthread.h>
+static pthread_mutex_t nethack_slow_reset_mu = PTHREAD_MUTEX_INITIALIZER;
+
 static void nethack_slow_reset(Nethack* env) {
+    pthread_mutex_lock(&nethack_slow_reset_mu);
     PROF_START(nle_end);
     if (env->ctx != NULL && env->fn_end) {
         env->fn_end(env->ctx);
@@ -638,6 +651,7 @@ static void nethack_slow_reset(Nethack* env) {
 
     if (nethack_load_lib(env) != 0) {
         fprintf(stderr, "nethack: failed to reload libnethack on reset\n");
+        pthread_mutex_unlock(&nethack_slow_reset_mu);
         return;
     }
     nethack_bind_obs(env);
@@ -648,6 +662,7 @@ static void nethack_slow_reset(Nethack* env) {
 
     if (env->fn_start == NULL) {
         fprintf(stderr, "nethack: fn_start is NULL — load_lib failed\n");
+        pthread_mutex_unlock(&nethack_slow_reset_mu);
         return;
     }
     PROF_START(nle_start);
@@ -668,6 +683,7 @@ static void nethack_slow_reset(Nethack* env) {
     PROF_START(reset_drain);
     nethack_drain_prompts_cat(env, PROF_FN_STEPS_RESET_DRAIN);
     PROF_END(reset_drain, PROF_RESET_DRAIN);
+    pthread_mutex_unlock(&nethack_slow_reset_mu);
 }
 
 void c_reset(Nethack* env) {
