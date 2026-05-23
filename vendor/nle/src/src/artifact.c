@@ -45,7 +45,8 @@ nle_artilist_init(struct artifact **target)
  *        the contents, just the total size.
  */
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 #define get_artifact(o) \
     (((o) && (o)->oartifact) ? &artilist[(int) (o)->oartifact] : 0)

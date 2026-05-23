@@ -15,7 +15,8 @@ static const char *gate_str;
 
 /* kickedobj (decl.c) tracks a kicked object until placed or destroyed */
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 STATIC_DCL void FDECL(kickdmg, (struct monst *, BOOLEAN_P));
 STATIC_DCL boolean FDECL(maybe_kick_monster, (struct monst *,

@@ -18,7 +18,27 @@ STATIC_DCL boolean FDECL(check_restriction, (int));
 /* Cluster AJ: per-env (was __thread). Ball/chain placement restriction. */
 #define bcrestriction (current_nle_ctx->s_bcrestriction)
 #ifdef BREADCRUMBS
-static struct breadcrumbs bcpbreadcrumbs = {0}, bcubreadcrumbs = {0};
+/* Cluster AX-fix-2: bc[pu]breadcrumbs per-env via nle_ctx_t.
+ * Stored as pointers (lazy alloc) because nle.h only forward-declares
+ * struct breadcrumbs (its full definition lives in decl.h AFTER nle.h
+ * is included, so inline embedding would not compile when nle.h is
+ * parsed via decl.h). The macros dereference the pointer so all
+ * existing `bcpbreadcrumbs.funcnm` callsites stay unchanged. */
+static struct breadcrumbs *
+nle_bc_get(struct breadcrumbs **slot)
+{
+    if (!*slot) {
+        struct breadcrumbs *bc =
+            (struct breadcrumbs *) alloc(sizeof(struct breadcrumbs));
+        bc->funcnm = (const char *) 0;
+        bc->linenum = 0;
+        bc->in_effect = FALSE;
+        *slot = bc;
+    }
+    return *slot;
+}
+#define bcpbreadcrumbs    (*nle_bc_get(&current_nle_ctx->s_bcpbreadcrumbs))
+#define bcubreadcrumbs    (*nle_bc_get(&current_nle_ctx->s_bcubreadcrumbs))
 #endif
 
 void

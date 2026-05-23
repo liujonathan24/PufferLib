@@ -6,7 +6,8 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 STATIC_DCL int FDECL(use_camera, (struct obj *));
 STATIC_DCL int FDECL(use_towel, (struct obj *));

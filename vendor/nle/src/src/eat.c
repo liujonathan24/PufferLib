@@ -10,6 +10,12 @@
 #define ate_brains    (current_nle_ctx->s_maybe_cannibal_ate_brains)
 #define save_hs       (current_nle_ctx->s_newuhs_save_hs)
 #define saved_hs      (current_nle_ctx->s_newuhs_saved_hs)
+/* Cluster AX-fix-2: file-statics msgbuf / force_save_hs per-env via nle_ctx_t.
+ * Originals (char msgbuf[BUFSZ]; STATIC_OVL boolean force_save_hs = FALSE;)
+ * removed below. The Static_assert guards the literal-256 sizing in nle.h. */
+#define msgbuf            (current_nle_ctx->s_eat_msgbuf)
+#define force_save_hs     (current_nle_ctx->s_eat_force_save_hs)
+_Static_assert(BUFSZ == 256, "eat.c: s_eat_msgbuf hard-coded to 256 in nle.h; update if BUFSZ changes");
 
 STATIC_PTR int NDECL(eatmdone);
 STATIC_PTR int NDECL(eatfood);
@@ -45,7 +51,7 @@ STATIC_DCL const char *FDECL(foodword, (struct obj *));
 STATIC_DCL int FDECL(tin_variety, (struct obj *, BOOLEAN_P));
 STATIC_DCL boolean FDECL(maybe_cannibal, (int, BOOLEAN_P));
 
-char msgbuf[BUFSZ];
+/* Cluster AX-fix-2: char msgbuf[BUFSZ] migrated to current_nle_ctx->s_eat_msgbuf via macro at top of file. */
 
 /* also used to see if you're allowed to eat cats and dogs */
 #define CANNIBAL_ALLOWED() (Role_if(PM_CAVEMAN) || Race_if(PM_ORC))
@@ -75,7 +81,8 @@ STATIC_OVL NEARDATA const char allobj[] = {
     BALL_CLASS,   CHAIN_CLASS,  SPBOOK_CLASS, 0
 };
 
-STATIC_OVL boolean force_save_hs = FALSE;
+/* Cluster AX-fix-2: STATIC_OVL boolean force_save_hs migrated to
+ * current_nle_ctx->s_eat_force_save_hs via macro at top of file. */
 
 /* see hunger states in hack.h - texts used on bottom line */
 const char *hu_stat[] = { "Satiated", "        ", "Hungry  ", "Weak    ",

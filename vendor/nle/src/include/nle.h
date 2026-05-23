@@ -69,6 +69,7 @@ struct opvar;            /* include/sp_lev.h — Cluster AU group 7 (do_name.c g
  * struct definitions remain local to their .c files (extralev.c, dbridge.c). */
 struct rogueroom;        /* src/extralev.c */
 struct entity;           /* src/dbridge.c */
+struct breadcrumbs;      /* include/decl.h — Cluster AX-fix-2 (ball.c bc[pu]breadcrumbs) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -772,6 +773,29 @@ typedef struct nle_globals {
     int                  s_flush_screen_flushing;       /* display.c flush_screen() recursion guard */
     int                  s_flush_screen_delay_flushing; /* display.c flush_screen() delay latch */
     struct toptenentry  *s_get_rnd_toptenentry_tt_buf;  /* topten.c get_rnd_toptenentry scratch (lazy-alloc) */
+
+    /* Cluster AX-fix-2 — residual race surfaces.
+     * Final 7 file-statics flagged by the AX-fix-1 diagnostic that produce
+     * incorrect gameplay (not crashes) until migrated. Direct ctx fields
+     * (no swap); macros at top of each .c file rewrite bare-name accesses
+     * to current_nle_ctx->s_<name>.
+     *
+     * Notes:
+     *  - s_eat_msgbuf is sized literally to 256 (== BUFSZ on this build)
+     *    because nle.h is included by util TUs that don't pull hack.h;
+     *    a _Static_assert in eat.c enforces BUFSZ == 256 (same precedent
+     *    as s_outbuf in save.c, Cluster AU group 1).
+     *  - s_bcpbreadcrumbs / s_bcubreadcrumbs use pointers (lazy alloc in
+     *    ball.c) because struct breadcrumbs is defined in decl.h, which
+     *    nle.h cannot include without re-defining it; forward-decl here
+     *    is sufficient for pointer-only use. */
+    boolean              s_notonhead;             /* potion.c (worm-tail target flag, cross-file extern) */
+    struct monst        *s_mthrowu_target;        /* mthrowu.c (combat target cache) */
+    struct monst        *s_mthrowu_archer;        /* mthrowu.c (combat archer cache) */
+    char                 s_eat_msgbuf[256];       /* eat.c (BUFSZ pline scratch) */
+    boolean              s_eat_force_save_hs;     /* eat.c (force-save hunger state) */
+    struct breadcrumbs  *s_bcpbreadcrumbs;        /* ball.c (ball/chain trail, lazy alloc) */
+    struct breadcrumbs  *s_bcubreadcrumbs;        /* ball.c (ball/chain trail, lazy alloc) */
 
     /* Cluster AV-b4 — function-local statics (medium): single-action caches */
     long                s_breakobj_lastmovetime;          /* dothrow.c breakobj */

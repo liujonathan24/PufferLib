@@ -6,7 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-boolean notonhead = FALSE;
+/* Cluster AX-fix-2 — notonhead migrated to nle_ctx_t->s_notonhead (per-env).
+ * Was: `boolean notonhead = FALSE;` here, with `extern boolean notonhead;`
+ * declarations in 9 other files. Macro added in every file that references
+ * notonhead so each access expands to current_nle_ctx->s_notonhead. */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 static NEARDATA int nothing, unkn;
 static const char beverages[] = { POTION_CLASS, 0 };

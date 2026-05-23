@@ -33,7 +33,8 @@ static const char bullets[] = { ALLOW_COUNT, COIN_CLASS, ALL_CLASSES,
 
 /* thrownobj (decl.c) tracks an object until it lands */
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 /* Throw the selected object, asking for direction */
 STATIC_OVL int

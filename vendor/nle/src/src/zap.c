@@ -17,7 +17,8 @@
  */
 #define MAGIC_COOKIE 1000
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 /* kludge to use mondied instead of killed */
 extern boolean m_using;

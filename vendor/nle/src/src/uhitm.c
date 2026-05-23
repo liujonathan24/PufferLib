@@ -28,7 +28,8 @@ STATIC_DCL boolean FDECL(hmonas, (struct monst *));
 STATIC_DCL void FDECL(nohandglow, (struct monst *));
 STATIC_DCL boolean FDECL(shade_aware, (struct obj *));
 
-extern boolean notonhead; /* for long worms */
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 /* Used to flag attacks caused by Stormbringer's maliciousness.
  * Cluster AO: per-env. */

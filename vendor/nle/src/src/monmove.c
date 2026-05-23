@@ -8,7 +8,8 @@
 #include "mfndpos.h"
 #include "artifact.h"
 
-extern boolean notonhead;
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 STATIC_DCL void FDECL(watch_on_duty, (struct monst *));
 STATIC_DCL int FDECL(disturb, (struct monst *));

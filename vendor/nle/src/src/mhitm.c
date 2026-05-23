@@ -12,7 +12,8 @@
 #define otmp      (current_nle_ctx->s_mhitm_otmp)
 #define dieroll   (current_nle_ctx->s_dieroll_mhitm)
 
-extern boolean notonhead;
+/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+#define notonhead         (current_nle_ctx->s_notonhead)
 
 static NEARDATA boolean vis, far_noise;
 
