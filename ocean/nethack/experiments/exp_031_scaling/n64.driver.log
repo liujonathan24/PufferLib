@@ -1,0 +1,1 @@
+ocean/nethack/experiments/exp_031_scaling/run_n.sh: line 36: 4117034 Killed                  timeout $TIMEOUT puffer train nethack --vec.total-agents $N --vec.num-buffers 1 --vec.num-threads 1 --train.gpus 1 --train.total-timesteps 1000000000 --train.minibatch-size $MB --train.horizon 64 > $LOG 2> $ERR
