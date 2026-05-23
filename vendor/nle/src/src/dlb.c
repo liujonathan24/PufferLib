@@ -496,18 +496,21 @@ dlb_init()
 void
 dlb_cleanup()
 {
-    if (dlb_initialized) {
-        do_dlb_cleanup();
-        dlb_initialized = FALSE;
-        /* Cluster AQ: reset the init-once guard so the NEXT nle_start can
-         * re-open the DLB file.  Without this, after nle_end calls dlb_cleanup
-         * (setting dlb_initialized=FALSE), the next dlb_init() hits the CAS
-         * guard state==2 (already done) branch, returns dlb_initialized=FALSE,
-         * and dlb_fopen returns NULL → init_dungeons panics.
-         * The CAS guard is still correct: only the first concurrent caller
-         * among N simultaneous threads will run do_dlb_init(). */
-        atomic_store(&dlb_init_state, 0);
-    }
+    /* Cluster AY: in a PufferLib vecenv, many envs share the process
+     * and the DLB file is open for the lifetime of the process. The
+     * previous code (Cluster AQ) called do_dlb_cleanup() on every
+     * nle_end and reset dlb_initialized=FALSE so the next nle_start
+     * could re-run lib_dlb_init — which memset()s dlb_libs[0] and
+     * re-opens the file. Another pthread mid-dlb_fopen on
+     * dlb_libs[0].fdata would see torn state and indirect-call into
+     * garbage (root cause of the N=256 B=8 "ip 0x0e error 14" crash).
+     *
+     * Per-env copies are not the right answer — the DLB file is
+     * identical across envs by design. Instead make cleanup a no-op
+     * so dlb_libs[] stays valid and dlb_initialized stays TRUE for
+     * the rest of the process lifetime. The OS reclaims the FILE* on
+     * process exit. Supersedes Cluster AQ. */
+    return;
 }
 
 dlb *

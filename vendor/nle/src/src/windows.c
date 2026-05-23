@@ -5,6 +5,17 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
+#include <stdatomic.h>
+
+/* Cluster AY: PufferLib vecenv has many pthreads, and each new env calls
+ * choose_windows() during its nle_start. The body of choose_windows()
+ * rewrites the global `windowprocs` struct. Other pthreads that are
+ * mid-c_step can read torn function pointers and indirect-call to
+ * garbage. Per-env copies aren't needed (every env uses the same window
+ * port `rl`), so we make the init idempotent with an atomic CAS:
+ * the first caller wins and performs the assignment; subsequent
+ * callers spin briefly until state==2 (ready) then return. */
+static atomic_int windowprocs_init_state = 0;  /* 0=uninit, 1=initializing, 2=ready */
 #ifdef TTY_GRAPHICS
 #include "wintty.h"
 #endif
@@ -264,6 +275,23 @@ const char *s;
     int i;
     char *tmps = 0;
 
+    /* Cluster AY: idempotent init -- only the first caller assigns
+     * windowprocs; later callers (other vecenv envs in other pthreads)
+     * spin until ready and return without touching the global. */
+    {
+        int expected = 0;
+        if (!atomic_compare_exchange_strong(&windowprocs_init_state,
+                                            &expected, 1)) {
+            /* Another env is initializing or has already finished. Spin
+             * briefly until it publishes state==2 (ready). Init is fast
+             * (just a struct copy + small ini_routine call). */
+            while (atomic_load(&windowprocs_init_state) != 2) {
+                /* busy-wait */
+            }
+            return;
+        }
+    }
+
     for (i = 0; winchoices[i].procs; i++) {
         if ('+' == winchoices[i].procs->name[0])
             continue;
@@ -277,6 +305,9 @@ const char *s;
             if (winchoices[i].ini_routine)
                 (*winchoices[i].ini_routine)(WININIT);
             set_last_winchoice(&winchoices[i]);
+            /* Cluster AY: signal other pthreads that windowprocs is now
+             * fully initialized so their spin-wait can complete. */
+            atomic_store(&windowprocs_init_state, 2);
             return;
         }
     }
@@ -331,6 +362,10 @@ const char *s;
     if (windowprocs.win_raw_print == def_raw_print
             || WINDOWPORT("safe-startup"))
         nh_terminate(EXIT_SUCCESS);
+
+    /* Cluster AY: fallback exit path -- still mark ready so other
+     * spinning pthreads can proceed. */
+    atomic_store(&windowprocs_init_state, 2);
 }
 
 #ifdef WINCHAIN
