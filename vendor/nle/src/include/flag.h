@@ -467,10 +467,20 @@ struct instance_flags {
 #endif
 #define preload_tiles wc_preload_tiles
 
-/* flags — collision-prone (struct field name in many places like
- * `lev->flags`, `efp->flags`). Stays as a TLS NEARDATA global for
- * now; the swap blob still routes it through nle_ctx_t.flags_ptr. */
+/* flags — Cluster AW-full: now per-env via macro indirection. All 12
+ * struct-field `flags` collisions were renamed (rmflags, lflags, dflags,
+ * linfo_flags, mflags, init_flags, cmd_flags, ls_flags, wflags, tflags),
+ * so the `flags` token is now unambiguous and can be redirected through
+ * current_nle_ctx like iflags/sysflags.
+ *
+ * Util binaries (makedefs, recover) don't link nle.h and need the
+ * traditional `struct flag flags` global, so we gate on
+ * NLE_PER_ENV_FLAGS (set by CMakeLists.txt for the nethack target). */
+#ifdef NLE_PER_ENV_FLAGS
+#define flags (*current_nle_ctx->flags_ptr)
+#else
 extern NEARDATA struct flag flags;
+#endif
 #ifdef SYSFLAGS
 /* sysflags — migrated to nle_ctx_t (per-env). No `.sysflags`
  * struct-field collisions. */

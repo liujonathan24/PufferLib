@@ -133,6 +133,11 @@ target_compile_definitions(nethack PRIVATE NLE_USE_ARENA_FREE=1)
 # NOT define this, so their local `char lock[N]` / `char SAVEF[N]` keep
 # working unchanged.
 target_compile_definitions(nethack PRIVATE NLE_PER_ENV_FILES=1)
+# Cluster AW-full: `flags` global (struct flag) is now per-env via macro
+# indirection through current_nle_ctx->flags_ptr (see include/flag.h). This
+# only takes effect when NLE_PER_ENV_FLAGS is defined; util binaries that
+# don't include nle.h continue to declare their own local `flags`.
+target_compile_definitions(nethack PRIVATE NLE_PER_ENV_FLAGS=1)
 # -Bsymbolic-functions: bind libnethack's intra-DSO function calls (notably
 # free) to our own definitions, so NetHack's free() calls resolve to
 # nle_arena_free instead of libc free even when the loader is also linked.

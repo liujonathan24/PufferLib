@@ -134,7 +134,11 @@ subrooms_init(void)
 }
 /* youmonst — stage 9' batch C migrated to nle_ctx_t. */
 /* context — migrated to nle_ctx_t (per-game state). */
-NEARDATA struct flag flags = DUMMY;
+/* flags — Cluster AW-full: migrated to nle_ctx_t.flags_ptr (per-env, heap).
+ * The 12 struct-field `flags` collisions were renamed first so the
+ * `#define flags (*current_nle_ctx->flags_ptr)` macro in flag.h is now
+ * unambiguous. The storage formerly here was a process-global swapped on
+ * every nle_step; that swap is retired in nle.c. */
 #ifdef SYSFLAGS
 /* sysflags — migrated to nle_ctx_t.sysflags_ptr. */
 #endif
