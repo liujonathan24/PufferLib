@@ -1,0 +1,11 @@
+=== sweep start 11:37:46 ===
+--- A: small + aggressive --- 11:37:46
+ocean/nethack/experiments/exp_032_hyperparam/run_hp.sh: line 47: 197886 Segmentation fault      timeout $TIMEOUT puffer train nethack --vec.total-agents 512 --vec.num-buffers 1 --vec.num-threads 1 --policy.hidden-size $H --policy.num-layers $L --train.clip-coef $CLIP --train.ent-coef $ENT --train.gpus 1 --train.total-timesteps 1000000000 --train.minibatch-size 32768 --train.horizon 64 > $LOG 2> $ERR
+--- A done 11:38:16, exit=EXIT=0 ---
+--- B: small + moderate --- 11:38:16
+ocean/nethack/experiments/exp_032_hyperparam/run_hp.sh: line 47: 199292 Segmentation fault      timeout $TIMEOUT puffer train nethack --vec.total-agents 512 --vec.num-buffers 1 --vec.num-threads 1 --policy.hidden-size $H --policy.num-layers $L --train.clip-coef $CLIP --train.ent-coef $ENT --train.gpus 1 --train.total-timesteps 1000000000 --train.minibatch-size 32768 --train.horizon 64 > $LOG 2> $ERR
+--- B done 11:39:46, exit=EXIT=0 ---
+--- C: large + aggressive --- 11:39:46
+ocean/nethack/experiments/exp_032_hyperparam/run_hp.sh: line 47: 205371 Segmentation fault      timeout $TIMEOUT puffer train nethack --vec.total-agents 512 --vec.num-buffers 1 --vec.num-threads 1 --policy.hidden-size $H --policy.num-layers $L --train.clip-coef $CLIP --train.ent-coef $ENT --train.gpus 1 --train.total-timesteps 1000000000 --train.minibatch-size 32768 --train.horizon 64 > $LOG 2> $ERR
+--- C done 11:40:47, exit=EXIT=0 ---
+=== sweep complete 11:40:47 ===

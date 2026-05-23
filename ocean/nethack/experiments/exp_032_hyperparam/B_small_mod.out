@@ -1,0 +1,1461 @@
+Detected discrete action space with 1 heads
+Num workers: 1
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 0%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate     0ms   0%    Losses            Value  │
+│  Env            nethack      GPU        0ms   0%    policy           -0.014  │
+│  Params          313.7K      Env        0ms   0%    value             0.000  │
+│  Steps              0.0    Train       99ms  99%    entropy           3.120  │
+│  SPS                0.0      Misc      22ms  22%    total            -0.170  │
+│  Epoch                0      Forwa…    77ms  77%    old_kl            0.000  │
+│  Uptime             0ms                             kl                0.000  │
+│  Remaini…   A hair past                             clipfrac          0.008  │
+│               a freckle                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.044  │
+│  Params          313.7K      GPU       22ms   1%    value             2.042  │
+│  Steps            32.8K      Env      0d 0h  97%    entropy           0.708  │
+│  SPS              19.5K               0m 1s         total             0.212  │
+│  Epoch                1    Train       10ms   0%    old_kl            0.140  │
+│  Uptime     0d 0h 0m 1s      Misc       2ms   0%    kl                0.135  │
+│  Remaini…    0d 14h 13m      Forwa…     8ms   0%    clipfrac          0.298  │
+│                     13s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.045  │
+│  Params          313.7K      GPU       11ms   1%    value             0.295  │
+│  Steps            65.5K      Env      999ms  97%    entropy           0.674  │
+│  SPS              31.7K    Train       10ms   1%    total             0.041  │
+│  Epoch                2      Misc       2ms   0%    old_kl            0.190  │
+│  Uptime     0d 0h 0m 2s      Forwa…     8ms   0%    kl                0.200  │
+│  Remaini…     0d 8h 46m                             clipfrac          0.363  │
+│                     24s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.300    episode_length              121.000  │
+│  depth                         0.000    valid_moves                  79.000  │
+│  illegal_actions               0.000    new_tiles                    13.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   990ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.031  │
+│  Params          313.7K      Env      976ms  97%    value             0.315  │
+│  Steps            98.3K    Train       10ms   1%    entropy           0.780  │
+│  SPS              32.3K      Misc       2ms   0%    total             0.023  │
+│  Epoch                3      Forwa…     8ms   0%    old_kl            0.070  │
+│  Uptime     0d 0h 0m 3s                             kl                0.076  │
+│  Remaini…     0d 8h 35m                             clipfrac          0.343  │
+│                     46s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.300    episode_length              121.000  │
+│  depth                         0.000    valid_moves                  79.000  │
+│  illegal_actions               0.000    new_tiles                    13.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.033  │
+│  Params          313.7K      GPU       12ms   1%    value             0.611  │
+│  Steps           131.1K      Env      0d 0h  97%    entropy           0.869  │
+│  SPS              31.3K               0m 1s         total             0.050  │
+│  Epoch                4    Train       10ms   1%    old_kl            0.123  │
+│  Uptime     0d 0h 0m 4s      Misc       2ms   0%    kl                0.120  │
+│  Remaini…     0d 8h 51m      Forwa…     8ms   0%    clipfrac          0.364  │
+│                     40s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.300    episode_length              121.000  │
+│  depth                         0.000    valid_moves                  79.000  │
+│  illegal_actions               0.000    new_tiles                    13.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   972ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.034  │
+│  Params          313.7K      Env      957ms  97%    value             0.561  │
+│  Steps           163.8K    Train       10ms   1%    entropy           0.965  │
+│  SPS              32.9K      Misc       2ms   0%    total             0.042  │
+│  Epoch                5      Forwa…     8ms   0%    old_kl            0.100  │
+│  Uptime     0d 0h 0m 5s                             kl                0.110  │
+│  Remaini…  0d 8h 26m 7s                             clipfrac          0.369  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.300    episode_length              121.000  │
+│  depth                         0.000    valid_moves                  79.000  │
+│  illegal_actions               0.000    new_tiles                    13.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   994ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.021  │
+│  Params          313.7K      Env      979ms  97%    value             0.534  │
+│  Steps           196.6K    Train       10ms   1%    entropy           0.940  │
+│  SPS              32.2K      Misc       2ms   0%    total             0.028  │
+│  Epoch                6      Forwa…     8ms   0%    old_kl            0.051  │
+│  Uptime     0d 0h 0m 6s                             kl                0.050  │
+│  Remaini…     0d 8h 36m                             clipfrac          0.310  │
+│                     59s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.800    episode_length              323.000  │
+│  depth                         0.000    valid_moves                  17.000  │
+│  illegal_actions               0.000    new_tiles                    18.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   984ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.021  │
+│  Params          313.7K      Env      969ms  97%    value             0.551  │
+│  Steps           229.4K    Train       10ms   1%    entropy           1.064  │
+│  SPS              32.5K      Misc       2ms   0%    total             0.023  │
+│  Epoch                7      Forwa…     8ms   0%    old_kl            0.048  │
+│  Uptime     0d 0h 0m 7s                             kl                0.048  │
+│  Remaini…     0d 8h 32m                             clipfrac          0.300  │
+│                     43s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.800    episode_length              323.000  │
+│  depth                         0.000    valid_moves                  17.000  │
+│  illegal_actions               0.000    new_tiles                    18.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.025  │
+│  Params          313.7K      GPU       11ms   1%    value             0.319  │
+│  Steps           262.1K      Env      999ms  97%    entropy           1.112  │
+│  SPS              31.6K    Train       10ms   1%    total             0.002  │
+│  Epoch                8      Misc       2ms   0%    old_kl            0.047  │
+│  Uptime     0d 0h 0m 8s      Forwa…     8ms   0%    kl                0.048  │
+│  Remaini…     0d 8h 46m                             clipfrac          0.352  │
+│                     30s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.000    episode_length              490.500  │
+│  depth                         0.000    valid_moves                  43.500  │
+│  illegal_actions               0.000    new_tiles                    10.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.041  │
+│  Params          313.7K      GPU       11ms   1%    value             0.252  │
+│  Steps           294.9K      Env      0d 0h  97%    entropy           1.117  │
+│  SPS              31.0K               0m 1s         total             0.010  │
+│  Epoch                9    Train       10ms   0%    old_kl            0.053  │
+│  Uptime     0d 0h 0m 9s      Misc       2ms   0%    kl                0.056  │
+│  Remaini…     0d 8h 57m      Forwa…     8ms   0%    clipfrac          0.356  │
+│                     25s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.250    episode_length              554.500  │
+│  depth                         0.000    valid_moves                  62.500  │
+│  illegal_actions               0.000    new_tiles                    22.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.028  │
+│  Params          313.7K      GPU       12ms   1%    value             0.270  │
+│  Steps           327.7K      Env      0d 0h  97%    entropy           1.188  │
+│  SPS              30.3K               0m 1s         total            -0.005  │
+│  Epoch               10    Train       10ms   0%    old_kl            0.036  │
+│  Uptime    0d 0h 0m 10s      Misc       2ms   0%    kl                0.040  │
+│  Remaini…     0d 9h 10m      Forwa…     8ms   0%    clipfrac          0.347  │
+│                     14s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.650    episode_length              605.500  │
+│  depth                         0.000    valid_moves                  74.000  │
+│  illegal_actions               0.500    new_tiles                    14.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.037  │
+│  Params          313.7K      GPU       12ms   1%    value             0.488  │
+│  Steps           360.4K      Env      0d 0h  97%    entropy           1.206  │
+│  SPS              30.0K               0m 1s         total             0.026  │
+│  Epoch               11    Train       10ms   0%    old_kl            0.071  │
+│  Uptime    0d 0h 0m 12s      Misc       2ms   0%    kl                0.072  │
+│  Remaini…     0d 9h 14m      Forwa…     8ms   0%    clipfrac          0.376  │
+│                     39s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.650    episode_length              605.500  │
+│  depth                         0.000    valid_moves                  74.000  │
+│  illegal_actions               0.500    new_tiles                    14.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.025  │
+│  Params          313.7K      GPU       12ms   1%    value             0.158  │
+│  Steps           393.2K      Env      0d 0h  97%    entropy           1.241  │
+│  SPS              29.1K               0m 1s         total            -0.021  │
+│  Epoch               12    Train       10ms   0%    old_kl            0.037  │
+│  Uptime    0d 0h 0m 13s      Misc       2ms   0%    kl                0.039  │
+│  Remaini…  0d 9h 33m 7s      Forwa…     8ms   0%    clipfrac          0.339  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.000    episode_length              732.333  │
+│  depth                         0.000    valid_moves                  38.667  │
+│  illegal_actions               0.333    new_tiles                     8.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.036  │
+│  Params          313.7K      GPU       12ms   1%    value             0.199  │
+│  Steps           426.0K      Env      0d 0h  97%    entropy           1.232  │
+│  SPS              29.3K               0m 1s         total            -0.005  │
+│  Epoch               13    Train       10ms   0%    old_kl            0.056  │
+│  Uptime    0d 0h 0m 14s      Misc       2ms   0%    kl                0.052  │
+│  Remaini…     0d 9h 29m      Forwa…     8ms   0%    clipfrac          0.351  │
+│                     29s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.900    episode_length              793.500  │
+│  depth                         0.000    valid_moves                 127.000  │
+│  illegal_actions               0.000    new_tiles                     9.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.024  │
+│  Params          313.7K      GPU       12ms   1%    value             0.231  │
+│  Steps           458.8K      Env      0d 0h  97%    entropy           1.273  │
+│  SPS              28.9K               0m 1s         total            -0.017  │
+│  Epoch               14    Train       10ms   0%    old_kl            0.032  │
+│  Uptime    0d 0h 0m 15s      Misc       2ms   0%    kl                0.033  │
+│  Remaini…     0d 9h 36m      Forwa…     8ms   0%    clipfrac          0.348  │
+│                     36s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                3.200    episode_length              855.000  │
+│  depth                         0.000    valid_moves                  88.500  │
+│  illegal_actions               0.000    new_tiles                    32.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.036  │
+│  Params          313.7K      GPU       12ms   1%    value             0.114  │
+│  Steps           491.5K      Env      0d 0h  97%    entropy           1.305  │
+│  SPS              28.5K               0m 1s         total            -0.018  │
+│  Epoch               15    Train       10ms   0%    old_kl            0.037  │
+│  Uptime    0d 0h 0m 16s      Misc       2ms   0%    kl                0.040  │
+│  Remaini…  0d 9h 45m 3s      Forwa…     8ms   0%    clipfrac          0.369  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.400    episode_length              959.000  │
+│  depth                         0.000    valid_moves                 309.000  │
+│  illegal_actions               0.000    new_tiles                    54.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.018  │
+│  Params          313.7K      GPU       11ms   0%    value             0.109  │
+│  Steps           524.3K      Env      0d 0h  97%    entropy           1.324  │
+│  SPS              28.0K               0m 1s         total            -0.037  │
+│  Epoch               16    Train       10ms   0%    old_kl            0.027  │
+│  Uptime    0d 0h 0m 17s      Misc       2ms   0%    kl                0.028  │
+│  Remaini…     0d 9h 55m      Forwa…     8ms   0%    clipfrac          0.333  │
+│                     32s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.900    episode_length              991.000  │
+│  depth                         0.000    valid_moves                  67.500  │
+│  illegal_actions               0.500    new_tiles                    11.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.019  │
+│  Params          313.7K      GPU       12ms   1%    value             0.193  │
+│  Steps           557.1K      Env      0d 0h  97%    entropy           1.358  │
+│  SPS              28.3K               0m 1s         total            -0.029  │
+│  Epoch               17    Train       10ms   0%    old_kl            0.035  │
+│  Uptime    0d 0h 0m 18s      Misc       2ms   0%    kl                0.035  │
+│  Remaini…     0d 9h 47m      Forwa…     8ms   0%    clipfrac          0.364  │
+│                     47s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.550    episode_length              599.000  │
+│  depth                         0.000    valid_moves                  58.000  │
+│  illegal_actions               0.000    new_tiles                    25.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.029  │
+│  Params          313.7K      GPU       12ms   1%    value             0.096  │
+│  Steps           589.8K      Env      0d 0h  97%    entropy           1.362  │
+│  SPS              27.7K               0m 1s         total            -0.030  │
+│  Epoch               18    Train       10ms   0%    old_kl            0.028  │
+│  Uptime    0d 0h 0m 20s      Misc       2ms   0%    kl                0.029  │
+│  Remaini…     0d 10h 0m      Forwa…     8ms   0%    clipfrac          0.351  │
+│                     57s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                3.600    episode_length             1119.500  │
+│  depth                         0.000    valid_moves                 236.000  │
+│  illegal_actions               0.000    new_tiles                    31.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.018  │
+│  Params          313.7K      GPU       12ms   1%    value             0.065  │
+│  Steps           622.6K      Env      0d 0h  97%    entropy           1.394  │
+│  SPS              28.1K               0m 1s         total            -0.046  │
+│  Epoch               19    Train       10ms   0%    old_kl            0.026  │
+│  Uptime    0d 0h 0m 21s      Misc       2ms   0%    kl                0.023  │
+│  Remaini…     0d 9h 53m      Forwa…     8ms   0%    clipfrac          0.293  │
+│                     44s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.033    episode_length             1183.667  │
+│  depth                         0.000    valid_moves                 100.667  │
+│  illegal_actions               0.000    new_tiles                    20.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.036  │
+│  Params          313.7K      GPU       12ms   1%    value             0.071  │
+│  Steps           655.4K      Env      0d 0h  97%    entropy           1.451  │
+│  SPS              28.0K               0m 1s         total            -0.029  │
+│  Epoch               20    Train       10ms   0%    old_kl            0.039  │
+│  Uptime    0d 0h 0m 22s      Misc       2ms   0%    kl                0.038  │
+│  Remaini…     0d 9h 54m      Forwa…     8ms   0%    clipfrac          0.377  │
+│                     26s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.033    episode_length             1183.667  │
+│  depth                         0.000    valid_moves                 100.667  │
+│  illegal_actions               0.000    new_tiles                    20.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.020  │
+│  Params          313.7K      GPU       12ms   0%    value             0.132  │
+│  Steps           688.1K      Env      0d 0h  97%    entropy           1.422  │
+│  SPS              27.2K               0m 1s         total            -0.038  │
+│  Epoch               21    Train       11ms   0%    old_kl            0.023  │
+│  Uptime    0d 0h 0m 23s      Misc       2ms   0%    kl                0.025  │
+│  Remaini…    0d 10h 13m      Forwa…     8ms   0%    clipfrac          0.350  │
+│                      5s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.033    episode_length             1183.667  │
+│  depth                         0.000    valid_moves                 100.667  │
+│  illegal_actions               0.000    new_tiles                    20.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.018  │
+│  Params          313.7K      GPU       12ms   1%    value             0.066  │
+│  Steps           720.9K      Env      0d 0h  97%    entropy           1.487  │
+│  SPS              27.3K               0m 1s         total            -0.050  │
+│  Epoch               22    Train       10ms   0%    old_kl            0.025  │
+│  Uptime    0d 0h 0m 24s      Misc       2ms   0%    kl                0.026  │
+│  Remaini…     0d 10h 9m      Forwa…     8ms   0%    clipfrac          0.361  │
+│                     15s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.233    episode_length             1382.333  │
+│  depth                         0.000    valid_moves                  76.333  │
+│  illegal_actions               0.000    new_tiles                    12.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.027  │
+│  Params          313.7K      GPU       12ms   1%    value             0.053  │
+│  Steps           753.7K      Env      0d 0h  97%    entropy           1.481  │
+│  SPS              27.2K               0m 1s         total            -0.042  │
+│  Epoch               23    Train       10ms   0%    old_kl            0.032  │
+│  Uptime    0d 0h 0m 26s      Misc       2ms   0%    kl                0.033  │
+│  Remaini…    0d 10h 12m      Forwa…     8ms   0%    clipfrac          0.346  │
+│                     11s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.233    episode_length             1382.333  │
+│  depth                         0.000    valid_moves                  76.333  │
+│  illegal_actions               0.000    new_tiles                    12.333  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.027  │
+│  Params          313.7K      GPU       12ms   0%    value             0.070  │
+│  Steps           786.4K      Env      0d 0h  97%    entropy           1.500  │
+│  SPS              27.3K               0m 1s         total            -0.041  │
+│  Epoch               24    Train       10ms   0%    old_kl            0.035  │
+│  Uptime    0d 0h 0m 27s      Misc       2ms   0%    kl                0.037  │
+│  Remaini…     0d 10h 9m      Forwa…     8ms   0%    clipfrac          0.357  │
+│                     10s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.400    episode_length             1493.000  │
+│  depth                         0.000    valid_moves                  12.000  │
+│  illegal_actions               0.000    new_tiles                     4.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.019  │
+│  Params          313.7K      GPU       12ms   0%    value             0.060  │
+│  Steps           819.2K      Env      0d 0h  97%    entropy           1.522  │
+│  SPS              27.3K               0m 1s         total            -0.051  │
+│  Epoch               25    Train       10ms   0%    old_kl            0.028  │
+│  Uptime    0d 0h 0m 28s      Misc       2ms   0%    kl                0.028  │
+│  Remaini…     0d 10h 9m      Forwa…     8ms   0%    clipfrac          0.348  │
+│                     31s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.400    episode_length             1493.000  │
+│  depth                         0.000    valid_moves                  12.000  │
+│  illegal_actions               0.000    new_tiles                     4.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.020  │
+│  Params          313.7K      GPU       12ms   1%    value             0.049  │
+│  Steps           852.0K      Env      0d 0h  97%    entropy           1.535  │
+│  SPS              27.5K               0m 1s         total            -0.052  │
+│  Epoch               26    Train       10ms   0%    old_kl            0.020  │
+│  Uptime    0d 0h 0m 29s      Misc       2ms   0%    kl                0.022  │
+│  Remaini…     0d 10h 6m      Forwa…     8ms   0%    clipfrac          0.351  │
+│                     18s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.300    episode_length             1635.000  │
+│  depth                         0.000    valid_moves                  82.000  │
+│  illegal_actions               2.000    new_tiles                     3.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.023  │
+│  Params          313.7K      GPU       13ms   1%    value             0.064  │
+│  Steps           884.7K      Env      0d 0h  97%    entropy           1.550  │
+│  SPS              27.6K               0m 1s         total            -0.048  │
+│  Epoch               27    Train       10ms   0%    old_kl            0.035  │
+│  Uptime    0d 0h 0m 30s      Misc       2ms   0%    kl                0.035  │
+│  Remaini…     0d 10h 4m      Forwa…     8ms   0%    clipfrac          0.380  │
+│                     18s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.300    episode_length             1635.000  │
+│  depth                         0.000    valid_moves                  82.000  │
+│  illegal_actions               2.000    new_tiles                     3.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.024  │
+│  Params          313.7K      GPU       12ms   1%    value             0.045  │
+│  Steps           917.5K      Env      0d 0h  97%    entropy           1.529  │
+│  SPS              27.9K               0m 1s         total            -0.047  │
+│  Epoch               28    Train       10ms   0%    old_kl            0.032  │
+│  Uptime    0d 0h 0m 32s      Misc       2ms   0%    kl                0.032  │
+│  Remaini…     0d 9h 56m      Forwa…     8ms   0%    clipfrac          0.369  │
+│                     54s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.300    episode_length             1635.000  │
+│  depth                         0.000    valid_moves                  82.000  │
+│  illegal_actions               2.000    new_tiles                     3.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.017  │
+│  Params          313.7K      GPU       11ms   0%    value             0.036  │
+│  Steps           950.3K      Env      0d 0h  97%    entropy           1.500  │
+│  SPS              28.3K               0m 1s         total            -0.054  │
+│  Epoch               29    Train       10ms   0%    old_kl            0.028  │
+│  Uptime    0d 0h 0m 33s      Misc       2ms   0%    kl                0.030  │
+│  Remaini…     0d 9h 47m      Forwa…     8ms   0%    clipfrac          0.373  │
+│                     45s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.300    episode_length             1635.000  │
+│  depth                         0.000    valid_moves                  82.000  │
+│  illegal_actions               2.000    new_tiles                     3.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.033  │
+│  Params          313.7K      GPU       12ms   1%    value             0.043  │
+│  Steps           983.0K      Env      0d 0h  97%    entropy           1.443  │
+│  SPS              29.1K               0m 1s         total            -0.034  │
+│  Epoch               30    Train       10ms   0%    old_kl            0.024  │
+│  Uptime    0d 0h 0m 34s      Misc       2ms   0%    kl                0.028  │
+│  Remaini…     0d 9h 31m      Forwa…     8ms   0%    clipfrac          0.369  │
+│                     25s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.100    episode_length             1880.500  │
+│  depth                         0.000    valid_moves                 312.000  │
+│  illegal_actions               0.000    new_tiles                    41.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.027  │
+│  Params          313.7K      GPU       12ms   1%    value             0.050  │
+│  Steps             1.0M      Env      0d 0h  97%    entropy           1.412  │
+│  SPS              29.3K               0m 1s         total            -0.039  │
+│  Epoch               31    Train       10ms   0%    old_kl            0.025  │
+│  Uptime    0d 0h 0m 35s      Misc       2ms   0%    kl                0.026  │
+│  Remaini…     0d 9h 27m      Forwa…     8ms   0%    clipfrac          0.387  │
+│                     37s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.100    episode_length             1880.500  │
+│  depth                         0.000    valid_moves                 312.000  │
+│  illegal_actions               0.000    new_tiles                    41.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.033  │
+│  Params          313.7K      GPU       12ms   1%    value             0.034  │
+│  Steps             1.0M      Env      0d 0h  97%    entropy           1.349  │
+│  SPS              29.5K               0m 1s         total            -0.031  │
+│  Epoch               32    Train       10ms   0%    old_kl            0.031  │
+│  Uptime    0d 0h 0m 36s      Misc       2ms   0%    kl                0.032  │
+│  Remaini…     0d 9h 23m      Forwa…     8ms   0%    clipfrac          0.393  │
+│                     32s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.100    episode_length             1880.500  │
+│  depth                         0.000    valid_moves                 312.000  │
+│  illegal_actions               0.000    new_tiles                    41.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.040  │
+│  Params          313.7K      GPU       12ms   1%    value             0.041  │
+│  Steps             1.1M      Env      0d 0h  97%    entropy           1.269  │
+│  SPS              29.5K               0m 1s         total            -0.019  │
+│  Epoch               33    Train       10ms   0%    old_kl            0.037  │
+│  Uptime    0d 0h 0m 37s      Misc       2ms   0%    kl                0.041  │
+│  Remaini…     0d 9h 24m      Forwa…     8ms   0%    clipfrac          0.401  │
+│                     43s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.100    episode_length             1880.500  │
+│  depth                         0.000    valid_moves                 312.000  │
+│  illegal_actions               0.000    new_tiles                    41.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  99%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.035  │
+│  Params          313.7K      GPU       12ms   1%    value             0.038  │
+│  Steps             1.1M      Env      0d 0h  97%    entropy           1.195  │
+│  SPS              29.1K               0m 1s         total            -0.021  │
+│  Epoch               34    Train       10ms   0%    old_kl            0.030  │
+│  Uptime    0d 0h 0m 38s      Misc       2ms   0%    kl                0.032  │
+│  Remaini…     0d 9h 32m      Forwa…     8ms   0%    clipfrac          0.385  │
+│                     11s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.250    episode_length             2165.000  │
+│  depth                         0.000    valid_moves                 734.500  │
+│  illegal_actions               0.000    new_tiles                    22.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.036  │
+│  Params          313.7K      GPU       12ms   1%    value             0.025  │
+│  Steps             1.1M      Env      0d 0h  97%    entropy           1.128  │
+│  SPS              31.3K               0m 1s         total            -0.018  │
+│  Epoch               35    Train       10ms   1%    old_kl            0.034  │
+│  Uptime    0d 0h 0m 39s      Misc       2ms   0%    kl                0.037  │
+│  Remaini…     0d 8h 51m      Forwa…     8ms   0%    clipfrac          0.370  │
+│                     37s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                0.300    episode_length             2177.000  │
+│  depth                         0.000    valid_moves                1032.000  │
+│  illegal_actions               0.000    new_tiles                     3.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.040  │
+│  Params          313.7K      GPU       11ms   1%    value             0.062  │
+│  Steps             1.2M      Env      0d 0h  97%    entropy           1.091  │
+│  SPS              31.5K               0m 1s         total            -0.008  │
+│  Epoch               36    Train       11ms   1%    old_kl            0.034  │
+│  Uptime    0d 0h 0m 40s      Misc       2ms   0%    kl                0.035  │
+│  Remaini…     0d 8h 47m      Forwa…     8ms   0%    clipfrac          0.379  │
+│                     47s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                3.200    episode_length             2253.000  │
+│  depth                         0.000    valid_moves                 119.000  │
+│  illegal_actions               0.000    new_tiles                    32.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.038  │
+│  Params          313.7K      GPU       12ms   1%    value             0.025  │
+│  Steps             1.2M      Env      0d 0h  97%    entropy           1.016  │
+│  SPS              31.6K               0m 1s         total            -0.010  │
+│  Epoch               37    Train       10ms   1%    old_kl            0.023  │
+│  Uptime    0d 0h 0m 41s      Misc       2ms   0%    kl                0.025  │
+│  Remaini…     0d 8h 47m      Forwa…     8ms   0%    clipfrac          0.338  │
+│                     27s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                3.200    episode_length             2253.000  │
+│  depth                         0.000    valid_moves                 119.000  │
+│  illegal_actions               0.000    new_tiles                    32.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   985ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.043  │
+│  Params          313.7K      Env      970ms  97%    value             0.030  │
+│  Steps             1.2M    Train       10ms   1%    entropy           0.939  │
+│  SPS              32.5K      Misc       2ms   0%    total            -0.001  │
+│  Epoch               38      Forwa…     8ms   0%    old_kl            0.032  │
+│  Uptime    0d 0h 0m 42s                             kl                0.032  │
+│  Remaini…     0d 8h 31m                             clipfrac          0.338  │
+│                     59s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             2369.000  │
+│  depth                         0.000    valid_moves                 213.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   988ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.031  │
+│  Params          313.7K      Env      973ms  97%    value             0.055  │
+│  Steps             1.3M    Train       10ms   1%    entropy           0.856  │
+│  SPS              32.4K      Misc       2ms   0%    total            -0.006  │
+│  Epoch               39      Forwa…     8ms   0%    old_kl            0.018  │
+│  Uptime    0d 0h 0m 43s                             kl                0.018  │
+│  Remaini…  0d 8h 33m 9s                             clipfrac          0.247  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.500    episode_length             2469.500  │
+│  depth                         0.000    valid_moves                 332.000  │
+│  illegal_actions               0.000    new_tiles                    40.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   991ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.047  │
+│  Params          313.7K      Env      976ms  97%    value             0.029  │
+│  Steps             1.3M    Train       10ms   1%    entropy           0.861  │
+│  SPS              32.3K      Misc       2ms   0%    total             0.007  │
+│  Epoch               40      Forwa…     8ms   0%    old_kl            0.039  │
+│  Uptime    0d 0h 0m 44s                             kl                0.042  │
+│  Remaini…     0d 8h 35m                             clipfrac          0.341  │
+│                     13s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   989ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.043  │
+│  Params          313.7K      Env      974ms  97%    value             0.037  │
+│  Steps             1.3M    Train       10ms   1%    entropy           0.841  │
+│  SPS              32.4K      Misc       2ms   0%    total             0.005  │
+│  Epoch               41      Forwa…     8ms   0%    old_kl            0.033  │
+│  Uptime    0d 0h 0m 45s                             kl                0.035  │
+│  Remaini…     0d 8h 33m                             clipfrac          0.320  │
+│                     44s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   970ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.055  │
+│  Params          313.7K      Env      955ms  97%    value             0.024  │
+│  Steps             1.4M    Train       10ms   1%    entropy           0.822  │
+│  SPS              33.0K      Misc       2ms   0%    total             0.016  │
+│  Epoch               42      Forwa…     8ms   0%    old_kl            0.044  │
+│  Uptime    0d 0h 0m 46s                             kl                0.045  │
+│  Remaini…  0d 8h 24m 6s                             clipfrac          0.313  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   965ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.050  │
+│  Params          313.7K      Env      951ms  97%    value             0.035  │
+│  Steps             1.4M    Train       10ms   1%    entropy           0.772  │
+│  SPS              33.2K      Misc       2ms   0%    total             0.015  │
+│  Epoch               43      Forwa…     8ms   0%    old_kl            0.033  │
+│  Uptime    0d 0h 0m 47s                             kl                0.032  │
+│  Remaini…     0d 8h 21m                             clipfrac          0.299  │
+│                     37s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   950ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.046  │
+│  Params          313.7K      Env      936ms  97%    value             0.036  │
+│  Steps             1.4M    Train       10ms   1%    entropy           0.740  │
+│  SPS              33.7K      Misc       2ms   0%    total             0.013  │
+│  Epoch               44      Forwa…     8ms   0%    old_kl            0.028  │
+│  Uptime    0d 0h 0m 48s                             kl                0.026  │
+│  Remaini…  0d 8h 14m 8s                             clipfrac          0.280  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   929ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.035  │
+│  Params          313.7K      Env      915ms  97%    value             0.063  │
+│  Steps             1.5M    Train       10ms   1%    entropy           0.586  │
+│  SPS              34.4K      Misc       2ms   0%    total             0.012  │
+│  Epoch               45      Forwa…     8ms   0%    old_kl            0.011  │
+│  Uptime    0d 0h 0m 49s                             kl                0.012  │
+│  Remaini…   0d 8h 3m 7s                             clipfrac          0.137  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   941ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.046  │
+│  Params          313.7K      Env      927ms  97%    value             0.046  │
+│  Steps             1.5M    Train       10ms   1%    entropy           0.689  │
+│  SPS              34.0K      Misc       2ms   0%    total             0.016  │
+│  Epoch               46      Forwa…     8ms   0%    old_kl            0.037  │
+│  Uptime    0d 0h 0m 50s                             kl                0.039  │
+│  Remaini…   0d 8h 9m 7s                             clipfrac          0.308  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                8.500    episode_length             2559.000  │
+│  depth                         0.000    valid_moves                 701.000  │
+│  illegal_actions               0.000    new_tiles                    85.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   940ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.034  │
+│  Params          313.7K      Env      925ms  97%    value             0.070  │
+│  Steps             1.5M    Train       10ms   1%    entropy           0.744  │
+│  SPS              34.0K      Misc       2ms   0%    total             0.004  │
+│  Epoch               47      Forwa…     8ms   0%    old_kl            0.028  │
+│  Uptime    0d 0h 0m 51s                             kl                0.026  │
+│  Remaini…  0d 8h 8m 43s                             clipfrac          0.287  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return               11.900    episode_length             2983.000  │
+│  depth                         0.000    valid_moves                 552.000  │
+│  illegal_actions               0.000    new_tiles                   109.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   966ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.031  │
+│  Params          313.7K      Env      951ms  97%    value             0.023  │
+│  Steps             1.6M    Train       10ms   1%    entropy           0.899  │
+│  SPS              33.1K      Misc       2ms   0%    total            -0.012  │
+│  Epoch               48      Forwa…     8ms   0%    old_kl            0.040  │
+│  Uptime    0d 0h 0m 52s                             kl                0.039  │
+│  Remaini…     0d 8h 22m                             clipfrac          0.334  │
+│                     10s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return               11.900    episode_length             2983.000  │
+│  depth                         0.000    valid_moves                 552.000  │
+│  illegal_actions               0.000    new_tiles                   109.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   973ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.037  │
+│  Params          313.7K      Env      959ms  97%    value             0.041  │
+│  Steps             1.6M    Train       10ms   1%    entropy           0.923  │
+│  SPS              32.9K      Misc       2ms   0%    total            -0.005  │
+│  Epoch               49      Forwa…     8ms   0%    old_kl            0.026  │
+│  Uptime    0d 0h 0m 53s                             kl                0.032  │
+│  Remaini…     0d 8h 25m                             clipfrac          0.315  │
+│                     38s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return               11.900    episode_length             2983.000  │
+│  depth                         0.000    valid_moves                 552.000  │
+│  illegal_actions               0.000    new_tiles                   109.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   995ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.046  │
+│  Params          313.7K      Env      980ms  97%    value             0.027  │
+│  Steps             1.6M    Train       10ms   1%    entropy           0.946  │
+│  SPS              32.2K      Misc       2ms   0%    total             0.001  │
+│  Epoch               50      Forwa…     8ms   0%    old_kl            0.034  │
+│  Uptime    0d 0h 0m 54s                             kl                0.034  │
+│  Remaini…     0d 8h 37m                             clipfrac          0.351  │
+│                     13s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                6.400    episode_length             3155.000  │
+│  depth                         0.000    valid_moves                 381.000  │
+│  illegal_actions               0.000    new_tiles                    64.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   996ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.046  │
+│  Params          313.7K      Env      981ms  97%    value             0.016  │
+│  Steps             1.7M    Train       10ms   1%    entropy           0.959  │
+│  SPS              32.2K      Misc       2ms   0%    total            -0.000  │
+│  Epoch               51      Forwa…     8ms   0%    old_kl            0.036  │
+│  Uptime    0d 0h 0m 55s                             kl                0.041  │
+│  Remaini…     0d 8h 37m                             clipfrac          0.348  │
+│                     15s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                6.400    episode_length             3155.000  │
+│  depth                         0.000    valid_moves                 381.000  │
+│  illegal_actions               0.000    new_tiles                    64.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   996ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.040  │
+│  Params          313.7K      Env      981ms  97%    value             0.048  │
+│  Steps             1.7M    Train       10ms   1%    entropy           0.948  │
+│  SPS              32.2K      Misc       2ms   0%    total            -0.002  │
+│  Epoch               52      Forwa…     8ms   0%    old_kl            0.024  │
+│  Uptime    0d 0h 0m 56s                             kl                0.025  │
+│  Remaini…     0d 8h 37m                             clipfrac          0.314  │
+│                     10s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.300    episode_length             3289.000  │
+│  depth                         0.000    valid_moves                 753.000  │
+│  illegal_actions               0.000    new_tiles                    43.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.044  │
+│  Params          313.7K      GPU       12ms   1%    value             0.023  │
+│  Steps             1.7M      Env      986ms  97%    entropy           1.022  │
+│  SPS              32.0K    Train       10ms   1%    total            -0.005  │
+│  Epoch               53      Misc       2ms   0%    old_kl            0.035  │
+│  Uptime    0d 0h 0m 57s      Forwa…     8ms   0%    kl                0.036  │
+│  Remaini…     0d 8h 39m                             clipfrac          0.355  │
+│                     51s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.300    episode_length             3289.000  │
+│  depth                         0.000    valid_moves                 753.000  │
+│  illegal_actions               0.000    new_tiles                    43.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   990ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.044  │
+│  Params          313.7K      Env      976ms  97%    value             0.021  │
+│  Steps             1.8M    Train       10ms   1%    entropy           1.061  │
+│  SPS              32.4K      Misc       2ms   0%    total            -0.007  │
+│  Epoch               54      Forwa…     8ms   0%    old_kl            0.029  │
+│  Uptime    0d 0h 0m 58s                             kl                0.028  │
+│  Remaini…     0d 8h 34m                             clipfrac          0.335  │
+│                     17s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.300    episode_length             3289.000  │
+│  depth                         0.000    valid_moves                 753.000  │
+│  illegal_actions               0.000    new_tiles                    43.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   989ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.038  │
+│  Params          313.7K      Env      974ms  97%    value             0.021  │
+│  Steps             1.8M    Train       10ms   1%    entropy           1.083  │
+│  SPS              32.4K      Misc       2ms   0%    total            -0.014  │
+│  Epoch               55      Forwa…     8ms   0%    old_kl            0.036  │
+│  Uptime    0d 0h 0m 59s                             kl                0.035  │
+│  Remaini…     0d 8h 33m                             clipfrac          0.351  │
+│                     49s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.700    episode_length             3516.000  │
+│  depth                         0.000    valid_moves                 278.000  │
+│  illegal_actions               1.000    new_tiles                    52.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   995ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.031  │
+│  Params          313.7K      Env      980ms  97%    value             0.030  │
+│  Steps             1.8M    Train       10ms   1%    entropy           1.069  │
+│  SPS              32.2K      Misc       2ms   0%    total            -0.019  │
+│  Epoch               56      Forwa…     8ms   0%    old_kl            0.028  │
+│  Uptime     0d 0h 1m 0s                             kl                0.027  │
+│  Remaini…     0d 8h 36m                             clipfrac          0.336  │
+│                     20s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.700    episode_length             3516.000  │
+│  depth                         0.000    valid_moves                 278.000  │
+│  illegal_actions               1.000    new_tiles                    52.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.038  │
+│  Params          313.7K      GPU       12ms   1%    value             0.020  │
+│  Steps             1.9M      Env      997ms  97%    entropy           1.068  │
+│  SPS              31.7K    Train       10ms   1%    total            -0.014  │
+│  Epoch               57      Misc       2ms   0%    old_kl            0.024  │
+│  Uptime     0d 0h 1m 1s      Forwa…     8ms   0%    kl                0.024  │
+│  Remaini…     0d 8h 44m                             clipfrac          0.337  │
+│                     41s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.700    episode_length             3516.000  │
+│  depth                         0.000    valid_moves                 278.000  │
+│  illegal_actions               1.000    new_tiles                    52.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   0d 0h  98%    Losses            Value  │
+│  Env            nethack               0m 1s         policy            0.039  │
+│  Params          313.7K      GPU       12ms   1%    value             0.026  │
+│  Steps             1.9M      Env      993ms  97%    entropy           1.010  │
+│  SPS              31.8K    Train       10ms   1%    total            -0.009  │
+│  Epoch               58      Misc       2ms   0%    old_kl            0.022  │
+│  Uptime     0d 0h 1m 2s      Forwa…     8ms   0%    kl                0.022  │
+│  Remaini…     0d 8h 43m                             clipfrac          0.317  │
+│                     10s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                4.700    episode_length             3516.000  │
+│  depth                         0.000    valid_moves                 278.000  │
+│  illegal_actions               1.000    new_tiles                    52.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   994ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.042  │
+│  Params          313.7K      Env      980ms  97%    value             0.018  │
+│  Steps             1.9M    Train       10ms   1%    entropy           0.974  │
+│  SPS              32.2K      Misc       2ms   0%    total            -0.005  │
+│  Epoch               59      Forwa…     8ms   0%    old_kl            0.020  │
+│  Uptime     0d 0h 1m 3s                             kl                0.019  │
+│  Remaini…     0d 8h 36m                             clipfrac          0.291  │
+│                     24s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.800    episode_length             3760.000  │
+│  depth                         0.000    valid_moves                1006.000  │
+│  illegal_actions               0.000    new_tiles                    18.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   971ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.037  │
+│  Params          313.7K      Env      956ms  97%    value             0.027  │
+│  Steps             2.0M    Train       10ms   1%    entropy           0.954  │
+│  SPS              33.0K      Misc       2ms   0%    total            -0.008  │
+│  Epoch               60      Forwa…     8ms   0%    old_kl            0.017  │
+│  Uptime     0d 0h 1m 4s                             kl                0.020  │
+│  Remaini…     0d 8h 24m                             clipfrac          0.310  │
+│                     21s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.800    episode_length             3760.000  │
+│  depth                         0.000    valid_moves                1006.000  │
+│  illegal_actions               0.000    new_tiles                    18.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   976ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.037  │
+│  Params          313.7K      Env      961ms  97%    value             0.015  │
+│  Steps             2.0M    Train       10ms   1%    entropy           0.966  │
+│  SPS              32.8K      Misc       2ms   0%    total            -0.010  │
+│  Epoch               61      Forwa…     8ms   0%    old_kl            0.021  │
+│  Uptime     0d 0h 1m 5s                             kl                0.021  │
+│  Remaini…  0d 8h 27m 9s                             clipfrac          0.304  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                1.800    episode_length             3760.000  │
+│  depth                         0.000    valid_moves                1006.000  │
+│  illegal_actions               0.000    new_tiles                    18.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   962ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.044  │
+│  Params          313.7K      Env      948ms  97%    value             0.017  │
+│  Steps             2.0M    Train       10ms   1%    entropy           0.890  │
+│  SPS              33.3K      Misc       2ms   0%    total             0.001  │
+│  Epoch               62      Forwa…     8ms   0%    old_kl            0.013  │
+│  Uptime     0d 0h 1m 6s                             kl                0.014  │
+│  Remaini…     0d 8h 19m                             clipfrac          0.245  │
+│                     51s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   963ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.029  │
+│  Params          313.7K      Env      948ms  97%    value             0.014  │
+│  Steps             2.1M    Train       10ms   1%    entropy           0.879  │
+│  SPS              33.2K      Misc       2ms   0%    total            -0.013  │
+│  Epoch               63      Forwa…     8ms   0%    old_kl            0.014  │
+│  Uptime     0d 0h 1m 7s                             kl                0.015  │
+│  Remaini…     0d 8h 20m                             clipfrac          0.262  │
+│                     13s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0       🐡           GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   953ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.048  │
+│  Params          313.7K      Env      939ms  97%    value             0.013  │
+│  Steps             2.1M    Train       10ms   1%    entropy           0.859  │
+│  SPS              33.6K      Misc       2ms   0%    total             0.006  │
+│  Epoch               64      Forwa…     8ms   0%    old_kl            0.015  │
+│  Uptime     0d 0h 1m 8s                             kl                0.016  │
+│  Remaini…     0d 8h 15m                             clipfrac          0.260  │
+│                     10s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0      🐡            GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   945ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.041  │
+│  Params          313.7K      Env      931ms  97%    value             0.010  │
+│  Steps             2.1M    Train       10ms   1%    entropy           0.827  │
+│  SPS              33.9K      Misc       2ms   0%    total             0.000  │
+│  Epoch               65      Forwa…     8ms   0%    old_kl            0.014  │
+│  Uptime     0d 0h 1m 9s                             kl                0.015  │
+│  Remaini…  0d 8h 11m 1s                             clipfrac          0.253  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0     🐡             GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   950ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.040  │
+│  Params          313.7K      Env      936ms  97%    value             0.021  │
+│  Steps             2.2M    Train       10ms   1%    entropy           0.826  │
+│  SPS              33.7K      Misc       2ms   0%    total             0.001  │
+│  Epoch               66      Forwa…     8ms   0%    old_kl            0.014  │
+│  Uptime    0d 0h 1m 10s                             kl                0.013  │
+│  Remaini…     0d 8h 13m                             clipfrac          0.249  │
+│                     53s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0    🐡              GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   951ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.045  │
+│  Params          313.7K      Env      936ms  97%    value             0.013  │
+│  Steps             2.2M    Train       10ms   1%    entropy           0.890  │
+│  SPS              33.7K      Misc       2ms   0%    total             0.002  │
+│  Epoch               67      Forwa…     8ms   0%    old_kl            0.017  │
+│  Uptime    0d 0h 1m 11s                             kl                0.018  │
+│  Remaini…     0d 8h 13m                             clipfrac          0.288  │
+│                     58s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.300    episode_length             3940.000  │
+│  depth                         0.000    valid_moves                 777.000  │
+│  illegal_actions               0.000    new_tiles                    53.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0   🐡               GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   955ms  98%    Losses            Value  │
+│  Env            nethack      GPU       11ms   1%    policy            0.025  │
+│  Params          313.7K      Env      940ms  97%    value             0.027  │
+│  Steps             2.2M    Train       10ms   1%    entropy           0.921  │
+│  SPS              33.5K      Misc       2ms   0%    total            -0.019  │
+│  Epoch               68      Forwa…     8ms   0%    old_kl            0.018  │
+│  Uptime    0d 0h 1m 12s                             kl                0.020  │
+│  Remaini…  0d 8h 16m 4s                             clipfrac          0.304  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                5.000    episode_length             4337.500  │
+│  depth                         0.000    valid_moves                 516.500  │
+│  illegal_actions               1.500    new_tiles                    57.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0  🐡                GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   953ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.043  │
+│  Params          313.7K      Env      938ms  97%    value             0.014  │
+│  Steps             2.3M    Train       10ms   1%    entropy           1.051  │
+│  SPS              33.6K      Misc       2ms   0%    total            -0.008  │
+│  Epoch               69      Forwa…     8ms   0%    old_kl            0.020  │
+│  Uptime    0d 0h 1m 13s                             kl                0.021  │
+│  Remaini…     0d 8h 14m                             clipfrac          0.331  │
+│                     58s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                6.500    episode_length             4382.000  │
+│  depth                         0.000    valid_moves                 207.000  │
+│  illegal_actions               2.000    new_tiles                    55.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0 🐡                 GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   965ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.036  │
+│  Params          313.7K      Env      950ms  97%    value             0.019  │
+│  Steps             2.3M    Train       10ms   1%    entropy           1.118  │
+│  SPS              33.2K      Misc       2ms   0%    total            -0.018  │
+│  Epoch               70      Forwa…     8ms   0%    old_kl            0.020  │
+│  Uptime    0d 0h 1m 14s                             kl                0.022  │
+│  Remaini…     0d 8h 21m                             clipfrac          0.351  │
+│                     16s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                6.500    episode_length             4382.000  │
+│  depth                         0.000    valid_moves                 207.000  │
+│  illegal_actions               2.000    new_tiles                    55.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0          🐡        GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   969ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.043  │
+│  Params          313.7K      Env      954ms  97%    value             0.010  │
+│  Steps             2.3M    Train       10ms   1%    entropy           1.164  │
+│  SPS              33.1K      Misc       2ms   0%    total            -0.014  │
+│  Epoch               71      Forwa…     8ms   0%    old_kl            0.022  │
+│  Uptime    0d 0h 1m 15s                             kl                0.022  │
+│  Remaini…     0d 8h 22m                             clipfrac          0.364  │
+│                     41s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                6.500    episode_length             4382.000  │
+│  depth                         0.000    valid_moves                 207.000  │
+│  illegal_actions               2.000    new_tiles                    55.000  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0         🐡         GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   987ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.024  │
+│  Params          313.7K      Env      972ms  97%    value             0.016  │
+│  Steps             2.4M    Train       10ms   1%    entropy           1.218  │
+│  SPS              32.5K      Misc       2ms   0%    total            -0.035  │
+│  Epoch               72      Forwa…     8ms   0%    old_kl            0.020  │
+│  Uptime    0d 0h 1m 16s                             kl                0.019  │
+│  Remaini…  0d 8h 32m 9s                             clipfrac          0.361  │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.850    episode_length             4589.500  │
+│  depth                         0.000    valid_moves                 286.000  │
+│  illegal_actions               3.000    new_tiles                    43.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[0;0H╭──────────────────────────────────────────────────────────────────────────────╮
+│  PufferLib 4.0        🐡          GPU: 1%      VRAM: 1.2/39G      RAM: 1.0G  │
+│                                                                              │
+│  Summary          Value    Evaluate   987ms  98%    Losses            Value  │
+│  Env            nethack      GPU       12ms   1%    policy            0.033  │
+│  Params          313.7K      Env      972ms  97%    value             0.019  │
+│  Steps             2.4M    Train       10ms   1%    entropy           1.231  │
+│  SPS              32.4K      Misc       2ms   0%    total            -0.027  │
+│  Epoch               73      Forwa…     8ms   0%    old_kl            0.020  │
+│  Uptime    0d 0h 1m 17s                             kl                0.020  │
+│  Remaini…     0d 8h 32m                             clipfrac          0.375  │
+│                     24s                                                      │
+│                                                                              │
+│  User Stats                    Value    User Stats                    Value  │
+│  perf                          0.000    score                         0.000  │
+│  episode_return                2.850    episode_length             4589.500  │
+│  depth                         0.000    valid_moves                 286.000  │
+│  illegal_actions               3.000    new_tiles                    43.500  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
