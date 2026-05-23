@@ -40,6 +40,9 @@ struct nle_globals; /* forward */
 #define n_dgns        (current_nle_ctx->s_n_dgns)
 #define dgn_branches  (*(branch **)&current_nle_ctx->s_branches)
 #define mapseenchn    (*(mapseen **)&current_nle_ctx->s_mapseenchn)
+/* Cluster BB: add_branch branch_id counter — monotonic IDs would otherwise
+ * collide across envs. Reuse pre-existing Cluster-AT-C s_branch_id_ctr slot. */
+#define branch_id     (current_nle_ctx->s_branch_id_ctr)
 
 struct lchoice {
     int idx;
@@ -499,7 +502,7 @@ int dgn;
 int child_entry_level;
 struct proto_dungeon *pd;
 {
-    static int branch_id = 0;
+    /* Cluster BB: branch_id migrated to current_nle_ctx->s_branch_id_ctr. */
     int branch_num;
     branch *new_branch;
 

@@ -6,6 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
+/* Cluster BB: function-local statics in tty_getmsghistory/tty_putmsghistory.
+ * These are reached from the RL frontend via winrl.cc:rl_get/putmsghistory,
+ * so they race across envs sharing one libnethack.so. Migrate to per-env. */
+#define nxtidx           (current_nle_ctx->s_topl_nxtidx)
+#define initd            (current_nle_ctx->s_topl_initd)
+
 #ifdef TTY_GRAPHICS
 
 #include "tcap.h"
@@ -645,7 +651,7 @@ char *
 tty_getmsghistory(init)
 boolean init;
 {
-    static int nxtidx;
+    /* Cluster BB: nxtidx migrated to current_nle_ctx->s_topl_nxtidx. */
     char *nextmesg;
     char *result = 0;
 
@@ -687,7 +693,8 @@ tty_putmsghistory(msg, restoring_msghist)
 const char *msg;
 boolean restoring_msghist;
 {
-    static boolean initd = FALSE;
+    /* Cluster BB: initd migrated to current_nle_ctx->s_topl_initd; ctx is
+     * calloc-zero'd which gives FALSE on first call (matches original init). */
     int idx;
 #ifdef DUMPLOG
     extern unsigned saved_pline_index; /* pline.c */

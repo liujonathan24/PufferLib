@@ -18,6 +18,8 @@
 /* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
 #define costly        (current_nle_ctx->s_autopick_costly)
 #define oldcap        (current_nle_ctx->s_encumber_msg_oldcap)
+/* Cluster BB: add_valid_menu_class vmc_count accumulator -> per-env. */
+#define vmc_count     (current_nle_ctx->s_vmc_count)
 
 #define CONTAINED_SYM '>' /* from invent.c */
 
@@ -361,7 +363,7 @@ void
 add_valid_menu_class(c)
 int c;
 {
-    static int vmc_count = 0;
+    /* Cluster BB: vmc_count migrated to current_nle_ctx->s_vmc_count. */
 
     if (c == 0) { /* reset */
         vmc_count = 0;

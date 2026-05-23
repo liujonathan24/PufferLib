@@ -65,6 +65,11 @@ extern struct passwd *FDECL(getpwuid, (int));
 #endif
 #endif
 #endif
+/* Cluster BB: process-static OK — these are dead code in our build because
+ * the entire enclosing #ifdef MAIL block is compiled out (the nethack target
+ * is built with -DNOMAIL via vendor/nle/src/build/CMakeFiles/nethack.dir/flags.make,
+ * and include/unixconf.h:151 only defines MAIL when NOMAIL is undefined).
+ * Leaving these declarations untouched preserves the upstream-merge surface. */
 static struct stat omstat, nmstat;
 static char *mailbox = (char *) 0;
 static long laststattime;

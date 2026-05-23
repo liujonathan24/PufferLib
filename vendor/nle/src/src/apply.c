@@ -9,6 +9,11 @@
 /* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
+/* Cluster BB: jumping_is_magic was a file-scope static set in jump() before
+ * walk_path() invokes the get_valid_jump_position callback; under N envs in
+ * one process this raced. Migrate to per-env. */
+#define jumping_is_magic  (current_nle_ctx->s_jumping_is_magic)
+
 STATIC_DCL int FDECL(use_camera, (struct obj *));
 STATIC_DCL int FDECL(use_towel, (struct obj *));
 STATIC_DCL boolean FDECL(its_dead, (int, int, int *));
@@ -1626,7 +1631,7 @@ boolean showmsg;
     return TRUE;
 }
 
-static int jumping_is_magic;
+/* Cluster BB: jumping_is_magic migrated to nle_ctx_t (macro above). */
 
 STATIC_OVL boolean
 get_valid_jump_position(x,y)

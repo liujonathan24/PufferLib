@@ -813,6 +813,20 @@ typedef struct nle_globals {
     /* Cluster AX-fix-1+: residual file-statics flagged by AX diagnostic.
      * acid_ctx is opaque void* — struct h2o_ctx lives local in trap.c. */
     void                *s_acid_ctx;                      /* trap.c water_damage_chain ctx (heap, lazy) */
+
+    /* Cluster BB — persistent counters / gated-path statics that still race
+     * across envs in shared-libnethack vecenv. Direct fields; macros at the
+     * top of each .c file rewrite bare-name accesses to current_nle_ctx->s_<name>.
+     *  - jumping_is_magic: apply.c — set before walk_path callback path; races.
+     *  - vmc_count:        pickup.c add_valid_menu_class — accumulates across calls.
+     *  - topl_nxtidx / topl_initd: win/tty/topl.c — tty_getmsghistory / tty_putmsghistory
+     *    persistent state, reached from RL frontend via winrl.cc rl_get/putmsghistory.
+     * (branch_id in dungeon.c reuses the already-existing s_branch_id_ctr field
+     *  from Cluster AT-C; no new field needed.) */
+    int                  s_jumping_is_magic;   /* apply.c get_valid_jump_position */
+    int                  s_vmc_count;          /* pickup.c add_valid_menu_class */
+    int                  s_topl_nxtidx;        /* topl.c tty_getmsghistory cursor */
+    boolean              s_topl_initd;         /* topl.c tty_putmsghistory init flag */
 } nle_ctx_t;
 
 /*

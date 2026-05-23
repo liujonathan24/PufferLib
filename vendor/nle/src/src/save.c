@@ -388,6 +388,10 @@ void
 savestateinlock()
 {
     int fd, hpid;
+    /* Cluster BB: process-static OK — this function is inside #ifdef INSURANCE
+     * (include/config.h:356 leaves INSURANCE undefined in our build), so the
+     * whole savestateinlock() body is dead code. Leaving untouched preserves
+     * the upstream-merge surface. */
     static boolean havestate = TRUE;
     char whynot[BUFSZ];
 
@@ -1193,7 +1197,10 @@ int fd;
 register struct trap *trap;
 int mode;
 {
-    static struct trap zerotrap;
+    /* Cluster BB: const sentinel — read-only end-of-chain marker. Was a
+     * mutable file-local static; making it const moves it to .rodata and
+     * eliminates the cross-env shared-mutable-state hazard. */
+    static const struct trap zerotrap;
     register struct trap *trap2;
 
     while (trap) {
@@ -1217,7 +1224,8 @@ void
 savefruitchn(fd, mode)
 int fd, mode;
 {
-    static struct fruit zerofruit;
+    /* Cluster BB: const sentinel — see zerotrap comment in savetrapchn(). */
+    static const struct fruit zerofruit;
     register struct fruit *f2, *f1;
 
     f1 = ffruit;
