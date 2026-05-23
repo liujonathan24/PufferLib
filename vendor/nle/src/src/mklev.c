@@ -925,7 +925,7 @@ boolean skip_lvl_checks;
         && (In_hell(&u.uz) || In_V_tower(&u.uz) || Is_rogue_level(&u.uz)
             || level.lflags.arboreal
             || ((sp = Is_special(&u.uz)) != 0 && !Is_oracle_level(&u.uz)
-                && (!In_mines(&u.uz) || sp->flags.town))))
+                && (!In_mines(&u.uz) || sp->dflags.town))))
         return;
 
     /* basic level-related probabilities */

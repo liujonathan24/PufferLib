@@ -369,7 +369,7 @@ doextcmd(VOID_ARGS)
             return 0; /* quit */
 
         func = extcmdlist[idx].ef_funct;
-        if (!wizard && (extcmdlist[idx].flags & WIZMODECMD)) {
+        if (!wizard && (extcmdlist[idx].cmd_flags & WIZMODECMD)) {
             You("can't do that.");
             return 0;
         }
@@ -463,10 +463,10 @@ doextlist(VOID_ARGS)
             for (efp = extcmdlist; efp->ef_txt; efp++) {
                 int wizc;
 
-                if ((efp->flags & CMD_NOT_AVAILABLE) != 0)
+                if ((efp->cmd_flags & CMD_NOT_AVAILABLE) != 0)
                     continue;
                 /* if hiding non-autocomplete commands, skip such */
-                if (menumode == 1 && (efp->flags & AUTOCOMPLETE) == 0)
+                if (menumode == 1 && (efp->cmd_flags & AUTOCOMPLETE) == 0)
                     continue;
                 /* if searching, skip this command if it doesn't match */
                 if (*searchbuf
@@ -481,7 +481,7 @@ doextlist(VOID_ARGS)
                 /* skip wizard mode commands if not in wizard mode;
                    when showing two sections, skip wizard mode commands
                    in pass==0 and skip other commands in pass==1 */
-                wizc = (efp->flags & WIZMODECMD) != 0;
+                wizc = (efp->cmd_flags & WIZMODECMD) != 0;
                 if (wizc && !wizard)
                     continue;
                 if (!onelist && pass != wizc)
@@ -499,7 +499,7 @@ doextlist(VOID_ARGS)
                 }
                 Sprintf(buf, " %-14s %-3s %s",
                         efp->ef_txt,
-                        (efp->flags & AUTOCOMPLETE) ? "[A]" : " ",
+                        (efp->cmd_flags & AUTOCOMPLETE) ? "[A]" : " ",
                         efp->ef_desc);
                 add_menu(menuwin, NO_GLYPH, &any, 0, 0, ATR_NONE,
                          buf, MENU_UNSELECTED);
@@ -594,9 +594,9 @@ extcmd_via_menu()
         any = zeroany;
         /* populate choices */
         for (efp = extcmdlist; efp->ef_txt; efp++) {
-            if ((efp->flags & CMD_NOT_AVAILABLE)
-                || !(efp->flags & AUTOCOMPLETE)
-                || (!wizard && (efp->flags & WIZMODECMD)))
+            if ((efp->cmd_flags & CMD_NOT_AVAILABLE)
+                || !(efp->cmd_flags & AUTOCOMPLETE)
+                || (!wizard && (efp->cmd_flags & WIZMODECMD)))
                 continue;
             if (!matchlevel || !strncmp(efp->ef_txt, cbuf, matchlevel)) {
                 choices[i] = efp;
@@ -1198,13 +1198,13 @@ wiz_map_levltyp(VOID_ARGS)
             Sprintf(eos(dsc), " \"%s\"", slev->proto);
             /* special level flags (note: dungeon.def doesn't set `maze'
                or `hell' for any specific levels so those never show up) */
-            if (slev->flags.maze_like)
+            if (slev->dflags.maze_like)
                 Strcat(dsc, " mazelike");
-            if (slev->flags.hellish)
+            if (slev->dflags.hellish)
                 Strcat(dsc, " hellish");
-            if (slev->flags.town)
+            if (slev->dflags.town)
                 Strcat(dsc, " town");
-            if (slev->flags.rogue_like)
+            if (slev->dflags.rogue_like)
                 Strcat(dsc, " roguelike");
             /* alignment currently omitted to save space */
         }
@@ -3743,8 +3743,8 @@ boolean *keys_used; /* boolean keys_used[256] */
         if (key == ' ' && !flags.rest_on_space)
             continue;
         if ((extcmd = Cmd.commands[i]) != (struct ext_func_tab *) 0) {
-            if ((cmdflags && !(extcmd->flags & cmdflags))
-                || (exflags && (extcmd->flags & exflags)))
+            if ((cmdflags && !(extcmd->cmd_flags & cmdflags))
+                || (exflags && (extcmd->cmd_flags & exflags)))
                 continue;
             if (docount) {
                 count++;
@@ -4505,9 +4505,9 @@ boolean condition;
     for (efp = extcmdlist; efp->ef_txt; efp++) {
         if (!strcmp(autocomplete, efp->ef_txt)) {
             if (condition)
-                efp->flags |= AUTOCOMPLETE;
+                efp->cmd_flags |= AUTOCOMPLETE;
             else
-                efp->flags &= ~AUTOCOMPLETE;
+                efp->cmd_flags &= ~AUTOCOMPLETE;
             return;
         }
     }
@@ -4937,10 +4937,10 @@ register char *cmd;
 
         /* current - use *cmd to directly index cmdlist array */
         if ((tlist = Cmd.commands[*cmd & 0xff]) != 0) {
-            if (!wizard && (tlist->flags & WIZMODECMD)) {
+            if (!wizard && (tlist->cmd_flags & WIZMODECMD)) {
                 You_cant("do that!");
                 res = 0;
-            } else if (u.uburied && !(tlist->flags & IFBURIED)) {
+            } else if (u.uburied && !(tlist->cmd_flags & IFBURIED)) {
                 You_cant("do that while you are buried!");
                 res = 0;
             } else {

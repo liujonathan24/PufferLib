@@ -2403,7 +2403,7 @@ register int x, y;
     register struct mkroom *sroom;
     boolean has_subrooms = FALSE;
 
-    if (!slev || !slev->flags.town)
+    if (!slev || !slev->dflags.town)
         return FALSE;
 
     /*

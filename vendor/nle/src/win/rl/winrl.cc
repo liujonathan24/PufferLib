@@ -486,7 +486,7 @@ NetHackRL::getch_method()
        the context switch. No stdin required. The following code is from
        tty_nhgetch. */
     if (WIN_MESSAGE != WIN_ERR && wins[WIN_MESSAGE])
-        wins[WIN_MESSAGE]->flags &= ~WIN_STOP;
+        wins[WIN_MESSAGE]->wflags &= ~WIN_STOP;
     if (!i)
         i = '\033'; /* map NUL to ESC since nethack doesn't expect NUL */
     else if (i == EOF)

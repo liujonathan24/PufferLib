@@ -248,7 +248,7 @@ dosave0()
     for (ltmp = (xchar) 1; ltmp <= maxledgerno(); ltmp++) {
         if (ltmp == ledger_no(&uz_save))
             continue;
-        if (!(level_info[ltmp].flags & LFILE_EXISTS))
+        if (!(level_info[ltmp].linfo_flags & LFILE_EXISTS))
             continue;
 #ifdef MICRO
         curs(WIN_MAP, 1 + dotcnt++, dotrow);
@@ -527,7 +527,7 @@ int mode;
         count_only = (mode & COUNT_SAVE);
 #endif
         if (lev >= 0 && lev <= maxledgerno())
-            level_info[lev].flags |= VISITED;
+            level_info[lev].linfo_flags |= VISITED;
         bwrite(fd, (genericptr_t) &current_nle_ctx->hackpid, sizeof current_nle_ctx->hackpid);
 #ifdef TOS
         tlev = lev;

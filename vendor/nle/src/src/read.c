@@ -865,8 +865,8 @@ int percent;
      */
     indices[0] = 0; /* lint suppression */
     for (count = 0, i = 0; i <= maxl; i++)
-        if ((level_info[i].flags & VISITED)
-            && !(level_info[i].flags & FORGOTTEN) && i != this_lev) {
+        if ((level_info[i].linfo_flags & VISITED)
+            && !(level_info[i].linfo_flags & FORGOTTEN) && i != this_lev) {
             if (ledger_to_dnum(i) == sokoban_dnum)
                 percent += 2;
             else
@@ -882,7 +882,7 @@ int percent;
         /* forget first % of randomized indices */
         count = ((count * percent) + 50) / 100;
         for (i = 0; i < count; i++) {
-            level_info[indices[i]].flags |= FORGOTTEN;
+            level_info[indices[i]].linfo_flags |= FORGOTTEN;
             forget_mapseen(indices[i]);
         }
     }

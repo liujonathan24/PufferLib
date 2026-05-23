@@ -1501,7 +1501,7 @@ register struct permonst *ptr;
         set_lev_cached(Is_special(&u.uz));
         oldmoves = moves;
     }
-    switch ((lev_cached) ? lev_cached->flags.align : dungeons[u.uz.dnum].flags.align) {
+    switch ((lev_cached) ? lev_cached->dflags.align : dungeons[u.uz.dnum].dflags.align) {
     default: /* just in case */
     case AM_NONE:
         alshift = 0;

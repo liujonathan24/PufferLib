@@ -1485,7 +1485,7 @@ int type;
     wins[newid] = newwin;
 
     newwin->type = type;
-    newwin->flags = 0;
+    newwin->wflags = 0;
     newwin->active = FALSE;
     newwin->curx = newwin->cury = 0;
     newwin->morestr = 0;
@@ -2117,7 +2117,7 @@ struct WinDesc *cw;
                     curr->selected = FALSE;
                     curr->count = -1L;
                 }
-                cw->flags |= WIN_CANCELLED;
+                cw->wflags |= WIN_CANCELLED;
                 finished = TRUE;
             }
             /* else only stop count */
@@ -2275,7 +2275,7 @@ struct WinDesc *cw;
             cl_end();
             dmore(cw, quitchars);
             if (morc == '\033') {
-                cw->flags |= WIN_CANCELLED;
+                cw->wflags |= WIN_CANCELLED;
                 break;
             }
             if (cw->offy) {
@@ -2333,7 +2333,7 @@ struct WinDesc *cw;
         cl_end();
         dmore(cw, quitchars);
         if (morc == '\033')
-            cw->flags |= WIN_CANCELLED;
+            cw->wflags |= WIN_CANCELLED;
     }
 }
 
@@ -2349,7 +2349,7 @@ boolean blocking; /* with ttys, all windows are blocking */
     HUPSKIP();
     if (window == WIN_ERR || (cw = wins[window]) == (struct WinDesc *) 0)
         panic(winpanicstr, window);
-    if (cw->flags & WIN_CANCELLED)
+    if (cw->wflags & WIN_CANCELLED)
         return;
     ttyDisplay->lastwin = window;
     ttyDisplay->rawprint = 0;
@@ -2476,7 +2476,7 @@ winid window;
         }
         break;
     }
-    cw->flags = 0;
+    cw->wflags = 0;
 }
 
 void
@@ -2692,7 +2692,7 @@ const char *str;
     }
 
     if (str == (const char *) 0
-        || ((cw->flags & WIN_CANCELLED) && (cw->type != NHW_MESSAGE)))
+        || ((cw->wflags & WIN_CANCELLED) && (cw->type != NHW_MESSAGE)))
         return;
     if (cw->type != NHW_MESSAGE)
         str = compress_str(str);
@@ -2927,7 +2927,7 @@ boolean complain;
                     (void) tabexpand(buf);
                 empty = FALSE;
                 tty_putstr(datawin, 0, buf);
-                if (wins[datawin]->flags & WIN_CANCELLED)
+                if (wins[datawin]->wflags & WIN_CANCELLED)
                     break;
             }
             if (!empty)
@@ -3158,7 +3158,7 @@ menu_item **menu_list;
     cw->how = (short) how;
     morc = 0;
     tty_display_nhwindow(window, TRUE);
-    cancelled = !!(cw->flags & WIN_CANCELLED);
+    cancelled = !!(cw->wflags & WIN_CANCELLED);
     tty_dismiss_nhwindow(window); /* does not destroy window data */
 
     if (cancelled) {
@@ -3210,7 +3210,7 @@ const char *mesg;
     /* normally <ESC> means skip further messages, but in this case
        it means cancel the current prompt; any other messages should
        continue to be output normally */
-    wins[WIN_MESSAGE]->flags &= ~WIN_CANCELLED;
+    wins[WIN_MESSAGE]->wflags &= ~WIN_CANCELLED;
     ttyDisplay->dismiss_more = 0;
 
     return ((how == PICK_ONE && morc == let) || morc == '\033') ? morc : '\0';
@@ -3558,7 +3558,7 @@ tty_nhgetch()
      * here, but validate those pointers just in case...
      */
     if (WIN_MESSAGE != WIN_ERR && wins[WIN_MESSAGE])
-        wins[WIN_MESSAGE]->flags &= ~WIN_STOP;
+        wins[WIN_MESSAGE]->wflags &= ~WIN_STOP;
     if (iflags.debug_fuzzer) {
         i = randomkey();
     } else {
