@@ -3515,11 +3515,23 @@ struct obj *obj;
 
 /* context for water_damage(), managed by water_damage_chain();
    when more than one stack of potions of acid explode while processing
-   a chain of objects, use alternate phrasing after the first message */
-static struct h2o_ctx {
-    int dkn_boom, unk_boom; /* track dknown, !dknown separately */
+   a chain of objects, use alternate phrasing after the first message.
+   Cluster AX-fix-1+: migrated to per-env to stop multi-buffer race in
+   water_damage_chain at trap.c:3695 (segfault at offset 0x34 was
+   reading torn ctx_valid across pthreads). Struct defined here, storage
+   in nle_ctx_t->s_acid_ctx (declared as opaque void* in nle.h to keep
+   the type local). */
+struct h2o_ctx {
+    int dkn_boom, unk_boom;
     boolean ctx_valid;
-} acid_ctx = { 0, 0, FALSE };
+};
+#define acid_ctx (*(struct h2o_ctx *)nle_get_acid_ctx())
+static void *nle_get_acid_ctx(void) {
+    if (!current_nle_ctx->s_acid_ctx) {
+        current_nle_ctx->s_acid_ctx = calloc(1, sizeof(struct h2o_ctx));
+    }
+    return current_nle_ctx->s_acid_ctx;
+}
 
 /* Get an object wet and damage it appropriately.
  *   "ostr", if present, is used instead of the object name in some

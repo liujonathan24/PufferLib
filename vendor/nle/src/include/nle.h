@@ -785,6 +785,10 @@ typedef struct nle_globals {
     int                 s_encumber_msg_oldcap;            /* pickup.c encumber_msg (UNENCUMBERED=0) */
     boolean             s_hitum_cleave_clockwise;         /* uhitm.c hitum_cleave */
     long                s_ck_server_admin_msg_lastchk;    /* mail.c ck_server_admin_msg */
+
+    /* Cluster AX-fix-1+: residual file-statics flagged by AX diagnostic.
+     * acid_ctx is opaque void* — struct h2o_ctx lives local in trap.c. */
+    void                *s_acid_ctx;                      /* trap.c water_damage_chain ctx (heap, lazy) */
 } nle_ctx_t;
 
 /*
