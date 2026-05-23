@@ -1355,7 +1355,7 @@ boolean
 Can_dig_down(lev)
 d_level *lev;
 {
-    return (boolean) (!level.flags.hardfloor
+    return (boolean) (!level.lflags.hardfloor
                       && !Is_botlevel(lev)
                       && !Invocation_lev(lev));
 }

@@ -163,7 +163,7 @@ xchar x, y;
                      : IS_TREE(levl[x][y].typ)
                         ? (ispick ? DIGTYP_UNDIGGABLE : DIGTYP_TREE)
                         : (ispick && IS_ROCK(levl[x][y].typ)
-                           && (!level.flags.arboreal
+                           && (!level.lflags.arboreal
                                || IS_WALL(levl[x][y].typ)))
                            ? DIGTYP_ROCK
                            : DIGTYP_UNDIGGABLE);
@@ -411,9 +411,9 @@ dig(VOID_ARGS)
                 add_damage(dpx, dpy, SHOP_WALL_DMG);
                 dmgtxt = "damage";
             }
-            if (level.flags.is_maze_lev) {
+            if (level.lflags.is_maze_lev) {
                 lev->typ = ROOM, lev->rmflags = 0;
-            } else if (level.flags.is_cavernous_lev && !in_town(dpx, dpy)) {
+            } else if (level.lflags.is_cavernous_lev && !in_town(dpx, dpy)) {
                 lev->typ = CORR, lev->rmflags = 0;
             } else {
                 lev->typ = DOOR, lev->doormask = D_NODOOR;
@@ -1312,9 +1312,9 @@ register struct monst *mtmp;
             You_hear("crashing rock.");
         if (*in_rooms(mtmp->mx, mtmp->my, SHOPBASE))
             add_damage(mtmp->mx, mtmp->my, 0L);
-        if (level.flags.is_maze_lev) {
+        if (level.lflags.is_maze_lev) {
             here->typ = ROOM, here->rmflags = 0;
-        } else if (level.flags.is_cavernous_lev
+        } else if (level.lflags.is_cavernous_lev
                    && !in_town(mtmp->mx, mtmp->my)) {
             here->typ = CORR, here->rmflags = 0;
         } else {
@@ -1449,7 +1449,7 @@ zap_dig()
 
     /* normal case: digging across the level */
     shopdoor = shopwall = FALSE;
-    maze_dig = level.flags.is_maze_lev && !Is_earthlevel(&u.uz);
+    maze_dig = level.lflags.is_maze_lev && !Is_earthlevel(&u.uz);
     zx = u.ux + u.dx;
     zy = u.uy + u.dy;
     if (u.utrap && u.utraptype == TT_PIT
@@ -1555,7 +1555,7 @@ zap_dig()
                     shopwall = TRUE;
                 }
                 watch_dig((struct monst *) 0, zx, zy, TRUE);
-                if (level.flags.is_cavernous_lev && !in_town(zx, zy)) {
+                if (level.lflags.is_cavernous_lev && !in_town(zx, zy)) {
                     room->typ = CORR, room->rmflags = 0;
                 } else {
                     room->typ = DOOR, room->doormask = D_NODOOR;

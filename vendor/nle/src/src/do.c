@@ -317,7 +317,7 @@ polymorph_sink()
         return;
 
     sinklooted = levl[u.ux][u.uy].looted != 0;
-    level.flags.nsinks--;
+    level.lflags.nsinks--;
     levl[u.ux][u.uy].doormask = 0; /* levl[][].flags */
     switch (rn2(4)) {
     default:
@@ -327,7 +327,7 @@ polymorph_sink()
         levl[u.ux][u.uy].blessedftn = 0;
         if (sinklooted)
             SET_FOUNTAIN_LOOTED(u.ux, u.uy);
-        level.flags.nfountains++;
+        level.lflags.nfountains++;
         break;
     case 1:
         sym = S_throne;
@@ -752,7 +752,7 @@ boolean with_impact;
             container_impact_dmg(obj, u.ux, u.uy);
         if (obj == uball)
             drop_ball(u.ux, u.uy);
-        else if (level.flags.has_shop)
+        else if (level.lflags.has_shop)
             sellobj(obj, u.ux, u.uy);
         stackobj(obj);
         if (Blind && Levitation)

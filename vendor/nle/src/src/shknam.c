@@ -775,7 +775,7 @@ register struct mkroom *sroom;
      * monsters will sit on top of objects and not the other way around.
      */
 
-    level.flags.has_shop = TRUE;
+    level.lflags.has_shop = TRUE;
 }
 
 /* does shkp's shop stock this item type? */

@@ -277,7 +277,7 @@ struct mkroom *sroom;
     sh = sroom->fdoor;
     switch (type) {
     case COURT:
-        if (level.flags.is_maze_lev) {
+        if (level.lflags.is_maze_lev) {
             for (tx = sroom->lx; tx <= sroom->hx; tx++)
                 for (ty = sroom->ly; ty <= sroom->hy; ty++)
                     if (IS_THRONE(levl[tx][ty].typ))
@@ -416,23 +416,23 @@ struct mkroom *sroom;
         add_to_container(chest, gold);
         chest->owt = weight(chest);
         chest->spe = 2; /* so it can be found later */
-        level.flags.has_court = 1;
+        level.lflags.has_court = 1;
         break;
     }
     case BARRACKS:
-        level.flags.has_barracks = 1;
+        level.lflags.has_barracks = 1;
         break;
     case ZOO:
-        level.flags.has_zoo = 1;
+        level.lflags.has_zoo = 1;
         break;
     case MORGUE:
-        level.flags.has_morgue = 1;
+        level.lflags.has_morgue = 1;
         break;
     case SWAMP:
-        level.flags.has_swamp = 1;
+        level.lflags.has_swamp = 1;
         break;
     case BEEHIVE:
-        level.flags.has_beehive = 1;
+        level.lflags.has_beehive = 1;
         break;
     }
 }
@@ -457,7 +457,7 @@ int mm_flags;
                 || !revive(otmp, FALSE)))
             (void) makemon(mdat, cc.x, cc.y, mm_flags);
     }
-    level.flags.graveyard = TRUE; /* reduced chance for undead corpse */
+    level.lflags.graveyard = TRUE; /* reduced chance for undead corpse */
 }
 
 STATIC_OVL struct permonst *
@@ -546,7 +546,7 @@ mkswamp() /* Michiel Huisjes & Fred de Wilde */
                         (void) makemon(mkclass(S_FUNGUS, 0), sx, sy,
                                        NO_MM_FLAGS);
                 }
-        level.flags.has_swamp = 1;
+        level.lflags.has_swamp = 1;
     }
 }
 
@@ -594,7 +594,7 @@ mktemple()
     lev->altarmask = induced_align(80);
     priestini(&u.uz, sroom, shrine_spot->x, shrine_spot->y, FALSE);
     lev->altarmask |= AM_SHRINE;
-    level.flags.has_temple = 1;
+    level.lflags.has_temple = 1;
 }
 
 boolean

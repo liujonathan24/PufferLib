@@ -2198,7 +2198,7 @@ register struct monst *mtmp;
             appear = Is_rogue_level(&u.uz) ? S_hwall : S_hcdoor;
         else
             appear = Is_rogue_level(&u.uz) ? S_vwall : S_vcdoor;
-    } else if (level.flags.is_maze_lev && !In_sokoban(&u.uz) && rn2(2)) {
+    } else if (level.lflags.is_maze_lev && !In_sokoban(&u.uz) && rn2(2)) {
         ap_type = M_AP_OBJECT;
         appear = STATUE;
     } else if (roomno < 0 && !t_at(mx, my)) {

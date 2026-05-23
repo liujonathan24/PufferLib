@@ -43,7 +43,7 @@ STATIC_DCL void FDECL(deal_with_overcrowding, (struct monst *));
 /* note: duplicated in dog.c */
 #define LEVEL_SPECIFIC_NOCORPSE(mdat) \
     (Is_rogue_level(&u.uz)            \
-     || (level.flags.graveyard && is_undead(mdat) && rn2(3)))
+     || (level.lflags.graveyard && is_undead(mdat) && rn2(3)))
 
 #if 0
 /* part of the original warning code which was replaced in 3.3.1 */
@@ -1479,7 +1479,7 @@ long flag;
                     }
                     /* Note: ALLOW_SANCT only prevents movement, not
                        attack, into a temple. */
-                    if (level.flags.has_temple && *in_rooms(nx, ny, TEMPLE)
+                    if (level.lflags.has_temple && *in_rooms(nx, ny, TEMPLE)
                         && !*in_rooms(x, y, TEMPLE)
                         && in_your_sanctuary((struct monst *) 0, nx, ny)) {
                         if (!(flag & ALLOW_SANCT))

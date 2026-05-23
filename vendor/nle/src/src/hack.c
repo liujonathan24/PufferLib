@@ -502,9 +502,9 @@ xchar x, y;
             dmgtxt = "damage";
         }
         digtxt = "chew a hole in the wall.";
-        if (level.flags.is_maze_lev) {
+        if (level.lflags.is_maze_lev) {
             lev->typ = ROOM;
-        } else if (level.flags.is_cavernous_lev && !in_town(x, y)) {
+        } else if (level.lflags.is_cavernous_lev && !in_town(x, y)) {
             lev->typ = CORR;
         } else {
             lev->typ = DOOR;
@@ -2557,25 +2557,25 @@ register boolean newlev;
                 /* No more room of that type */
                 switch (rt) {
                 case COURT:
-                    level.flags.has_court = 0;
+                    level.lflags.has_court = 0;
                     break;
                 case SWAMP:
-                    level.flags.has_swamp = 0;
+                    level.lflags.has_swamp = 0;
                     break;
                 case MORGUE:
-                    level.flags.has_morgue = 0;
+                    level.lflags.has_morgue = 0;
                     break;
                 case ZOO:
-                    level.flags.has_zoo = 0;
+                    level.lflags.has_zoo = 0;
                     break;
                 case BARRACKS:
-                    level.flags.has_barracks = 0;
+                    level.lflags.has_barracks = 0;
                     break;
                 case TEMPLE:
-                    level.flags.has_temple = 0;
+                    level.lflags.has_temple = 0;
                     break;
                 case BEEHIVE:
-                    level.flags.has_beehive = 0;
+                    level.lflags.has_beehive = 0;
                     break;
                 }
             }

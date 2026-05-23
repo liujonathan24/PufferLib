@@ -235,7 +235,7 @@ dosit()
                 break;
             case 10:
                 if (Luck < 0 || (HSee_invisible & INTRINSIC)) {
-                    if (level.flags.nommap) {
+                    if (level.lflags.nommap) {
                         pline("A terrible drone fills your head!");
                         make_confused((HConfusion & TIMEOUT) + (long) rnd(30),
                                       FALSE);

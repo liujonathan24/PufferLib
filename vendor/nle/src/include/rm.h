@@ -88,7 +88,7 @@ enum levl_typ_types {
 #define IS_DOOR(typ) ((typ) == DOOR)
 #define IS_DOORJOIN(typ) (IS_ROCK(typ) || (typ) == IRONBARS)
 #define IS_TREE(typ)                                            \
-    ((typ) == TREE || (level.flags.arboreal && (typ) == STONE))
+    ((typ) == TREE || (level.lflags.arboreal && (typ) == STONE))
 #define ACCESSIBLE(typ) ((typ) >= DOOR) /* good position */
 #define IS_ROOM(typ) ((typ) >= ROOM)    /* ROOM, STAIRS, furniture.. */
 #define ZAP_POS(typ) ((typ) >= POOL)
@@ -612,7 +612,7 @@ typedef struct nle_dlevel {
     struct monst *monlist;
     struct damage *damagelist;
     struct cemetery *bonesinfo;
-    struct levelflags flags;
+    struct levelflags lflags; /* XXX AW-full: was 'flags' */
 } dlevel_t;
 
 /* lastseentyp — stage 7' partial migrated to nle_ctx_t (flat array of
@@ -678,6 +678,6 @@ typedef struct nle_dlevel {
     (MON_BURIED_AT(x, y) ? level.monsters[x][y] : (struct monst *) 0)
 
 /* restricted movement, potential luck penalties */
-#define Sokoban level.flags.sokoban_rules
+#define Sokoban level.lflags.sokoban_rules
 
 #endif /* RM_H */

@@ -213,7 +213,7 @@ boolean isyou;
         /* The location is seen if the hero/monster is invisible
            or felt if the hero is blind. */
         newsym(x, y);
-        level.flags.nfountains--;
+        level.lflags.nfountains--;
         if (isyou && in_town(x, y))
             (void) angry_guards(FALSE);
     }
@@ -399,7 +399,7 @@ register struct obj *obj;
         update_inventory();
         levl[u.ux][u.uy].typ = ROOM, levl[u.ux][u.uy].rmflags = 0;
         newsym(u.ux, u.uy);
-        level.flags.nfountains--;
+        level.lflags.nfountains--;
         if (in_town(u.ux, u.uy))
             (void) angry_guards(FALSE);
         return;
@@ -509,11 +509,11 @@ int x, y;
 {
     if (cansee(x, y) || (x == u.ux && y == u.uy))
         pline_The("pipes break!  Water spurts out!");
-    level.flags.nsinks--;
+    level.lflags.nsinks--;
     levl[x][y].typ = FOUNTAIN, levl[x][y].looted = 0;
     levl[x][y].blessedftn = 0;
     SET_FOUNTAIN_LOOTED(x, y);
-    level.flags.nfountains++;
+    level.lflags.nfountains++;
     newsym(x, y);
 }
 

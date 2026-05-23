@@ -558,7 +558,7 @@ int mode;
     bwrite(fd, (genericptr_t) &sstairs, sizeof (stairway));
     bwrite(fd, (genericptr_t) &updest, sizeof (dest_area));
     bwrite(fd, (genericptr_t) &dndest, sizeof (dest_area));
-    bwrite(fd, (genericptr_t) &level.flags, sizeof level.flags);
+    bwrite(fd, (genericptr_t) &level.lflags, sizeof level.lflags);
     bwrite(fd, (genericptr_t) doors, sizeof doors);
     save_rooms(fd); /* no dynamic memory to reclaim */
 

@@ -1092,7 +1092,7 @@ boolean ghostly;
     mread(fd, (genericptr_t) &sstairs, sizeof(stairway));
     mread(fd, (genericptr_t) &updest, sizeof(dest_area));
     mread(fd, (genericptr_t) &dndest, sizeof(dest_area));
-    mread(fd, (genericptr_t) &level.flags, sizeof(level.flags));
+    mread(fd, (genericptr_t) &level.lflags, sizeof(level.lflags));
     /* stage 7': `doors` is now a `coord *` macro, not an array. */
     mread(fd, (genericptr_t) doors, DOORMAX * sizeof(coord));
     rest_rooms(fd); /* No joke :-) */

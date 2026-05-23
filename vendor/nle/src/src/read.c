@@ -1549,7 +1549,7 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
             recharge(otmp, scursed ? -1 : sblessed ? 1 : 0);
         break;
     case SCR_MAGIC_MAPPING:
-        if (level.flags.nommap) {
+        if (level.lflags.nommap) {
             Your("mind is filled with crazy lines!");
             if (Hallucination)
                 pline("Wow!  Modern art.");
@@ -1570,7 +1570,7 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
         known = TRUE;
         /*FALLTHRU*/
     case SPE_MAGIC_MAPPING:
-        if (level.flags.nommap) {
+        if (level.lflags.nommap) {
             Your("%s spins as %s blocks the spell!", body_part(HEAD),
                  something);
             make_confused(HConfusion + rnd(30), FALSE);

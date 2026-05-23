@@ -3722,7 +3722,7 @@ struct obj *no_wish;
         p = eos(bp);
         if (!BSTRCMPI(bp, p - 8, "fountain")) {
             lev->typ = FOUNTAIN;
-            level.flags.nfountains++;
+            level.lflags.nfountains++;
             if (!strncmpi(bp, "magic ", 6))
                 lev->blessedftn = 1;
             pline("A %sfountain.", lev->blessedftn ? "magic " : "");
@@ -3733,7 +3733,7 @@ struct obj *no_wish;
             madeterrain = TRUE;
         } else if (!BSTRCMPI(bp, p - 4, "sink")) {
             lev->typ = SINK;
-            level.flags.nsinks++;
+            level.lflags.nsinks++;
             pline("A sink.");
             madeterrain = TRUE;
 

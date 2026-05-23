@@ -1209,48 +1209,48 @@ wiz_map_levltyp(VOID_ARGS)
             /* alignment currently omitted to save space */
         }
         /* level features */
-        if (level.flags.nfountains)
+        if (level.lflags.nfountains)
             Sprintf(eos(dsc), " %c:%d", defsyms[S_fountain].sym,
-                    (int) level.flags.nfountains);
-        if (level.flags.nsinks)
+                    (int) level.lflags.nfountains);
+        if (level.lflags.nsinks)
             Sprintf(eos(dsc), " %c:%d", defsyms[S_sink].sym,
-                    (int) level.flags.nsinks);
-        if (level.flags.has_vault)
+                    (int) level.lflags.nsinks);
+        if (level.lflags.has_vault)
             Strcat(dsc, " vault");
-        if (level.flags.has_shop)
+        if (level.lflags.has_shop)
             Strcat(dsc, " shop");
-        if (level.flags.has_temple)
+        if (level.lflags.has_temple)
             Strcat(dsc, " temple");
-        if (level.flags.has_court)
+        if (level.lflags.has_court)
             Strcat(dsc, " throne");
-        if (level.flags.has_zoo)
+        if (level.lflags.has_zoo)
             Strcat(dsc, " zoo");
-        if (level.flags.has_morgue)
+        if (level.lflags.has_morgue)
             Strcat(dsc, " morgue");
-        if (level.flags.has_barracks)
+        if (level.lflags.has_barracks)
             Strcat(dsc, " barracks");
-        if (level.flags.has_beehive)
+        if (level.lflags.has_beehive)
             Strcat(dsc, " hive");
-        if (level.flags.has_swamp)
+        if (level.lflags.has_swamp)
             Strcat(dsc, " swamp");
         /* level flags */
-        if (level.flags.noteleport)
+        if (level.lflags.noteleport)
             Strcat(dsc, " noTport");
-        if (level.flags.hardfloor)
+        if (level.lflags.hardfloor)
             Strcat(dsc, " noDig");
-        if (level.flags.nommap)
+        if (level.lflags.nommap)
             Strcat(dsc, " noMMap");
-        if (!level.flags.hero_memory)
+        if (!level.lflags.hero_memory)
             Strcat(dsc, " noMem");
-        if (level.flags.shortsighted)
+        if (level.lflags.shortsighted)
             Strcat(dsc, " shortsight");
-        if (level.flags.graveyard)
+        if (level.lflags.graveyard)
             Strcat(dsc, " graveyard");
-        if (level.flags.is_maze_lev)
+        if (level.lflags.is_maze_lev)
             Strcat(dsc, " maze");
-        if (level.flags.is_cavernous_lev)
+        if (level.lflags.is_cavernous_lev)
             Strcat(dsc, " cave");
-        if (level.flags.arboreal)
+        if (level.lflags.arboreal)
             Strcat(dsc, " tree");
         if (Sokoban)
             Strcat(dsc, " sokoban-rules");
