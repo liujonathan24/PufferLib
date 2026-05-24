@@ -2466,6 +2466,16 @@ mapseen *mptr;
 void
 recalc_mapseen()
 {
+    /* exp_039: recalc_mapseen was ~6% of user CPU at iter-5 puffer N=128.
+     * It updates the player's "discovered rooms/features" annotations used
+     * by the in-game overview map and travel-by-click — not consumed by
+     * the RL agent (the observation gets chars/glyphs from level.locations
+     * directly via fill_obs). Skip entirely under the RL window-port.
+     * If a future caller needs it (e.g., for replay rendering), gate via
+     * !iflags.status_updates instead. */
+    if (!iflags.status_updates)
+        return;
+    {
     mapseen *mptr;
     struct monst *mtmp;
     struct cemetery *bp, **bonesaddr;
@@ -2720,6 +2730,7 @@ recalc_mapseen()
             bp->bonesknown = TRUE;
             mptr->mflags.knownbones = 1;
         }
+    } /* exp_039: close gated-block */
 }
 
 /*ARGUSED*/
