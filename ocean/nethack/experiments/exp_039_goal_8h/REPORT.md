@@ -12,21 +12,24 @@ emits the formatted status line into the windowport. This also gates
 the `recalc_mapseen` early-return at `dungeon.c:2467` (added in commit
 `4440a55e`).
 
-Observable consequences for the RL agent:
+Observable consequences for the RL agent (POST-FIX `179f6dcc`):
 - The agent's `blstats` obs (HP, score, depth, etc.) is unchanged —
-  populated by `update_blstats` (`winrl.cc:686-714`) reading
-  `u.uX` / `youmonst` directly, NOT through the bot/eval_notify chain.
+  `fill_obs()` now calls `update_blstats()` unconditionally before
+  the memcpy. **BUT initially this was BROKEN**: pre-`179f6dcc` the
+  `update_blstats()` call was reached only via `bot()` →
+  `rl_status_update`, which `!status_updates` short-circuits, so the
+  agent saw HP=HPMAX=DEPTH=AC=...=0. Found by diff'ing obs buffers
+  between `status_updates=ON` and `OFF`. The whole iter-9 stability
+  matrix trained on zero stats. Fix landed as `179f6dcc`.
 - The agent's `message` obs is unchanged — it's filled from
   `toplines` (`winrl.cc:506`), which `pline()` writes to directly.
 - The agent's `chars`/`colors`/`glyphs`/`specials` obs are unchanged.
-- **But**: `iflags.status_updates` is an `if`-gate that branches
-  internal game-loop paths (e.g. `allmain.c:378` skips a `timebot()`
-  call). The May-22 goldens captured before this flip therefore
-  diverge byte-for-byte from current HEAD's replay. **All 16 May-22
-  goldens FAIL against this build.** We re-captured against current
-  HEAD (commit `c8f5604e`): 16/16 record, 16/16 replay-all PASS, and
-  the previously-documented 3 reset-hang seeds (4, 5, 16) now complete
-  cleanly thanks to BH/BI/BJ/BK.
+- **Goldens captured pre-fix differ from post-fix**: before the fix,
+  blstats were zero (boring but consistent). After the fix, blstats
+  carry real values. Goldens re-captured against post-fix HEAD:
+  16/16 record, 16/16 replay-all PASS.
+- The May-22 goldens captured before the whole `!status_updates`
+  change also failed against any post-session build.
 
 Quantified perf cost of reverting `!status_updates` (in case future
 maintainers want the May-22 obs contract back):
