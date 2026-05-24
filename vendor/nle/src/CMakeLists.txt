@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.15)
 file(STRINGS "version.txt" NLE_VERSION)
 project(nle VERSION ${NLE_VERSION})
 
+# Default to RelWithDebInfo: at -O0 (Debug) the per-env macro accesses
+# (#define name (current_nle_ctx->s_name)) re-load __thread current_nle_ctx
+# on every reference inside inner loops, which costs ~20-25% SPS at N=1024.
+# -O2 hoists the TLS load. Explicit CMAKE_BUILD_TYPE on the command line
+# still wins.
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Default build type" FORCE)
+endif()
+
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message("Debug build.")
   # Unclear if this is even necessary. `dsymutil rlmain -o rlmain.dSYM` seems to

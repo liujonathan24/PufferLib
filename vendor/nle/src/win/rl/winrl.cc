@@ -91,7 +91,12 @@ using LibcVector = std::vector<T, LibcAllocator<T> >;
 template <class T>
 using LibcDeque = std::deque<T, LibcAllocator<T> >;
 
-using WinProcDeque = LibcDeque<LibcString>;
+/* Store const char* literals (not LibcString). All 38 ScopedStack call sites
+ * pass string literals — no need to construct an std::basic_string per push
+ * (a measurable hot-path cost; many of the literals exceed libstdc++ SSO and
+ * hit libc malloc each call). Nothing ever reads the contents — the deque is
+ * pure scope-tracking. */
+using WinProcDeque = LibcDeque<const char *>;
 
 /* Helper: build a LibcString from a C string without relying on a converting
  * constructor that might be ambiguous with the per-allocator overload set. */
@@ -156,7 +161,7 @@ class ScopedStack
   public:
     ScopedStack(WinProcDeque &deque, const char *s) : deque_(deque)
     {
-        deque_.emplace_back(make_libc_string(s));
+        deque_.push_back(s);
     }
 
     ~ScopedStack()
