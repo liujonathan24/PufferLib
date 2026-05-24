@@ -7,6 +7,9 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 #include "tcap.h" /* for TERMLIB and ASCIIGRAPH */
+#include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
 
 /* Cluster AU group 1 — per-env restore state. Same direct-ctx pattern
  * as save.c; see vendor/nle/src/include/nle.h for the fields. */
@@ -1688,6 +1691,25 @@ register unsigned int len;
             restoreprocs_mread_flags = -1;
             return;
         } else {
+            /* Short-read instrumentation: distinguishes "file truly truncated"
+             * (pos+rlen == size, the writer dropped bytes) from "read errored
+             * mid-file" (pos+rlen < size, EIO/EINTR). Goes to stderr because
+             * pline() may not be wired up before the panic chain dumps. */
+            {
+                off_t pos = lseek(fd, 0, SEEK_CUR);
+                struct stat st;
+                long long st_size = -1;
+                if (fstat(fd, &st) == 0) st_size = (long long) st.st_size;
+                fprintf(stderr,
+                        "DEF_MREAD_SHORT pid=%d hackdir=%s fd=%d "
+                        "pos=%lld size=%lld expected=%u got=%d errno=%d (%s)\n",
+                        current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                        (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                            ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                        fd, (long long) pos, st_size, len, rlen,
+                        errno, strerror(errno));
+                fflush(stderr);
+            }
             pline("Read %d instead of %u bytes.", rlen, len);
             if (current_nle_ctx->restoring) {
                 (void) nhclose(fd);

@@ -6,6 +6,8 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
+#include <errno.h>
+#include <string.h>
 
 /* Cluster AU group 1 — per-env save-session state. Macros rewrite
  * file-statics to direct nle_ctx_t fields so concurrent c_reset save
@@ -788,6 +790,17 @@ register unsigned num;
     }
 
     if (failed) {
+        /* Short-write instrumentation paired with def_mread's. If this fires,
+         * we know the writer truly produced a truncated file (matched later
+         * by reader's pos+rlen == size). */
+        fprintf(stderr,
+                "DEF_BWRITE_SHORT pid=%d hackdir=%s fd=%d expected=%u "
+                "errno=%d (%s)\n",
+                current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                    ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                fd, num, errno, strerror(errno));
+        fflush(stderr);
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
         if (current_nle_ctx->program_state.done_hup)
             nh_terminate(EXIT_FAILURE);
