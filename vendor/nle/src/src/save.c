@@ -741,6 +741,24 @@ STATIC_OVL void
 def_bufoff(fd)
 int fd;
 {
+#ifdef UNIX
+    /* Short-flush instrumentation: if bufoff is called for an fd that is
+     * NOT the one currently buffered, def_bflush silently no-ops; any bytes
+     * still in bw_FILE's stdio buffer would then be dropped by the matching
+     * def_bclose's `nhclose(fd)` (which closes the raw fd without flushing
+     * the FILE*). This pairs with the exp_037 smoking gun: a level file
+     * exactly the writer's claimed size but missing the last record. */
+    if (fd != bw_fd) {
+        fprintf(stderr,
+                "DEF_BUFOFF_MISMATCH pid=%d hackdir=%s fd=%d bw_fd=%d "
+                "buffering=%d errno=%d (%s)\n",
+                current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                    ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                fd, bw_fd, (int) buffering, errno, strerror(errno));
+        fflush(stderr);
+    }
+#endif
     def_bflush(fd);
     buffering = FALSE;
 }
@@ -751,8 +769,16 @@ int fd;
 {
 #ifdef UNIX
     if (fd == bw_fd) {
-        if (fflush(bw_FILE) == EOF)
+        if (fflush(bw_FILE) == EOF) {
+            fprintf(stderr,
+                    "DEF_BFLUSH_FAIL pid=%d hackdir=%s fd=%d errno=%d (%s)\n",
+                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                    fd, errno, strerror(errno));
+            fflush(stderr);
             panic("flush of savefile failed!");
+        }
     }
 #endif
     return;
@@ -817,9 +843,53 @@ int fd;
     bufoff(fd);
 #ifdef UNIX
     if (fd == bw_fd) {
-        (void) fclose(bw_FILE);
+        /* exp_037: the prior `(void) fclose(bw_FILE)` silently discarded
+         * fclose's return. After a successful fflush in def_bflush, fclose
+         * still drains the stdio buffer one more time and writes the FILE*'s
+         * internal state — if the underlying close(2) errors (EIO, ENOSPC,
+         * EDQUOT) or any residual buffered byte fails to flush, those bytes
+         * are dropped without notice. The N=1024 short-read panic at
+         * restmon (eshk, 4936 bytes) saw `pos == size` on the reader, so the
+         * file on disk was exactly the writer's `claimed' length — meaning
+         * the bug is on the writer side and the only ignored error path left
+         * is fclose. Check it and panic loudly with full context. */
+        FILE *bf = bw_FILE;
+        int save_fd = bw_fd;
+        int rc;
+        off_t end_pos_pre = lseek(save_fd, 0, SEEK_CUR);
+        /* Reset state BEFORE fclose so a re-entrant panic path can't
+         * double-close. */
         bw_fd = -1;
         bw_FILE = 0;
+        /* Force the kernel to push the just-flushed stdio bytes to the
+         * filesystem before fclose. This is paranoia — fflush already
+         * pushed bytes via write(2), so fsync should be a no-op here in
+         * terms of correctness, but it ensures we surface EIO/ENOSPC as
+         * an error rather than only after fclose has discarded info. */
+        if (fsync(save_fd) != 0 && errno != EINVAL /* pipe etc */) {
+            fprintf(stderr,
+                    "DEF_BCLOSE_FSYNC_FAIL pid=%d hackdir=%s fd=%d "
+                    "errno=%d (%s)\n",
+                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                    save_fd, errno, strerror(errno));
+            fflush(stderr);
+        }
+        rc = fclose(bf);
+        (void) end_pos_pre;
+        if (rc != 0) {
+            fprintf(stderr,
+                    "DEF_BCLOSE_FCLOSE_FAIL pid=%d hackdir=%s fd=%d rc=%d "
+                    "errno=%d (%s)\n",
+                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                    save_fd, rc, errno, strerror(errno));
+            fflush(stderr);
+            panic("fclose of savefile failed (fd=%d errno=%d)",
+                  save_fd, errno);
+        }
     } else
 #endif
         (void) nhclose(fd);
