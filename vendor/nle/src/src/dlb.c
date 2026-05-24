@@ -144,8 +144,26 @@ library *lp; /* library pointer to fill in */
     if (lp->rev > DLB_MAX_VERS || lp->rev < DLB_MIN_VERS)
         return FALSE;
 
+    /* Cluster BI: dlb_libs[] is process-global, but the alloc() macro under
+     * NLE_USE_ARENA_FREE places allocations into the *current env's* per-env
+     * mmap'd arena (see alloc.c). When that first env later runs nle_end,
+     * its arena is munmapped — and dlb_libs[i].dir / .sspace become dangling
+     * pointers into freed VA. Subsequent envs hitting find_file() during
+     * init_dungeons -> dlb_fopen("dungeon") then crash in __strcmp_avx2 on
+     * lp->dir[j].fname. Allocate via libc malloc directly so these survive
+     * any env's teardown for the full process lifetime. close_library is
+     * already a no-op under NLE_USE_ARENA_FREE, so no free path needs to
+     * change. */
+#ifdef NLE_USE_ARENA_FREE
+    extern void *__libc_malloc(size_t);
+    lp->dir = (libdir *) __libc_malloc((size_t) lp->nentries * sizeof(libdir));
+    lp->sspace = (char *) __libc_malloc((size_t) lp->strsize);
+    if (!lp->dir || !lp->sspace)
+        return FALSE;
+#else
     lp->dir = (libdir *) alloc(lp->nentries * sizeof(libdir));
     lp->sspace = (char *) alloc(lp->strsize);
+#endif
 
     /* read in each directory entry */
     for (i = 0, sp = lp->sspace; i < lp->nentries; i++) {
