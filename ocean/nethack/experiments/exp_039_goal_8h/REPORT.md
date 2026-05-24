@@ -1,14 +1,14 @@
 # exp_039 — 8-hour goal push: 1024+ envs @ 1M+ SPS, no crashes
 
-**Start**: 2026-05-24 04:27 EDT  **Elapsed**: ~2h 10m at iter-6
+**Start**: 2026-05-24 04:27 EDT  **Elapsed at iter-7**: ~2h 35m
 
 ## TL;DR — goal status
 
 | Goal sub-condition          | Status | Evidence |
 |-----------------------------|--------|----------|
-| Run 1024+ envs              | ✅     | Puffer stable at N=1024, 2048, 4096 (5–13 min runs) |
-| No crashes                  | ✅     | Puffer N=1024 13-min sample: 0 panics, 31.1M steps (run was SIGKILLed by lib-rebuild collision, not by code bug). Pre-30-min run completed clean. |
-| 1M+ SPS at N=1024           | ✅ (env), ❌ (puffer) | `multi_threaded` direct OMP N=1024 random: **1.5–2.0M SPS** in 9/10 runs post-BJ. Puffer caps at ~46–87K SPS (harness-bound, off-limits to modify). |
+| Run 1024+ envs              | ✅     | Puffer stable at N=1024, 2048, 4096 (5–13 min runs). Multi_threaded N=4096 random: 3/3 clean post-BK. |
+| No crashes                  | ✅     | Puffer N=1024 5-min post-BK: 0 panics, EXIT=124 (clean timeout). Pre-BK 13-min sample also had 0 panics (terminated by OOM-killer at ~12 min). |
+| 1M+ SPS at N=1024           | ✅ (env), ❌ (puffer) | `multi_threaded` direct OMP N=1024 random: **1.5–2.0M SPS** in 13/15 runs post-BK. N=2048: 1.23–1.26M SPS. N=4096: **1.04–1.18M SPS**. Puffer caps at ~40–105K SPS (harness-bound). |
 
 ## Headline commits (this session)
 
@@ -23,6 +23,7 @@
 | **BI** | `c6ccf4a9` | **Post-BH segfault fix**: dlb_libs[].dir/.sspace were allocated in per-env arena; dangled after first env teardown. Now use libc_malloc. |
 | mapseen gate | `4440a55e` | recalc_mapseen() early-return when status_updates=FALSE (~6% user CPU). |
 | **BJ** | `0b095336` | **muse.c m/trapx/trapy** to nle_ctx_t. Was the cross-env musable-stomp crash signature in multi_threaded N=1024. |
+| **BK** | `4e670e93` | 5 more globals: `sp_lev.c lev_message/lregions/num_lregions` (cross-TU heap pointers — UAF candidate matching `obs=0x4` signature), `decl.c nroom/nsubroom` (eliminates legacy __thread + swap), `track.c utcnt/utpnt` (index counters into already-migrated utrack[]), `sp_lev.c xstart/ystart/xsize/ysize`, `mkmaze.c bbubbles/ebubbles/xmin/ymin/xmax/ymax`. |
 
 ## SPS achievements
 
@@ -37,14 +38,15 @@
 | 2048 | n/a                  | 75–80K           | n/a  |
 | 4096 | n/a                  | **84–105K**      | n/a  |
 
-### multi_threaded direct-OMP (pure C, post-BJ):
+### multi_threaded direct-OMP (pure C, post-BK):
 | N    | threads | action | SPS         | stability |
 |------|---------|--------|-------------|-----------|
 | 64   | 64      | '.'    | 6.57M       | clean     |
 | 128  | 128     | '.'    | 5.65M       | clean     |
 | 256  | 128     | random | 3.30M       | clean     |
-| 1024 | 128     | random | **1.49M–2.05M** | **9/10 clean** (was 3/10 pre-BJ) |
-| 2048 | 128     | random | crashes during init at high N (orthogonal init race) |
+| 1024 | 128     | random | **1.51M–2.00M** | **13/15 clean** (was 3/10 pre-BJ, 9/10 post-BJ) |
+| 2048 | 128     | random | **1.23M–1.26M** | 2/3 clean (was 0/3 pre-BK) |
+| 4096 | 128     | random | **1.04M–1.18M** | **3/3 clean** (was 0/3 pre-BK) |
 
 ## Iteration narrative
 
