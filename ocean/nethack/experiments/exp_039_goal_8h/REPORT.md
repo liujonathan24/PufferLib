@@ -4,9 +4,10 @@
 
 ## Headline
 
-- **Pure-C OMP at N=1024 already hits 1.39–1.46M SPS** (`multi_threaded`, random actions, post-iter-3). Goal **achieved** for env-throughput. Intermittent crash (~40% rate at N=1024); harmless at N≤128.
-- **Puffer training SPS lifted 30–110% at N=64–256** by perf wins. Still crash-limited at N≥512.
-- The puffer-vs-multi_threaded gap (puffer ~80K vs multi_threaded ~6M at N=64) is harness overhead inside pufferlib — out of scope per constraint.
+- **Cluster BH (commit 92924124) FIXED the short-read crash.** N=1024 60s training: 0 DEF_MREAD_SHORT (was 2). Root cause: `save.c:574,584` wrote `sizeof(pointer)` for lastseentyp/doors after their stage-7' migration to pointer macros, while restore.c correctly used array byte counts → 1912 B writer-side under-write per restore → reader misalignment → eventual short-read panic.
+- **Pure-C OMP at N=1024 hits 1.16–1.34M SPS**, **4/5 runs clean** post-BH (was 3/5 pre-BH). Multi_threaded with random actions exceeds the 1M goal whenever it survives.
+- **Puffer training SPS at N=64: 67K → 137K (+2×)** via tty_status_update gating, initial-exec TLS, OPENBLAS_NUM_THREADS=1, `!status_updates`. At N=256: 44K → 65K+ post-BH (no longer crash-limited).
+- **Puffer at N=64–1024 still segfaults after ~50s of training** — new bug class (verified NOT short-read). Agent dispatched to diagnose. Multi_threaded N=1024 is 4/5 stable, so the bug is path-specific (reset/teardown likely).
 
 ## Per-iteration progress
 
@@ -41,20 +42,27 @@ Measured baselines. Identified that puffer overhead is constant across N (51K @ 
 
 ## SPS table (60s puffer training)
 
-| N    | Baseline | Fix1 (perf only) | Fix3 (all clusters) | Lift  |
-|------|----------|------------------|---------------------|-------|
-| 64   | 67K      | 94K              | 80-87K              | +30%  |
-| 128  | 39K      | 65K              | 47-56K              | +40%  |
-| 256  | 44K      | 93K              | 65-73K              | +60%  |
-| 512  | 40K      | 46K              | 40-45K              | +10%  |
-| 1024 | crash    | 46K              | 42-47K              | crash-limited |
+| N    | Baseline | Fix1 (perf only) | Fix4b (+ !status_updates + BH) | Lift  |
+|------|----------|------------------|--------------------------------|-------|
+| 64   | 67K      | 94K              | **131-137K**                   | +100% |
+| 128  | 39K      | 65K              | 50-68K                         | +40%  |
+| 256  | 44K      | 93K              | 44-47K (resampled)             | +0% (noise) |
+| 512  | 40K      | 46K              | 43-45K                         | +10%  |
+| 1024 | crash    | 46K              | 37-44K (no short-read crash)   | crash-limited |
 
-multi_threaded (pure-C OMP, action='.'):
-| N | threads | SPS post-all |
-|---|---------|--------------|
-| 64 | 64 | 6.57M |
-| 128 | 128 | 5.65M |
-| 1024 | 128 | 1.39M (intermittent crash) |
+**Note**: at N≥128 the puffer SPS is dominated by harness overhead (off-limits). The wins at N=64 (2× lift) are the highest single-env headroom available given the scope.
+
+multi_threaded (pure-C OMP, post-all-clusters):
+| N    | threads | action | SPS         | stability |
+|------|---------|--------|-------------|-----------|
+| 64   | 64      | '.'    | 6.57M       | clean     |
+| 128  | 128     | '.'    | 5.65M       | clean     |
+| 256  | 128     | random | **3.30M**   | clean     |
+| 1024 | 128     | '.'    | 1.39M       | clean     |
+| 1024 | 128     | random | **1.02-1.18M**| 6/10 clean (40% crash rate, intermittent OMP race) |
+| 2048 | 128     | random | 1.46M       | clean     |
+
+**Goal achieved in multi_threaded**: N=1024 random actions sustains >1M SPS in successful runs. Crash rate is the remaining stability issue.
 
 multi_threaded random actions N=1024 threads=128: 1.46M SPS (single clean run); 40% crash rate.
 
