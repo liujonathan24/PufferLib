@@ -104,3 +104,93 @@ both clean for 10 minutes, the bug is closed.
 - `n1024.out`, `n1024.err`, `n1024.out.exit`
 - `cores/core.3593979` (1.9 GB, on /scratch)
 - `REPORT.md` (this file)
+
+---
+
+## Followup attempt (commit df811867): writer-side close path ruled out
+
+Strengthened the writer side to surface every previously-silent error:
+
+| check                                         | result on N=1024 600s repro |
+| --------------------------------------------- | --------------------------- |
+| `def_bclose`: check `fclose` retval           | never fired                 |
+| `def_bclose`: `fsync(bw_fd)` before `fclose`  | never fired                 |
+| `def_bflush`: log on `fflush == EOF`          | never fired                 |
+| `def_bwrite`: short-write log (pre-existing)  | never fired                 |
+| `def_bufoff`: log when `fd != bw_fd`          | fires ONCE post-panic (fd=50, bw_fd=-1) — savebones/teardown noise, NOT pre-crash |
+
+So with these checks active, the writer believes every byte was
+buffered (`fwrite` ok), drained (`fflush` ok), synced (`fsync` ok),
+and the fd closed cleanly (`fclose` rc=0). And yet the reader still
+hits `DEF_MREAD_SHORT pos=18702 size=18702 expected=4936 got=3100`
+on the SAME file. The level file is exactly the writer's claimed
+length, and we've now proven the writer's claim is honest.
+
+That means the bug is **NOT** in the buffered-write/close chain.
+The data was written and synced; something else is making the file
+shorter than expected. Three lines of investigation left:
+
+### Hypothesis 1: `sizeof(struct eshk)` is different between writer and reader
+
+The reader's `mread(fd, ESHK(mtmp), sizeof(struct eshk))` expects 4936.
+The writer's `bwrite(fd, ESHK(mtmp), buflen)` writes `buflen = sizeof(struct eshk)`.
+Same translation unit, same struct — should be identical. But `struct eshk`
+in `vendor/nle/src/include/eshk.h` contains `struct bill_x bill[BILLSZ]`,
+inline `char *shknam`, etc. If any sub-struct contains a flex array or a
+post-`#pragma pack` change, sizeof can differ across compilation units.
+
+Verify: add `_Static_assert(sizeof(struct eshk) == 4936, ...)` at top of
+save.c and restore.c. Also assert `sizeof(struct monst) == X`, since
+similar shenanigans there would shift the file layout.
+
+### Hypothesis 2: ESHK pointer aliasing / wild pointer
+
+`ESHK(mtmp)` returns `mtmp->mextra->eshk`. If `mtmp->mextra` was UAF'd
+(realloc'd by another env's allocator?), `eshk` could point at an
+allocation that is only 3100 bytes mapped. `fwrite(loc, 4936, 1, FILE)`
+would call `memcpy(stdio_buf, loc, 4936)` which would SIGSEGV at the
+unmapped page boundary. **BUT** if `loc` straddles into a guard page that
+is mapped but read-protected, memcpy errors differently. And if it's
+mapped-readable but the env's arena gave us a short tail allocation,
+we'd write 4936 garbage bytes successfully and the issue would be
+content-corruption, not size-truncation. So this hypothesis does NOT
+explain `size == 18702 < 23638`.
+
+Wait — actually it might. If `fwrite`'s underlying `_IO_default_xsputn`
+path discovers SIGSEGV in the memcpy and the SIGSEGV is caught by the
+fcontext stack (NetHack's coroutine), the signal handler might rewind
+the stack and resume at a higher call site — leaving the FILE in an
+inconsistent state with only 3100 bytes buffered. NLE's fcontext setup
+is unusual; check whether SIGSEGV is masked or installed with a custom
+handler that prevents normal core dumps. We'd see this as: writer thinks
+fwrite succeeded; fflush flushes 3100 bytes; fclose returns 0; file
+is 3100 bytes short. Matches the smoking gun.
+
+Concrete test: in `def_bwrite`, before the `fwrite`, write `loc[0]` and
+`loc[num-1]` (force the read) and assert no segv. Or run with
+`MALLOC_CHECK_=3 LD_PRELOAD=libduma.so` or `valgrind --tool=memcheck`
+(slow at N=1024, but N=64 may reproduce).
+
+### Hypothesis 3: The file is being truncated AFTER write
+
+Some path on the writer's env re-opens the level file with `O_TRUNC`
+between the save and the matching `goto_level` restore. The level file
+path is `<hackdir>/<plname>.<ledger>` and `create_levelfile` always uses
+`O_TRUNC`. Search for any second `create_levelfile(ledger)` between the
+first close and the read. In particular, `freelev_p`, `dosave0`,
+`savebones`, `mklev` — does anything on the path re-open level files
+for *write* (not read)?
+
+Concrete test: instrument `create_levelfile` to log every call (path,
+fd, pid, hackpid) and grep for the same level number being created
+twice without an intervening delete_levelfile + open_levelfile(read).
+
+### Recommendation for next session
+
+Do Hypothesis 1 first (static_assert) — it's a one-line change with a
+big payoff if wrong. Then Hypothesis 3 (create_levelfile log). Hypothesis 2
+last (most invasive).
+
+Also: budget bigger than 90 minutes — at N=1024 the repro takes 25-60s
+to fire and rebuild is ~30s, so each iteration is a 1-2 min cycle. Plan
+for 8-10 iterations.
