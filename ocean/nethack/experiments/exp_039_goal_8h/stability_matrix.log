@@ -1,0 +1,29 @@
+--- N=64 T=300 ---
+Sun May 24 10:59:30 AM EDT 2026
+EXIT=EXIT=124 panics=0
+uptime: │  Uptime    0d 0h 4m 55s                             kl                0.002  │
+sps: │  SPS              65.9K      Misc      15ms   2%    total            -0.213  │
+return: │  episode_return                8.775    episode_length             1756.500  │
+
+--- N=256 T=300 ---
+Sun May 24 11:04:31 AM EDT 2026
+EXIT=EXIT=124 panics=0
+uptime: │  Uptime    0d 0h 4m 55s                             kl                0.001  │
+sps: │  SPS              58.6K      Misc       6ms   0%    total            -0.255  │
+return: │  episode_return                8.562    episode_length             1190.923  │
+
+--- N=1024 T=600 ---
+Sun May 24 11:09:31 AM EDT 2026
+EXIT=EXIT=124 panics=0
+uptime: │  Uptime    0d 0h 9m 54s      Misc       4ms   0%    kl                0.001  │
+sps: │  SPS              41.8K               0m 1s         total            -0.268  │
+return: │  episode_return                9.463    episode_length             1436.070  │
+
+--- N=4096 T=300 ---
+Sun May 24 11:19:32 AM EDT 2026
+EXIT=EXIT=124 panics=0
+uptime: │  Uptime    0d 0h 4m 47s      Misc      13ms   0%    kl                0.001  │
+sps: │  SPS              45.2K               0m 5s         total            -0.267  │
+return: │  episode_return                9.620    episode_length             1639.737  │
+
+=== Matrix done Sun May 24 11:24:32 AM EDT 2026 ===
