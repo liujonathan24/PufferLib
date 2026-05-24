@@ -527,6 +527,15 @@ int
 nle_putchar(int c)
 {
     nle_ctx_t *nle = current_nle_ctx;
+    /* exp_039: when no tty observation is bound, the bytes nle_putchar
+     * writes to outbuf are dropped by nle_fflush (line ~509 gates
+     * tmt_write on obs->tty_chars/tty_colors/tty_cursor). Short-circuit
+     * the whole write path in that case. The RL agent doesn't bind
+     * tty_* fields in our config — see nle_obs init in ocean/nethack
+     * binding.c. Per perf: ~1.4% user CPU savings at N=1024. */
+    nle_obs *obs = nle->observation;
+    if (!obs || (!obs->tty_chars && !obs->tty_colors && !obs->tty_cursor))
+        return c;
     if (nle->outbuf_write_ptr >= nle->outbuf_write_end) {
         nle_fflush(stdout);
     }
