@@ -27,16 +27,29 @@
 
 ## SPS achievements
 
-### Puffer training (60s, all post-iter-6, 0 panics):
-| N    | Baseline pre-session | iter-6 post-all | Lift |
+### Puffer training (60s, post-iter-9, 0 panics):
+| N    | Baseline pre-session | iter-9 post-all | Lift |
 |------|----------------------|------------------|------|
-| 64   | 56–67K               | **80–137K**      | +60%—+100% |
-| 128  | 34–39K               | 50–68K           | +50% |
-| 256  | 42–44K               | 47–93K           | +60% |
-| 512  | 37–40K               | 43–47K           | +15% |
-| 1024 | crash-limited @ ~25s | **45–54K (10+ min stable)** | ∞ stability |
-| 2048 | n/a                  | 75–80K           | n/a  |
-| 4096 | n/a                  | **84–105K**      | n/a  |
+| 64   | 56–67K               | 43–51K           | (cache-fit, prefetch costs > benefit) |
+| 128  | 34–39K               | 45–54K           | +30% |
+| 256  | 42–44K               | 44–49K           | +10% |
+| 512  | 37–40K               | 44–47K           | +15% |
+| 1024 | crash-limited @ ~25s | **62–64K (10+ min stable)** | ∞ stability + +30% |
+| 2048 | n/a                  | 84–89K           | n/a  |
+| 4096 | crash                | **107–112K**     | ∞ stability |
+
+### Why the puffer SPS plateau at ~100K (not 1M)?
+
+**Root cause: cache thrash from round-robin OMP step pattern.**
+
+Puffer's harness does *one* c_step per env per horizon iteration. With nle_ctx_t at 72 KB and 8 envs per OMP thread (at N=1024 / 128 cores), each thread touches 576 KB of env state per OMP iter — bigger than the 1 MB L2 cache, so every c_step pays cold cache lines.
+
+A controlled bench (`/tmp/multi_threaded_rr` replicating puffer's pattern in pure-C) shows the same 10× slowdown vs the env-loop pattern:
+- `multi_threaded` env-loop (each thread runs all steps for env i before moving on): **1.5–2.0M SPS** at N=1024
+- `multi_threaded_rr` round-robin (one step per env per outer iter, mirroring puffer): **~270K SPS** at N=1024
+- Puffer training (same pattern + harness + GPU sync + Python callback): **~62K SPS** at N=1024
+
+The ~270K → 62K is real harness overhead (memcpy obs, drain prompts, reward shaping, GPU H2D/D2H, Python callback). The 1.5M → 270K is the cache pattern alone, structural to puffer's design and out of scope. We mitigated the cache-thrash side via `__builtin_prefetch` of the first 256 bytes of nle_ctx_t at nle_step entry (commit `e1989eda`), gaining ~30% at N=1024 / N=2048.
 
 ### multi_threaded direct-OMP (pure C, post-BK):
 | N    | threads | action | SPS         | stability |
