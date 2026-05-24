@@ -12,7 +12,10 @@
  * notonhead so each access expands to current_nle_ctx->s_notonhead. */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
-static NEARDATA int nothing, unkn;
+/* Cluster BG: nothing/unkn (per-action accumulators inside potion handlers)
+ * migrated to per-env via nle_ctx_t. Were static NEARDATA int. */
+#define nothing           (current_nle_ctx->s_potion_nothing)
+#define unkn              (current_nle_ctx->s_potion_unkn)
 static const char beverages[] = { POTION_CLASS, 0 };
 
 STATIC_DCL long FDECL(itimeout, (long));

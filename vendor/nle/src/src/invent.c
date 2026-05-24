@@ -1915,18 +1915,20 @@ struct obj *otmp;
             : FALSE;
 }
 
-/* extra xprname() input that askchain() can't pass through safe_qbuf() */
-STATIC_VAR struct xprnctx {
-    char let;
-    boolean dot;
-} safeq_xprn_ctx;
+/* Cluster BG: safeq_xprn_ctx (set per-action by askchain, read by
+ * safe_qbuf -> short_oname callbacks) migrated to per-env via nle_ctx_t.
+ * Was: STATIC_VAR struct xprnctx { char let; boolean dot; } safeq_xprn_ctx;
+ * Now: two scalar fields s_safeq_xprn_let / s_safeq_xprn_dot on nle_ctx_t;
+ * the 6 access sites use those directly. */
+#define safeq_xprn_let (current_nle_ctx->s_safeq_xprn_let)
+#define safeq_xprn_dot (current_nle_ctx->s_safeq_xprn_dot)
 
 /* safe_qbuf() -> short_oname() callback */
 STATIC_PTR char *
 safeq_xprname(obj)
 struct obj *obj;
 {
-    return xprname(obj, (char *) 0, safeq_xprn_ctx.let, safeq_xprn_ctx.dot,
+    return xprname(obj, (char *) 0, safeq_xprn_let, safeq_xprn_dot,
                    0L, 0L);
 }
 
@@ -1935,8 +1937,8 @@ STATIC_PTR char *
 safeq_shortxprname(obj)
 struct obj *obj;
 {
-    return xprname(obj, ansimpleoname(obj), safeq_xprn_ctx.let,
-                   safeq_xprn_ctx.dot, 0L, 0L);
+    return xprname(obj, ansimpleoname(obj), safeq_xprn_let,
+                   safeq_xprn_dot, 0L, 0L);
 }
 
 static const char removeables[] = { ARMOR_CLASS, WEAPON_CLASS,
@@ -2198,8 +2200,8 @@ int FDECL((*fn), (OBJ_P)), FDECL((*ckfn), (OBJ_P));
         if (bycat && !ckvalidcat(otmp))
             continue;
         if (!allflag) {
-            safeq_xprn_ctx.let = ilet;
-            safeq_xprn_ctx.dot = !nodot;
+            safeq_xprn_let = ilet;
+            safeq_xprn_dot = !nodot;
             *qpfx = '\0';
             if (first) {
                 /* traditional_loot() skips prompting when only one

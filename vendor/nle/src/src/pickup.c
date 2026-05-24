@@ -20,6 +20,11 @@
 #define oldcap        (current_nle_ctx->s_encumber_msg_oldcap)
 /* Cluster BB: add_valid_menu_class vmc_count accumulator -> per-env. */
 #define vmc_count     (current_nle_ctx->s_vmc_count)
+/* Cluster BG: per-action filter flags (set/cleared on each query_objlist
+ * pass). Per-env via nle_ctx_t to avoid cross-env races under OMP. */
+#define class_filter  (current_nle_ctx->s_class_filter)
+#define bucx_filter   (current_nle_ctx->s_bucx_filter)
+#define shop_filter   (current_nle_ctx->s_shop_filter)
 
 #define CONTAINED_SYM '>' /* from invent.c */
 
@@ -349,7 +354,8 @@ struct obj *obj;
  * MAXOCLASSES drift. */
 _Static_assert(MAXOCLASSES + 1 + 4 + 1 == 24,
                "MAXOCLASSES changed; update s_valid_menu_classes size in nle.h");
-static boolean class_filter, bucx_filter, shop_filter;
+/* Cluster BG: class_filter/bucx_filter/shop_filter migrated to nle_ctx_t
+ * via macros above. */
 
 /* check valid_menu_classes[] for an entry; also used by askchain() */
 boolean

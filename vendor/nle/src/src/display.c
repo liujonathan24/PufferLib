@@ -139,6 +139,16 @@
 #define flushing        (current_nle_ctx->s_flush_screen_flushing)
 #define delay_flushing  (current_nle_ctx->s_flush_screen_delay_flushing)
 
+/* Cluster BG: function-local statics in swallowed()/under_water()/
+ * under_ground() — per-env via nle_ctx_t. Names prefixed by function to
+ * avoid collisions (each function had its own lastx/lasty/dela). */
+#define swallowed_lastx    (current_nle_ctx->s_swallowed_lastx)
+#define swallowed_lasty    (current_nle_ctx->s_swallowed_lasty)
+#define under_water_lastx  (current_nle_ctx->s_under_water_lastx)
+#define under_water_lasty  (current_nle_ctx->s_under_water_lasty)
+#define under_water_dela   (current_nle_ctx->s_under_water_dela)
+#define under_ground_dela  (current_nle_ctx->s_under_ground_dela)
+
 STATIC_DCL void FDECL(show_mon_or_warn, (int, int, int));
 STATIC_DCL void FDECL(display_monster,
                       (XCHAR_P, XCHAR_P, struct monst *, int, XCHAR_P));
@@ -1140,7 +1150,7 @@ void
 swallowed(first)
 int first;
 {
-    static xchar lastx, lasty; /* last swallowed position */
+    /* Cluster BG: lastx/lasty -> swallowed_lastx/swallowed_lasty (per-env). */
     int swallower, left_ok, rght_ok;
 
     if (first) {
@@ -1150,8 +1160,8 @@ int first;
         register int x, y;
 
         /* Clear old location */
-        for (y = lasty - 1; y <= lasty + 1; y++)
-            for (x = lastx - 1; x <= lastx + 1; x++)
+        for (y = swallowed_lasty - 1; y <= swallowed_lasty + 1; y++)
+            for (x = swallowed_lastx - 1; x <= swallowed_lastx + 1; x++)
                 if (isok(x, y))
                     show_glyph(x, y, cmap_to_glyph(S_stone));
     }
@@ -1190,8 +1200,8 @@ int first;
     }
 
     /* Update the swallowed position. */
-    lastx = u.ux;
-    lasty = u.uy;
+    swallowed_lastx = u.ux;
+    swallowed_lasty = u.uy;
 }
 
 /*
@@ -1204,8 +1214,7 @@ void
 under_water(mode)
 int mode;
 {
-    static xchar lastx, lasty;
-    static boolean dela;
+    /* Cluster BG: lastx/lasty/dela -> under_water_* (per-env). */
     register int x, y;
 
     /* swallowing has a higher precedence than under water */
@@ -1213,19 +1222,19 @@ int mode;
         return;
 
     /* full update */
-    if (mode == 1 || dela) {
+    if (mode == 1 || under_water_dela) {
         cls();
-        dela = FALSE;
+        under_water_dela = FALSE;
 
     /* delayed full update */
     } else if (mode == 2) {
-        dela = TRUE;
+        under_water_dela = TRUE;
         return;
 
     /* limited update */
     } else {
-        for (y = lasty - 1; y <= lasty + 1; y++)
-            for (x = lastx - 1; x <= lastx + 1; x++)
+        for (y = under_water_lasty - 1; y <= under_water_lasty + 1; y++)
+            for (x = under_water_lastx - 1; x <= under_water_lastx + 1; x++)
                 if (isok(x, y))
                     show_glyph(x, y, cmap_to_glyph(S_stone));
     }
@@ -1242,8 +1251,8 @@ int mode;
                 else
                     newsym(x, y);
             }
-    lastx = u.ux;
-    lasty = u.uy;
+    under_water_lastx = u.ux;
+    under_water_lasty = u.uy;
 }
 
 /*
@@ -1255,20 +1264,20 @@ void
 under_ground(mode)
 int mode;
 {
-    static boolean dela;
+    /* Cluster BG: dela -> under_ground_dela (per-env). */
 
     /* swallowing has a higher precedence than under ground */
     if (u.uswallow)
         return;
 
     /* full update */
-    if (mode == 1 || dela) {
+    if (mode == 1 || under_ground_dela) {
         cls();
-        dela = FALSE;
+        under_ground_dela = FALSE;
 
     /* delayed full update */
     } else if (mode == 2) {
-        dela = TRUE;
+        under_ground_dela = TRUE;
         return;
 
     /* limited update */

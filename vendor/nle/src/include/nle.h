@@ -944,6 +944,23 @@ typedef struct nle_globals {
     boolean              s_vamp_rise_msg;   /* mon.c (vamp-rise message flag) */
     boolean              s_disintegested;   /* mon.c (digested/disintegrated flag) */
     boolean              s_read_known;      /* read.c (cross-TU: detect.c) */
+
+    /* Cluster BG: per-action warm globals migrated to per-env.
+     * Written on per-action paths (less frequent than every tick) but
+     * still race-prone across envs under OMP. */
+    boolean              s_class_filter;       /* pickup.c filter trio */
+    boolean              s_bucx_filter;        /* pickup.c filter trio */
+    boolean              s_shop_filter;        /* pickup.c filter trio */
+    int                  s_potion_nothing;     /* potion.c per-quaff accumulator */
+    int                  s_potion_unkn;        /* potion.c per-quaff accumulator */
+    char                 s_safeq_xprn_let;     /* invent.c safeq_xprn_ctx.let */
+    boolean              s_safeq_xprn_dot;     /* invent.c safeq_xprn_ctx.dot */
+    signed char          s_swallowed_lastx;    /* display.c swallowed() (xchar) */
+    signed char          s_swallowed_lasty;    /* display.c swallowed() (xchar) */
+    signed char          s_under_water_lastx;  /* display.c under_water() (xchar) */
+    signed char          s_under_water_lasty;  /* display.c under_water() (xchar) */
+    boolean              s_under_water_dela;   /* display.c under_water() */
+    boolean              s_under_ground_dela;  /* display.c under_ground() */
 } nle_ctx_t;
 
 /*
