@@ -15,7 +15,9 @@
 /* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
-static NEARDATA boolean vis, far_noise;
+/* Cluster BF: m-vs-m vis/far_noise per-env (was static NEARDATA boolean). */
+#define vis        (current_nle_ctx->s_vis)
+#define far_noise  (current_nle_ctx->s_far_noise)
 
 static const char brief_feeling[] =
     "have a %s feeling for a moment, then it passes.";

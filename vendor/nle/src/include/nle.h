@@ -929,6 +929,21 @@ typedef struct nle_globals {
     unsigned short       s_zc_inbufsz;
     short                s_zc_inrunlength;
     int                  s_zc_mreadfd;
+
+    /* Cluster BF: 5 hot-path monster-turn statics migrated to per-env.
+     * Identified by audit; all on the monster-turn hot path and likely
+     * sources of cross-env cache-line contention under OMP-128 stepping.
+     * Direct ctx fields; macros at top of each .c file rewrite bare-name
+     * accesses to current_nle_ctx->s_<name>. */
+    signed char          s_gtyp;            /* dogmove.c (xchar == schar) */
+    signed char          s_gx;              /* dogmove.c (xchar == schar) */
+    signed char          s_gy;              /* dogmove.c (xchar == schar) */
+    boolean              s_m_using;         /* muse.c (cross-TU: zap.c) */
+    boolean              s_vis;             /* mhitm.c (m-vs-m vis flag) */
+    boolean              s_far_noise;       /* mhitm.c (m-vs-m noise flag) */
+    boolean              s_vamp_rise_msg;   /* mon.c (vamp-rise message flag) */
+    boolean              s_disintegested;   /* mon.c (digested/disintegrated flag) */
+    boolean              s_read_known;      /* read.c (cross-TU: detect.c) */
 } nle_ctx_t;
 
 /*
@@ -945,7 +960,8 @@ typedef struct nle_globals {
  * dlclose() from unloading. Not applicable for our Linux/HPC target;
  * if we ever need macOS dynamic-unload, gate this with #ifndef __APPLE__.
  */
-extern __thread nle_ctx_t *current_nle_ctx;
+extern __attribute__((tls_model("initial-exec")))
+       __thread nle_ctx_t *current_nle_ctx;
 
 nle_ctx_t *nle_start(nle_obs *, FILE *, nle_seeds_init_t *, nle_settings *);
 nle_ctx_t *nle_step(nle_ctx_t *, nle_obs *);

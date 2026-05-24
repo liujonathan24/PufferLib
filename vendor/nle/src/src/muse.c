@@ -12,7 +12,9 @@
 /* Cluster AU group 4 — combat tick per-env (muse.c statics). */
 #define zap_oseen (current_nle_ctx->s_zap_oseen)
 
-boolean m_using = FALSE;
+/* Cluster BF: m_using per-env (was NON-static cross-TU boolean,
+ * extern in zap.c). nle_ctx_t-zeroed field defaults to FALSE. */
+#define m_using (current_nle_ctx->s_m_using)
 
 /* Let monsters use magic items.  Arbitrary assumptions: Monsters only use
  * scrolls when they can see, monsters know when wands have 0 charges,

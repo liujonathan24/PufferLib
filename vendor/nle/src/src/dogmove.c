@@ -11,6 +11,11 @@
 /* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
+/* Cluster BF: pet-goal state per-env (was STATIC_VAR xchar gtyp,gx,gy). */
+#define gtyp (current_nle_ctx->s_gtyp)
+#define gx   (current_nle_ctx->s_gx)
+#define gy   (current_nle_ctx->s_gy)
+
 STATIC_DCL boolean FDECL(dog_hunger, (struct monst *, struct edog *));
 STATIC_DCL int FDECL(dog_invent, (struct monst *, struct edog *, int));
 STATIC_DCL int FDECL(dog_goal, (struct monst *, struct edog *, int, int, int));
@@ -124,7 +129,7 @@ struct monst *mon;
 static const char nofetch[] = { BALL_CLASS, CHAIN_CLASS, ROCK_CLASS,
                                          0 };
 
-STATIC_VAR xchar gtyp, gx, gy; /* type and position of dog's current goal */
+/* Cluster BF: gtyp/gx/gy migrated to nle_ctx_t (see top of file). */
 
 STATIC_PTR void FDECL(wantdoor, (int, int, genericptr_t));
 

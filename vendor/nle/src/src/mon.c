@@ -20,7 +20,9 @@
 #define animal_list       (current_nle_ctx->s_animal_list)
 #define animal_list_count (current_nle_ctx->s_animal_list_count)
 
-STATIC_VAR boolean vamp_rise_msg, disintegested;
+/* Cluster BF: monster-death flags per-env (were STATIC_VAR boolean). */
+#define vamp_rise_msg (current_nle_ctx->s_vamp_rise_msg)
+#define disintegested (current_nle_ctx->s_disintegested)
 
 STATIC_DCL void FDECL(sanity_check_single_mon, (struct monst *, BOOLEAN_P,
                                                 const char *));
