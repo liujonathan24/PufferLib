@@ -266,20 +266,22 @@ static void* static_omp_threadmanager(void* arg) {
         /* Cluster AN: handle OMP_RESET by running c_reset on this buffer's
          * envs from this very pthread. Ensures init and step happen on the
          * same thread, so any TLS-captured state in NetHack's coroutine
-         * stays valid across yield/resume. NetHack's init touches process-
-         * shared state that can't safely be concurrent, so we go through
-         * a global mutex (init is one-time work and short next to training). */
+         * stays valid across yield/resume.
+         *
+         * Cluster BD: the previous reset_mu (process-wide pthread mutex
+         * around c_reset) is gone. With Cluster BD-1's artidisco migration
+         * and Clusters AT/AU/AV/AW/AX/AY/BA/BB/BC all done, NetHack's
+         * init no longer writes any process-shared state — each env's
+         * c_reset can run concurrently with every other env's c_reset
+         * (and with every other env's c_step). */
         int st;
         while ((st = atomic_load(&buffer_states[buf])) != OMP_RUNNING) {
             if (atomic_load(&threading->shutdown)) {
                 return NULL;
             }
             if (st == OMP_RESET) {
-                static pthread_mutex_t reset_mu = PTHREAD_MUTEX_INITIALIZER;
                 for (int i = env_start; i < env_start + env_count; i++) {
-                    pthread_mutex_lock(&reset_mu);
                     c_reset(&envs[i]);
-                    pthread_mutex_unlock(&reset_mu);
                 }
                 atomic_store(&buffer_states[buf], OMP_WAITING);
             }

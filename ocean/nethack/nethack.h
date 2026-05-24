@@ -673,19 +673,28 @@ static void nethack_reset_bookkeeping(Nethack* env) {
 // Slow path: dlopen + nle_start + drain welcome. Called on first c_reset
 // (and on every reset when NETHACK_FAST_RESET is disabled).
 //
-// Cluster AX root fix: this function mutates many libnethack `.data` globals
-// (windowprocs via choose_windows, dlb_libs[] via dlb_cleanup/dlb_init,
-// nle_baseline test-and-set, etc.) — all of which OTHER pthreads can read
-// from inside their own c_step. With num_buffers >= 2 these races fire as
-// intermittent NULL-deref crashes in polymon / mineralize / libc memcpy.
-// Serialize the entire slow-reset path through a process-wide mutex. The
-// reset is rare (once per episode) and short relative to the rollout, so
-// the contention cost is minimal and the safety guarantee is total.
-#include <pthread.h>
-static pthread_mutex_t nethack_slow_reset_mu = PTHREAD_MUTEX_INITIALIZER;
-
+// Cluster BD: the previous process-wide nethack_slow_reset_mu is removed.
+// All named hazards it guarded are now safe under concurrent c_reset:
+//   - choose_windows / windowprocs: idempotent CAS-guarded first-init-wins
+//     in vendor/nle/src/src/windows.c (Cluster AY).
+//   - dlb_init / dlb_libs[]: idempotent CAS-guarded first-init-wins in
+//     vendor/nle/src/src/dlb.c (Cluster AY).
+//   - nle_baseline: lazily allocated empty `struct nle_dungeon_save` whose
+//     save/load functions are no-ops after the per-env migration; even a
+//     concurrent double-calloc only leaks one zero-filled blob (Cluster AY).
+//   - init_artifacts memset of artidisco[]: artidisco is now per-env on
+//     nle_ctx_t (Cluster BD-1; see previous commit).
+//   - All "many libnethack `.data` globals" called out in the original
+//     comment: migrated in Clusters AT, AU, AV-a/b, AW, AW-full, AX-fix-2,
+//     BA, BB, BC. Every write reached from nle_start -> init_nle ->
+//     mainloop -> unixmain -> moveloop -> init_nethack / u_init /
+//     init_dungeons / init_objects / init_artifacts now targets a
+//     current_nle_ctx->s_* field (or a same-value-every-time process-shared
+//     register that is idempotent across envs).
+//
+// Removing the mutex restores concurrent reset: with N envs spread across
+// pthread workers, env i's c_reset no longer serializes against env j's.
 static void nethack_slow_reset(Nethack* env) {
-    pthread_mutex_lock(&nethack_slow_reset_mu);
     PROF_START(nle_end);
     if (env->ctx != NULL && env->fn_end) {
         env->fn_end(env->ctx);
@@ -698,7 +707,6 @@ static void nethack_slow_reset(Nethack* env) {
 
     if (nethack_load_lib(env) != 0) {
         fprintf(stderr, "nethack: failed to reload libnethack on reset\n");
-        pthread_mutex_unlock(&nethack_slow_reset_mu);
         return;
     }
     nethack_bind_obs(env);
@@ -709,7 +717,6 @@ static void nethack_slow_reset(Nethack* env) {
 
     if (env->fn_start == NULL) {
         fprintf(stderr, "nethack: fn_start is NULL — load_lib failed\n");
-        pthread_mutex_unlock(&nethack_slow_reset_mu);
         return;
     }
     PROF_START(nle_start);
@@ -730,7 +737,6 @@ static void nethack_slow_reset(Nethack* env) {
     PROF_START(reset_drain);
     nethack_drain_prompts_cat(env, PROF_FN_STEPS_RESET_DRAIN);
     PROF_END(reset_drain, PROF_RESET_DRAIN);
-    pthread_mutex_unlock(&nethack_slow_reset_mu);
 }
 
 void c_reset(Nethack* env) {
