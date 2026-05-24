@@ -22,6 +22,10 @@
  * generate it after env A's slot was reused). Now per-env. */
 #define artiexist     (current_nle_ctx->s_artiexist)
 #define touch_blasted (current_nle_ctx->s_touch_blasted)
+/* Cluster BD-1: artidisco[] per-env via nle_ctx_t — was STATIC_OVL xchar
+ * artidisco[NROFARTIFACTS] in this file; init_artifacts() memset()s on
+ * every reset (racing with discover_artifact() on concurrent envs). */
+#define artidisco     (current_nle_ctx->s_artidisco)
 
 /* Catch drift in the generated NROFARTIFACTS — nle.h sizes
  * s_artiexist[35] as 1 + NROFARTIFACTS + 1 with NROFARTIFACTS == 33. */
@@ -80,8 +84,7 @@ STATIC_DCL int FDECL(count_surround_traps, (int, int));
 STATIC_OVL int spec_dbon_applies = 0;
 
 /* artiexist[] migrated to nle_ctx_t (Cluster AU group 5) — see macros above. */
-/* and a discovery list for them (no dummy first entry here) */
-STATIC_OVL xchar artidisco[NROFARTIFACTS];
+/* artidisco[] migrated to nle_ctx_t (Cluster BD-1) — see macros above. */
 
 STATIC_DCL void NDECL(hack_artifacts);
 STATIC_DCL boolean FDECL(attacks, (int, struct obj *));
