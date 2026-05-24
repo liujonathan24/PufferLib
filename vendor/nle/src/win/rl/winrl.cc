@@ -828,7 +828,15 @@ NetHackRL::clear_nhwindow_method(winid wid)
     }
 
     DEBUG_API("rl_clear_nhwindow(wid=" << wid << ")" << std::endl);
+    /* exp_039: tty_clear_nhwindow emits home()/cl_end()/clear_screen() etc.
+     * which all go to nle_putchar -> outbuf. The agent reads the in-memory
+     * window state (windows_[wid]->menu_items, last_msg, glyphs_/chars_/
+     * colors_) which is already cleared above. The TTY-side rendering
+     * here is dead work. Per perf-record: this was ~2.4% of user CPU at
+     * N=1024 (clear_nhwindow_method -> tty_clear_nhwindow -> nle_putchar). */
+#if 0
     tty_clear_nhwindow(wid);
+#endif
 }
 
 void
