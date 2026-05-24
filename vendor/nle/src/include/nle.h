@@ -866,6 +866,54 @@ typedef struct nle_globals {
     char                 s_trap_tnbuf[12];                         /* trap.c trapnote */
     char                 s_uhitm_msgbuf[256];                      /* uhitm.c gulpum (BUFSZ) */
     unsigned char        s_vision_colbump[81 /* COLNO+1 = 80+1 */]; /* vision.c vision_recalc */
+
+    /* Cluster BC: save/restore-path dispatch tables and zerocomp read buffer.
+     * Were file-scope `static` in restore.c and save.c — process-globals.
+     *
+     * Root cause of N=1024 short-read panics: under PufferLib's OMP-parallel
+     * vecenv stepping, env A's mread() could see env B's just-mutated
+     * `restoreprocs.restore_mread` (def_mread vs zerocomp_mread) after a
+     * `set_restpref()` from another env's options/validate path, decoding
+     * env A's level file with the wrong codec → short read → panic.
+     *
+     * Even more critical: the zerocomp READ-side buffer (inbuf/inbufp/
+     * inbufsz/inrunlength/mreadfd) was a single shared array. Two envs
+     * concurrently decoding savefiles would clobber each other's read fd
+     * and partially-consumed buffer.
+     *
+     * Stored as untyped fields (void* / unsigned long) to avoid pulling
+     * <stdio.h>-dependent typedefs into nle.h; restore.c / save.c cast
+     * via macros. Use `#define <name> (current_nle_ctx->s_<name>)`.
+     */
+    /* restoreprocs */
+    const char          *s_restoreprocs_name;
+    int                  s_restoreprocs_mread_flags;
+    void               (*s_restoreprocs_restore_minit)(void);
+    void               (*s_restoreprocs_restore_mread)(int, void *, unsigned int);
+    void               (*s_restoreprocs_restore_bclose)(int);
+    /* saveprocs */
+    const char          *s_saveprocs_name;
+    void               (*s_saveprocs_save_bufon)(int);
+    void               (*s_saveprocs_save_bufoff)(int);
+    void               (*s_saveprocs_save_bflush)(int);
+    void               (*s_saveprocs_save_bwrite)(int, void *, unsigned int);
+    void               (*s_saveprocs_save_bclose)(int);
+    /* sfrestinfo / sfsaveinfo (per-env feature flags during save/restore).
+     * Laid out as 3 ulongs to match `struct savefile_info` (global.h:312).
+     * .c files use a struct-cast macro so existing `sfrestinfo.sfi1` etc.
+     * and `bwrite(fd, &sfsaveinfo, sizeof sfsaveinfo)` continue to work. */
+    unsigned long        s_sfrestinfo_sfi1;
+    unsigned long        s_sfrestinfo_sfi2;
+    unsigned long        s_sfrestinfo_sfi3;
+    unsigned long        s_sfsaveinfo_sfi1;
+    unsigned long        s_sfsaveinfo_sfi2;
+    unsigned long        s_sfsaveinfo_sfi3;
+    /* zerocomp read-side buffer state (restore.c) */
+    unsigned char        s_zc_inbuf[256 /* ZEROCOMP_BUFSIZ == BUFSZ */];
+    unsigned short       s_zc_inbufp;
+    unsigned short       s_zc_inbufsz;
+    short                s_zc_inrunlength;
+    int                  s_zc_mreadfd;
 } nle_ctx_t;
 
 /*

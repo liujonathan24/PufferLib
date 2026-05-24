@@ -527,7 +527,9 @@ E boolean fqn_prefix_locked[PREFIX_COUNT];
 E const char *fqn_prefix_names[PREFIX_COUNT];
 #endif
 
-E NEARDATA struct savefile_info sfcap, sfrestinfo, sfsaveinfo;
+/* Cluster BC: sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
+ * sfcap is const-after-init (build capabilities) and remains shared. */
+E NEARDATA struct savefile_info sfcap;
 
 struct opvar {
     xchar spovartyp; /* one of SPOVAR_foo */

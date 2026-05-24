@@ -353,6 +353,21 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * all match calloc-zero. */
     nle->s_cached_pickinv_win = WIN_ERR;
 
+    /* Cluster BC: per-env init of save/restore dispatch tables (saveprocs,
+     * restoreprocs) and sfsaveinfo/sfrestinfo flag words. These were
+     * process-global file-scope statics in save.c / restore.c / decl.c and
+     * raced under N>=1024 OMP vecenv stepping, where one env's set_*_pref
+     * could swap another env's mid-save/restore function pointers and
+     * produce wrong-codec short reads (the "Error reading level file"
+     * panic). Helpers live in save.c / restore.c so they can see the
+     * STATIC_OVL/STATIC_DCL codec functions. */
+    {
+        extern void NDECL(nle_restoreprocs_init);
+        extern void NDECL(nle_saveprocs_init);
+        nle_restoreprocs_init();
+        nle_saveprocs_init();
+    }
+
     return nle;
 }
 

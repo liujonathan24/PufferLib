@@ -64,21 +64,23 @@ STATIC_DCL void FDECL(zerocomp_bwrite, (int, genericptr_t, unsigned int));
 STATIC_DCL void FDECL(zerocomp_bputc, (int));
 #endif
 
-static struct save_procs {
-    const char *name;
-    void FDECL((*save_bufon), (int));
-    void FDECL((*save_bufoff), (int));
-    void FDECL((*save_bflush), (int));
-    void FDECL((*save_bwrite), (int, genericptr_t, unsigned int));
-    void FDECL((*save_bclose), (int));
-} saveprocs = {
-#if !defined(ZEROCOMP) || (defined(COMPRESS) || defined(ZLIB_COMP))
-    "externalcomp", def_bufon, def_bufoff, def_bflush, def_bwrite, def_bclose,
-#else
-    "zerocomp",      zerocomp_bufon,  zerocomp_bufoff,
-    zerocomp_bflush, zerocomp_bwrite, zerocomp_bclose,
-#endif
-};
+/* Cluster BC: `saveprocs` migrated to nle_ctx_t. Was file-scope static
+ * struct; mutated by set_savepref() per-env via options handlers and read
+ * by bufon/bufoff/bflush/bwrite/bclose during savefile writes. Under OMP
+ * vecenv this was racy: env B's set_savepref could swap env A's save_bwrite
+ * mid-save and write a wrong-codec stream into env A's level file (which
+ * env A — or worse, env A itself reading its own file moments later — then
+ * decodes incorrectly, producing the "Error reading level file" short-read
+ * panic seen at N=1024). Per-env init lives in init_nle (nle.c). */
+#define saveprocs_name          (current_nle_ctx->s_saveprocs_name)
+#define saveprocs_save_bufon    (current_nle_ctx->s_saveprocs_save_bufon)
+#define saveprocs_save_bufoff   (current_nle_ctx->s_saveprocs_save_bufoff)
+#define saveprocs_save_bflush   (current_nle_ctx->s_saveprocs_save_bflush)
+#define saveprocs_save_bwrite   (current_nle_ctx->s_saveprocs_save_bwrite)
+#define saveprocs_save_bclose   (current_nle_ctx->s_saveprocs_save_bclose)
+/* Cluster BC: sfsaveinfo (and sfrestinfo) per-env. */
+#define sfsaveinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfsaveinfo_sfi1))
+#define sfrestinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfrestinfo_sfi1))
 
 #if defined(UNIX) || defined(VMS) || defined(__EMX__) || defined(WIN32)
 #define HUP if (!current_nle_ctx->program_state.done_hup)
@@ -656,7 +658,7 @@ void
 bufon(fd)
 int fd;
 {
-    (*saveprocs.save_bufon)(fd);
+    (*saveprocs_save_bufon)(fd);
     return;
 }
 
@@ -665,7 +667,7 @@ void
 bufoff(fd)
 int fd;
 {
-    (*saveprocs.save_bufoff)(fd);
+    (*saveprocs_save_bufoff)(fd);
     return;
 }
 
@@ -674,7 +676,7 @@ void
 bflush(fd)
 register int fd;
 {
-    (*saveprocs.save_bflush)(fd);
+    (*saveprocs_save_bflush)(fd);
     return;
 }
 
@@ -684,7 +686,7 @@ int fd;
 genericptr_t loc;
 register unsigned num;
 {
-    (*saveprocs.save_bwrite)(fd, loc, num);
+    (*saveprocs_save_bwrite)(fd, loc, num);
     return;
 }
 
@@ -692,7 +694,7 @@ void
 bclose(fd)
 int fd;
 {
-    (*saveprocs.save_bclose)(fd);
+    (*saveprocs_save_bclose)(fd);
     return;
 }
 
@@ -1309,17 +1311,55 @@ int fd;
     return;
 }
 
+/* Cluster BC: per-env init for the migrated `saveprocs` table and the
+ * sfsaveinfo flag word. Called from init_nle (nle.c) before any save
+ * path can run. Mirrors the original file-scope static initializer. */
+void
+nle_saveprocs_init()
+{
+#if !defined(ZEROCOMP) || (defined(COMPRESS) || defined(ZLIB_COMP))
+    saveprocs_name        = "externalcomp";
+    saveprocs_save_bufon  = def_bufon;
+    saveprocs_save_bufoff = def_bufoff;
+    saveprocs_save_bflush = def_bflush;
+    saveprocs_save_bwrite = def_bwrite;
+    saveprocs_save_bclose = def_bclose;
+#else
+    saveprocs_name        = "zerocomp";
+    saveprocs_save_bufon  = zerocomp_bufon;
+    saveprocs_save_bufoff = zerocomp_bufoff;
+    saveprocs_save_bflush = zerocomp_bflush;
+    saveprocs_save_bwrite = zerocomp_bwrite;
+    saveprocs_save_bclose = zerocomp_bclose;
+#endif
+    /* sfsaveinfo: mirror the original static initializer in decl.c. */
+    sfsaveinfo.sfi1 =
+        0UL
+#if defined(COMPRESS) || defined(ZLIB_COMP)
+        | SFI1_EXTERNALCOMP
+#endif
+#if defined(ZEROCOMP)
+        | SFI1_ZEROCOMP
+#endif
+#if defined(RLECOMP)
+        | SFI1_RLECOMP
+#endif
+        ;
+    sfsaveinfo.sfi2 = 0UL;
+    sfsaveinfo.sfi3 = 0UL;
+}
+
 void
 set_savepref(suitename)
 const char *suitename;
 {
     if (!strcmpi(suitename, "externalcomp")) {
-        saveprocs.name = "externalcomp";
-        saveprocs.save_bufon = def_bufon;
-        saveprocs.save_bufoff = def_bufoff;
-        saveprocs.save_bflush = def_bflush;
-        saveprocs.save_bwrite = def_bwrite;
-        saveprocs.save_bclose = def_bclose;
+        saveprocs_name = "externalcomp";
+        saveprocs_save_bufon = def_bufon;
+        saveprocs_save_bufoff = def_bufoff;
+        saveprocs_save_bflush = def_bflush;
+        saveprocs_save_bwrite = def_bwrite;
+        saveprocs_save_bclose = def_bclose;
         sfsaveinfo.sfi1 |= SFI1_EXTERNALCOMP;
         sfsaveinfo.sfi1 &= ~SFI1_ZEROCOMP;
     }
@@ -1328,12 +1368,12 @@ const char *suitename;
     }
 #ifdef ZEROCOMP
     if (!strcmpi(suitename, "zerocomp")) {
-        saveprocs.name = "zerocomp";
-        saveprocs.save_bufon = zerocomp_bufon;
-        saveprocs.save_bufoff = zerocomp_bufoff;
-        saveprocs.save_bflush = zerocomp_bflush;
-        saveprocs.save_bwrite = zerocomp_bwrite;
-        saveprocs.save_bclose = zerocomp_bclose;
+        saveprocs_name = "zerocomp";
+        saveprocs_save_bufon = zerocomp_bufon;
+        saveprocs_save_bufoff = zerocomp_bufoff;
+        saveprocs_save_bflush = zerocomp_bflush;
+        saveprocs_save_bwrite = zerocomp_bwrite;
+        saveprocs_save_bclose = zerocomp_bclose;
         sfsaveinfo.sfi1 |= SFI1_ZEROCOMP;
         sfsaveinfo.sfi1 &= ~SFI1_EXTERNALCOMP;
     }

@@ -48,19 +48,21 @@ STATIC_OVL void FDECL(restore_msghistory, (int));
 STATIC_DCL void FDECL(reset_oattached_mids, (BOOLEAN_P));
 STATIC_DCL void FDECL(rest_levl, (int, BOOLEAN_P));
 
-static struct restore_procs {
-    const char *name;
-    int mread_flags;
-    void NDECL((*restore_minit));
-    void FDECL((*restore_mread), (int, genericptr_t, unsigned int));
-    void FDECL((*restore_bclose), (int));
-} restoreprocs = {
-#if !defined(ZEROCOMP) || (defined(COMPRESS) || defined(ZLIB_COMP))
-    "externalcomp", 0, def_minit, def_mread, def_bclose,
-#else
-    "zerocomp", 0, zerocomp_minit, zerocomp_mread, zerocomp_bclose,
-#endif
-};
+/* Cluster BC: `restoreprocs` migrated to nle_ctx_t. Was file-scope static
+ * struct; mutated by set_restpref() / validate() and read by mread().
+ * Under OMP vecenv, env B's set_restpref could swap env A's restore_mread
+ * mid-restore, causing wrong-codec short-read panics. Per-env init is in
+ * init_nle (nle.c) — must mirror the original static initializer. */
+#define restoreprocs_name             (current_nle_ctx->s_restoreprocs_name)
+#define restoreprocs_mread_flags      (current_nle_ctx->s_restoreprocs_mread_flags)
+#define restoreprocs_restore_minit    (current_nle_ctx->s_restoreprocs_restore_minit)
+#define restoreprocs_restore_mread    (current_nle_ctx->s_restoreprocs_restore_mread)
+#define restoreprocs_restore_bclose   (current_nle_ctx->s_restoreprocs_restore_bclose)
+/* Cluster BC: sfrestinfo / sfsaveinfo per-env (was process-global in decl.c).
+ * Cast over the 3 contiguous ulongs in nle_ctx_t so existing struct-field
+ * uses (`sfrestinfo.sfi1`) and address-of uses keep working. */
+#define sfrestinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfrestinfo_sfi1))
+#define sfsaveinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfsaveinfo_sfi1))
 
 /*
  * Save a mapping of IDs from ghost levels to the current level.  This
@@ -864,10 +866,10 @@ register int fd;
     if (!WINDOWPORT("X11"))
         putstr(WIN_MAP, 0, "Restoring:");
 #endif
-    restoreprocs.mread_flags = 1; /* return despite error */
+    restoreprocs_mread_flags = 1; /* return despite error */
     while (1) {
         mread(fd, (genericptr_t) &ltmp, sizeof ltmp);
-        if (restoreprocs.mread_flags == -1)
+        if (restoreprocs_mread_flags == -1)
             break;
         getlev(fd, 0, ltmp, FALSE);
 #ifdef MICRO
@@ -885,7 +887,7 @@ register int fd;
         if (rtmp < 2)
             return rtmp; /* dorecover called recursively */
     }
-    restoreprocs.mread_flags = 0;
+    restoreprocs_mread_flags = 0;
 
 #ifdef BSD
     (void) lseek(fd, 0L, 0);
@@ -1417,7 +1419,7 @@ winid bannerwin; /* if not WIN_ERR, clear window and show copyright in menu */
 void
 minit()
 {
-    (*restoreprocs.restore_minit)();
+    (*restoreprocs_restore_minit)();
     return;
 }
 
@@ -1427,7 +1429,7 @@ register int fd;
 register genericptr_t buf;
 register unsigned int len;
 {
-    (*restoreprocs.restore_mread)(fd, buf, len);
+    (*restoreprocs_restore_mread)(fd, buf, len);
     return;
 }
 
@@ -1529,14 +1531,43 @@ reset_restpref()
         set_restpref("!rlecomp");
 }
 
+/* Cluster BC: per-env init for the migrated `restoreprocs` table. Called
+ * from init_nle (nle.c) before any restore/level-load path can run. Must
+ * mirror the original file-scope static initializer in restore.c. */
+void
+nle_restoreprocs_init()
+{
+    /* zerocomp_minit / zerocomp_mread / etc. are STATIC_OVL in this TU, so
+     * the init MUST happen here; nle.c cannot see them. */
+#if !defined(ZEROCOMP) || (defined(COMPRESS) || defined(ZLIB_COMP))
+    restoreprocs_name = "externalcomp";
+    restoreprocs_restore_minit  = def_minit;
+    restoreprocs_restore_mread  = def_mread;
+    restoreprocs_restore_bclose = def_bclose;
+#else
+    restoreprocs_name = "zerocomp";
+    restoreprocs_restore_minit  = zerocomp_minit;
+    restoreprocs_restore_mread  = zerocomp_mread;
+    restoreprocs_restore_bclose = zerocomp_bclose;
+#endif
+    restoreprocs_mread_flags = 0;
+    /* zerocomp read-side buffer: calloc gives all zeros, but inrunlength
+     * must start at -1 per the original initializer. */
+    current_nle_ctx->s_zc_inrunlength = -1;
+    /* sfrestinfo: original was zero-initialized (only sfsaveinfo had flags). */
+    sfrestinfo.sfi1 = 0;
+    sfrestinfo.sfi2 = 0;
+    sfrestinfo.sfi3 = 0;
+}
+
 void
 set_restpref(suitename)
 const char *suitename;
 {
     if (!strcmpi(suitename, "externalcomp")) {
-        restoreprocs.name = "externalcomp";
-        restoreprocs.restore_mread = def_mread;
-        restoreprocs.restore_minit = def_minit;
+        restoreprocs_name = "externalcomp";
+        restoreprocs_restore_mread = def_mread;
+        restoreprocs_restore_minit = def_minit;
         sfrestinfo.sfi1 |= SFI1_EXTERNALCOMP;
         sfrestinfo.sfi1 &= ~SFI1_ZEROCOMP;
         def_minit();
@@ -1546,9 +1577,9 @@ const char *suitename;
     }
 #ifdef ZEROCOMP
     if (!strcmpi(suitename, "zerocomp")) {
-        restoreprocs.name = "zerocomp";
-        restoreprocs.restore_mread = zerocomp_mread;
-        restoreprocs.restore_minit = zerocomp_minit;
+        restoreprocs_name = "zerocomp";
+        restoreprocs_restore_mread = zerocomp_mread;
+        restoreprocs_restore_minit = zerocomp_minit;
         sfrestinfo.sfi1 |= SFI1_ZEROCOMP;
         sfrestinfo.sfi1 &= ~SFI1_EXTERNALCOMP;
         zerocomp_minit();
@@ -1567,11 +1598,17 @@ const char *suitename;
 #ifndef ZEROCOMP_BUFSIZ
 #define ZEROCOMP_BUFSIZ BUFSZ
 #endif
-static NEARDATA unsigned char inbuf[ZEROCOMP_BUFSIZ];
-static NEARDATA unsigned short inbufp = 0;
-static NEARDATA unsigned short inbufsz = 0;
-static NEARDATA short inrunlength = -1;
-static NEARDATA int mreadfd;
+/* Cluster BC: zerocomp read-side buffer migrated to nle_ctx_t. Was a
+ * single file-scope `static` shared by all envs in-process; two concurrent
+ * envs decoding savefiles would clobber each other's mreadfd and partial
+ * buffer, producing wrong-codec short reads downstream. Per-env init: all
+ * fields are zeroed by calloc except inrunlength, which is set to -1 in
+ * init_nle and every zerocomp_minit() entry. */
+#define inbuf        (current_nle_ctx->s_zc_inbuf)
+#define inbufp       (current_nle_ctx->s_zc_inbufp)
+#define inbufsz      (current_nle_ctx->s_zc_inbufsz)
+#define inrunlength  (current_nle_ctx->s_zc_inrunlength)
+#define mreadfd      (current_nle_ctx->s_zc_mreadfd)
 
 STATIC_OVL int
 zerocomp_mgetc()
@@ -1614,7 +1651,7 @@ register unsigned len;
         } else {
             register short ch = zerocomp_mgetc();
             if (ch < 0) {
-                restoreprocs.mread_flags = -1;
+                restoreprocs_mread_flags = -1;
                 return;
             }
             if ((*(*(char **) &buf)++ = (char) ch) == RLESC) {
@@ -1647,8 +1684,8 @@ register unsigned int len;
 
     rlen = read(fd, buf, (readLenType) len);
     if ((readLenType) rlen != (readLenType) len) {
-        if (restoreprocs.mread_flags == 1) { /* means "return anyway" */
-            restoreprocs.mread_flags = -1;
+        if (restoreprocs_mread_flags == 1) { /* means "return anyway" */
+            restoreprocs_mread_flags = -1;
             return;
         } else {
             pline("Read %d instead of %u bytes.", rlen, len);

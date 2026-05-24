@@ -312,28 +312,9 @@ NEARDATA struct savefile_info sfcap = {
 #endif
 };
 
-NEARDATA struct savefile_info sfrestinfo, sfsaveinfo = {
-#ifdef NHSTDC
-    0x00000000UL
-#else
-    0x00000000L
-#endif
-#if defined(COMPRESS) || defined(ZLIB_COMP)
-        | SFI1_EXTERNALCOMP
-#endif
-#if defined(ZEROCOMP)
-        | SFI1_ZEROCOMP
-#endif
-#if defined(RLECOMP)
-        | SFI1_RLECOMP
-#endif
-    ,
-#ifdef NHSTDC
-    0x00000000UL, 0x00000000UL
-#else
-    0x00000000L, 0x00000000L
-#endif
-};
+/* Cluster BC: sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
+ * Per-env init mirroring the original sfsaveinfo initializer happens in
+ * init_nle (nle.c). sfrestinfo is calloc-zero-initialized like before. */
 
 struct plinemsg_type *plinemsg_types = (struct plinemsg_type *) 0;
 
