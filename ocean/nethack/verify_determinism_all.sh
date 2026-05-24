@@ -37,6 +37,8 @@ echo "==> Rebuilding harness"
     $CFLAGS_EXTRA \
     ocean/nethack/verify_determinism.c \
     -o "$HARNESS" \
+    -L./vendor/nle/src/build -lnethack \
+    -Wl,-rpath="$PWD/vendor/nle/src/build" \
     -ldl -lpthread -lm
 
 n_files=$(find "$GOLDEN_DIR" -maxdepth 1 -name 'golden_seed*.bin' | wc -l)
