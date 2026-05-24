@@ -1,0 +1,9 @@
+CREATE_LEVELFILE pid=32310 hackdir=/tmp/nle-NOODor/ ledger=1 path=/tmp/nle-NOODor/.1 fd=49
+DEF_BCLOSE_SIZE pid=32310 hackdir=/tmp/nle-NOODor/ fd=49 size_before_close=18598
+CREATE_LEVELFILE pid=32310 hackdir=/tmp/nle-EKYG6L/ ledger=1 path=/tmp/nle-EKYG6L/.1 fd=49
+DEF_BCLOSE_SIZE pid=32310 hackdir=/tmp/nle-EKYG6L/ fd=49 size_before_close=17443
+CREATE_LEVELFILE pid=32310 hackdir=/tmp/nle-EKYG6L/ ledger=2 path=/tmp/nle-EKYG6L/.2 fd=49
+DEF_BCLOSE_SIZE pid=32310 hackdir=/tmp/nle-EKYG6L/ fd=49 size_before_close=17521
+OPEN_LEVELFILE pid=32310 hackdir=/tmp/nle-EKYG6L/ ledger=1 path=/tmp/nle-EKYG6L/.1 fd=49 size=17443
+DEF_MREAD_SHORT pid=32310 hackdir=/tmp/nle-EKYG6L/ fd=49 pos=17443 size=17443 expected=216 got=69 errno=2 (No such file or directory)
+DEF_BUFOFF_MISMATCH pid=32310 hackdir=/tmp/nle-EKYG6L/ fd=50 bw_fd=-1 buffering=0 errno=2 (No such file or directory)

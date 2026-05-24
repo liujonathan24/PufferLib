@@ -8,6 +8,7 @@
 #include "lev.h"
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h> /* exp_039 agent_d: DEF_BCLOSE_SIZE instrumentation */
 
 /* Cluster AU group 1 — per-env save-session state. Macros rewrite
  * file-statics to direct nle_ctx_t fields so concurrent c_reset save
@@ -33,6 +34,19 @@
 #ifdef MFLOPPY
 long bytes_counted;
 /* count_only migrated to nle_ctx_t (Cluster AU group 1). */
+#endif
+
+/* exp_038 hypothesis 1: enforce identical struct sizes between save.c and
+ * restore.c. ZEROCOMP is undef on this build so this lives OUTSIDE the
+ * ZEROCOMP block. Verified 2026-05-24:
+ *   sizeof(struct eshk) == 4936  (matches restore.c)
+ *   sizeof(struct monst) == 144  (matches restore.c)
+ *   sizeof(struct obj)   == 96   (matches restore.c)
+ * Hypothesis 1 (sizeof asymmetry) is ruled out — both TUs agree. */
+#if defined(__GNUC__) || defined(__clang__)
+_Static_assert(sizeof(struct eshk)  == 4936, "save.c: sizeof(struct eshk) drifted");
+_Static_assert(sizeof(struct monst) ==  144, "save.c: sizeof(struct monst) drifted");
+_Static_assert(sizeof(struct obj)   ==   96, "save.c: sizeof(struct obj) drifted");
 #endif
 
 #ifdef MICRO
@@ -874,6 +888,22 @@ int fd;
                     (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
                         ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
                     save_fd, errno, strerror(errno));
+            fflush(stderr);
+        }
+        /* exp_039 agent_d: capture the writer's truthful final-on-disk size
+         * just before fclose. Pair with reader's OPEN_LEVELFILE size to test
+         * Hypothesis 3 (something truncates the file post-close). */
+        {
+            struct stat _bcst;
+            long long pre_close_size = -1;
+            if (fstat(save_fd, &_bcst) == 0)
+                pre_close_size = (long long) _bcst.st_size;
+            fprintf(stderr,
+                    "DEF_BCLOSE_SIZE pid=%d hackdir=%s fd=%d size_before_close=%lld\n",
+                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                    save_fd, pre_close_size);
             fflush(stderr);
         }
         rc = fclose(bf);

@@ -64,6 +64,8 @@ const
 #else
 #include <sys/stat.h>
 #endif
+#else
+#include <sys/stat.h> /* exp_039 agent_d: fstat in open_levelfile */
 #endif
 #ifndef O_BINARY /* used for micros, no-op for others */
 #define O_BINARY 0
@@ -548,6 +550,18 @@ char errbuf[];
         Sprintf(errbuf, "Cannot create file \"%s\" for level %d (errno %d).",
                 lock, lev, errno);
 
+    /* exp_039 agent_d: Hypothesis 3 instrumentation — log every
+     * create_levelfile call. Writer reopens with O_TRUNC; if the same path
+     * is created twice between save-close and reload-open, the file gets
+     * truncated and reader sees short. */
+    fprintf(stderr,
+            "CREATE_LEVELFILE pid=%d hackdir=%s ledger=%d path=%s fd=%d\n",
+            current_nle_ctx ? current_nle_ctx->hackpid : -1,
+            (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+            lev, fq_lock ? fq_lock : "(null)", fd);
+    fflush(stderr);
+
     return fd;
 }
 
@@ -585,6 +599,24 @@ char errbuf[];
     if (fd < 0 && errbuf)
         Sprintf(errbuf, "Cannot open file \"%s\" for level %d (errno %d).",
                 lock, lev, errno);
+
+    /* exp_039 agent_d: log every open_levelfile with the on-disk size we
+     * are about to read. If size < what writer flushed (per DEF_BCLOSE_SIZE),
+     * the file was truncated post-write. */
+    {
+        long long open_size = -1;
+        if (fd >= 0) {
+            struct stat _ost;
+            if (fstat(fd, &_ost) == 0) open_size = (long long) _ost.st_size;
+        }
+        fprintf(stderr,
+                "OPEN_LEVELFILE pid=%d hackdir=%s ledger=%d path=%s fd=%d size=%lld\n",
+                current_nle_ctx ? current_nle_ctx->hackpid : -1,
+                (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
+                    ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
+                lev, fq_lock ? fq_lock : "(null)", fd, open_size);
+        fflush(stderr);
+    }
 
     return fd;
 }
