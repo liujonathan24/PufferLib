@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/mman.h>  /* Cluster BE: munmap per-env arena in nle_end */
 
 #include <tmt.h>
 
@@ -903,6 +904,20 @@ nle_end(nle_ctx_t *nle)
 
     destroy_fcontext_stack(&nle->stack);
     /* Cluster AW-full: nle_tls_loaded TLS cache retired; no clear needed. */
+    /* Cluster BE: release per-env bump arena mmap. The 64 MB virtual range
+     * (mostly MAP_NORESERVE, only touched pages are resident) is freed
+     * back to the kernel so long training runs that recycle envs don't
+     * accumulate virtual address space. Unregister from the global arena
+     * registry first so nle_arena_free on a stale pointer doesn't
+     * mis-claim the now-unmapped range. */
+    if (nle->s_arena_base) {
+        extern void nle_arena_registry_release(char *);
+        nle_arena_registry_release(nle->s_arena_base);
+        munmap(nle->s_arena_base, nle->s_arena_cap);
+        nle->s_arena_base = NULL;
+        nle->s_arena_used = 0;
+        nle->s_arena_cap  = 0;
+    }
     free(nle);
 }
 

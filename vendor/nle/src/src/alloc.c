@@ -34,93 +34,245 @@ extern void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2);
 
 #ifdef NLE_USE_ARENA_FREE
 #include <sys/mman.h>
+#include "nle.h"
 
-/* Arena: virtual address space, lazily backed by physical pages on first
- * touch. Bump-allocated. Aligned 16 bytes per allocation.
+/* Cluster BE: per-env bump arena. Each env owns its own mmap'd arena on
+ * nle_ctx_t (s_arena_base / s_arena_used / s_arena_cap), lazily allocated
+ * on first alloc() call where current_nle_ctx is non-NULL. The previous
+ * design used a single 16 GB process-wide arena guarded by
+ * __sync_fetch_and_add — that atomic was the last serializing primitive
+ * in the NetHack hot path under multi-env training. Per-env arenas remove
+ * it entirely: each env's coroutine is the sole writer of its own arena.
  *
- * Cluster AS: 16 GB with MAP_NORESERVE. Under multi-env training with
- * NETHACK_FAST_RESET=0 (the only safe config for N>=2), nle_end does NOT
- * rewind the arena bump pointer — arena allocations are leaked-by-design
- * until process exit. The 4 GB original cap fills up under N=64+ long
- * training. MAP_NORESERVE keeps the kernel from over-counting commit and
- * (critically) keeps the *un-touched* tail out of core dumps if the
- * process crashes — without it cores were ~64 GB each. Override at build
- * time with -DNLE_ARENA_SIZE_GB=N if you need more.
+ * Allocations made before current_nle_ctx is anchored (very early process
+ * init, before any env's mainloop runs) fall back to the legacy file-scope
+ * arena below. That fallback is also what nle_fast_reset.c references for
+ * its (dead-at-runtime; NETHACK_FAST_RESET=0) snapshot/restore code.
+ *
+ * MAP_NORESERVE keeps the kernel from over-counting commit; madvise
+ * DONTDUMP keeps un-touched pages out of cores.
  */
+#ifndef NLE_PER_ENV_ARENA_SIZE
+#define NLE_PER_ENV_ARENA_SIZE ((size_t) 64 * 1024 * 1024)
+#endif
 #ifndef NLE_ARENA_SIZE_GB
 #define NLE_ARENA_SIZE_GB 16
 #endif
-#define NLE_ARENA_SIZE ((size_t) NLE_ARENA_SIZE_GB * 1024 * 1024 * 1024)
+#define NLE_LEGACY_ARENA_SIZE ((size_t) NLE_ARENA_SIZE_GB * 1024 * 1024 * 1024)
 #define NLE_ARENA_ALIGN 16
 
-/* Exported so nle_fast_reset.c can snapshot the live portion. */
+/* Legacy fallback arena. Used only for allocations made before
+ * current_nle_ctx is set (early process init) and by nle_fast_reset.c
+ * (dead at runtime when NETHACK_FAST_RESET=0). Lazily mapped on first
+ * use. Exported (non-static) so nle_fast_reset.c can still reference it. */
 char  *nle_arena_base = NULL;
 size_t nle_arena_used = 0;
 size_t nle_arena_cap  = 0;
 
+/* Global registry of live per-env arena ranges. nle_arena_free needs to
+ * recognise pointers that came from ANY env's arena — not just the
+ * current one — because process-global state (e.g. sysopt) is populated
+ * by env A's arena (via dupstr) and later freed by env B during its
+ * teardown. Without a global registry the free would fall through to
+ * __libc_free and crash.
+ *
+ * Slots are written exactly once on first per-env mmap (publish via
+ * __atomic_store with release), and zeroed on munmap (env teardown).
+ * Lookups walk linearly with acquire loads — no lock, no contention on
+ * the hot alloc() path (only nle_arena_free pays the cost). Capacity
+ * 4096 is large vs the realistic env count (~1024). */
+#define NLE_ARENA_REGISTRY_CAP 4096
+static char  *nle_arena_registry_base[NLE_ARENA_REGISTRY_CAP];
+static size_t nle_arena_registry_cap_bytes[NLE_ARENA_REGISTRY_CAP];
+/* High-water mark: max+1 index ever assigned. Bounds the linear scan in
+ * nle_arena_registry_contains so we don't walk 4096 slots when only a
+ * few are live. Monotonically grows; ok to slightly overshoot. */
+static int nle_arena_registry_hwm = 0;
+
 static void
-nle_arena_init(void)
+nle_arena_registry_add(char *base, size_t cap)
+{
+    for (int i = 0; i < NLE_ARENA_REGISTRY_CAP; i++) {
+        char *expected = NULL;
+        if (__atomic_load_n(&nle_arena_registry_base[i], __ATOMIC_ACQUIRE)
+            != NULL)
+            continue;
+        if (__atomic_compare_exchange_n(&nle_arena_registry_base[i],
+                                        &expected, base, 0,
+                                        __ATOMIC_ACQ_REL,
+                                        __ATOMIC_ACQUIRE)) {
+            __atomic_store_n(&nle_arena_registry_cap_bytes[i], cap,
+                             __ATOMIC_RELEASE);
+            int hwm;
+            do {
+                hwm = __atomic_load_n(&nle_arena_registry_hwm,
+                                      __ATOMIC_ACQUIRE);
+                if (i + 1 <= hwm)
+                    break;
+            } while (!__atomic_compare_exchange_n(&nle_arena_registry_hwm,
+                                                  &hwm, i + 1, 0,
+                                                  __ATOMIC_ACQ_REL,
+                                                  __ATOMIC_ACQUIRE));
+            return;
+        }
+    }
+    /* Registry full — extremely unlikely under realistic env counts. */
+    panic("nle_arena: registry overflow (cap=%d)",
+          NLE_ARENA_REGISTRY_CAP);
+}
+
+static void
+nle_arena_registry_remove(char *base)
+{
+    for (int i = 0; i < NLE_ARENA_REGISTRY_CAP; i++) {
+        if (__atomic_load_n(&nle_arena_registry_base[i], __ATOMIC_ACQUIRE)
+            == base) {
+            __atomic_store_n(&nle_arena_registry_cap_bytes[i], 0,
+                             __ATOMIC_RELEASE);
+            __atomic_store_n(&nle_arena_registry_base[i], NULL,
+                             __ATOMIC_RELEASE);
+            return;
+        }
+    }
+}
+
+static int
+nle_arena_registry_contains(const void *ptr)
+{
+    int hwm = __atomic_load_n(&nle_arena_registry_hwm, __ATOMIC_ACQUIRE);
+    for (int i = 0; i < hwm; i++) {
+        char *base = __atomic_load_n(&nle_arena_registry_base[i],
+                                     __ATOMIC_ACQUIRE);
+        if (!base)
+            continue;
+        size_t cap = __atomic_load_n(&nle_arena_registry_cap_bytes[i],
+                                     __ATOMIC_ACQUIRE);
+        if ((const char *) ptr >= base
+            && (const char *) ptr <  base + cap)
+            return 1;
+    }
+    return 0;
+}
+
+/* Exposed so nle.c's nle_end can unregister a per-env arena before
+ * munmap'ing it. */
+void
+nle_arena_registry_release(char *base)
+{
+    nle_arena_registry_remove(base);
+}
+
+static void
+nle_arena_legacy_init(void)
 {
     if (nle_arena_base)
         return;
-    void *p = mmap(NULL, NLE_ARENA_SIZE, PROT_READ | PROT_WRITE,
+    void *p = mmap(NULL, NLE_LEGACY_ARENA_SIZE, PROT_READ | PROT_WRITE,
                    MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
     if (p == MAP_FAILED) {
-        fprintf(stderr, "nle_arena: mmap(%zu) failed\n", NLE_ARENA_SIZE);
+        fprintf(stderr, "nle_arena: legacy mmap(%zu) failed\n",
+                NLE_LEGACY_ARENA_SIZE);
         abort();
     }
-    /* Keep core dumps small: tell the kernel not to dump the un-touched
-     * tail of the arena. Touched pages still dump (so we can see what
-     * libnethack actually wrote), but the multi-GB unused virtual range
-     * is excluded. */
 #ifdef MADV_DONTDUMP
-    (void) madvise(p, NLE_ARENA_SIZE, MADV_DONTDUMP);
+    (void) madvise(p, NLE_LEGACY_ARENA_SIZE, MADV_DONTDUMP);
 #endif
     nle_arena_base = (char *) p;
     nle_arena_used = 0;
-    nle_arena_cap  = NLE_ARENA_SIZE;
+    nle_arena_cap  = NLE_LEGACY_ARENA_SIZE;
+}
+
+static void
+nle_arena_per_env_init(nle_ctx_t *ctx)
+{
+    if (ctx->s_arena_base)
+        return;
+    void *p = mmap(NULL, NLE_PER_ENV_ARENA_SIZE, PROT_READ | PROT_WRITE,
+                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
+    if (p == MAP_FAILED) {
+        fprintf(stderr, "nle_arena: per-env mmap(%zu) failed\n",
+                NLE_PER_ENV_ARENA_SIZE);
+        abort();
+    }
+#ifdef MADV_DONTDUMP
+    (void) madvise(p, NLE_PER_ENV_ARENA_SIZE, MADV_DONTDUMP);
+#endif
+    ctx->s_arena_base = (char *) p;
+    ctx->s_arena_used = 0;
+    ctx->s_arena_cap  = NLE_PER_ENV_ARENA_SIZE;
+    /* Register so nle_arena_free can recognise this arena's pointers
+     * when called from a different env's coroutine (e.g. sysopt strings
+     * dup'd by env A and freed during env B's nle_end). */
+    nle_arena_registry_add(ctx->s_arena_base, ctx->s_arena_cap);
 }
 
 long *
 alloc(lth)
 register unsigned int lth;
 {
-    if (!nle_arena_base)
-        nle_arena_init();
     size_t need = (lth + NLE_ARENA_ALIGN - 1) & ~(size_t)(NLE_ARENA_ALIGN - 1);
     if (need == 0)
         need = NLE_ARENA_ALIGN;
-    /* Cluster AQ: make the bump-pointer atomic so concurrent OMP envs don't
-     * race on nle_arena_used.  All envs share one arena (by design: fast-reset
-     * snapshot/restore uses the whole contiguous region).  Without atomics,
-     * two threads calling alloc() simultaneously both read the same 'used'
-     * value, compute the same base ptr, and write overlapping objects →
-     * heap corruption → SIGSEGV anywhere in makemon/dogmove/etc.
-     * __sync_fetch_and_add is a full barrier; it returns the OLD value
-     * (pre-increment), which is the start address of this env's slice. */
-    size_t offset = __sync_fetch_and_add(&nle_arena_used, need);
+
+    /* Fast path: current_nle_ctx is anchored to the active env. Bump its
+     * private arena — no atomic, no contention. */
+    nle_ctx_t *ctx = current_nle_ctx;
+    if (ctx) {
+        if (!ctx->s_arena_base)
+            nle_arena_per_env_init(ctx);
+        size_t offset = ctx->s_arena_used;
+        if (offset + need > ctx->s_arena_cap) {
+            panic("nle_arena: per-env out of memory "
+                  "(used=%zu + req=%zu > cap=%zu)",
+                  offset, need, ctx->s_arena_cap);
+        }
+        ctx->s_arena_used = offset + need;
+        return (long *) (ctx->s_arena_base + offset);
+    }
+
+    /* Fallback: very early process init, before any env has anchored
+     * current_nle_ctx. Use the legacy process-wide arena. Single-threaded
+     * by construction at this point — no atomic needed. */
+    if (!nle_arena_base)
+        nle_arena_legacy_init();
+    size_t offset = nle_arena_used;
     if (offset + need > nle_arena_cap) {
-        panic("nle_arena: out of memory (used=%zu + req=%zu > cap=%zu)",
+        panic("nle_arena: legacy out of memory "
+              "(used=%zu + req=%zu > cap=%zu)",
               offset, need, nle_arena_cap);
     }
-    void *ptr = nle_arena_base + offset;
-    return (long *) ptr;
+    nle_arena_used = offset + need;
+    return (long *) (nle_arena_base + offset);
 }
 
 /* Called by NetHack code via the `free` macro in global.h (non-MONITOR_HEAP
- * branch). Pointers inside the arena are leaked-until-restore; anything else
- * (rare, e.g. libc strdup in save recovery) is forwarded to libc free. */
+ * branch). Pointers inside any arena (current env's or legacy fallback)
+ * are no-ops; everything else (rare, e.g. libc strdup in save recovery)
+ * is forwarded to libc free. */
 void
 nle_arena_free(void *ptr)
 {
     if (!ptr)
         return;
+    nle_ctx_t *ctx = current_nle_ctx;
+    /* Fast path: current env's own arena (avoids walking the registry
+     * for the overwhelmingly common case). */
+    if (ctx && ctx->s_arena_base
+        && (char *) ptr >= ctx->s_arena_base
+        && (char *) ptr <  ctx->s_arena_base + ctx->s_arena_cap) {
+        return;
+    }
+    /* Legacy fallback arena. */
     if (nle_arena_base
         && (char *) ptr >= nle_arena_base
         && (char *) ptr <  nle_arena_base + nle_arena_cap) {
-        /* arena pointer: no-op. Reclaimed at snapshot restore. */
         return;
     }
+    /* Some other env's arena? sysopt strings et al. are dup'd into env A's
+     * arena and may be freed during env B's teardown — must recognise
+     * them as arena pointers (no-op), not libc free. */
+    if (nle_arena_registry_contains(ptr))
+        return;
     /* Non-arena pointer: forward to libc free. Use __libc_free to bypass
      * the `free` macro from global.h. */
     extern void __libc_free(void *);
