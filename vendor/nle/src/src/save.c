@@ -571,7 +571,19 @@ int mode;
         goto skip_lots;
 
     savelevl(fd, (boolean) ((sfsaveinfo.sfi1 & SFI1_RLECOMP) == SFI1_RLECOMP));
-    bwrite(fd, (genericptr_t) lastseentyp, sizeof lastseentyp);
+    /* Cluster BH (exp_039 agent_e): writer/reader byte-count mismatch.
+     * Stage 7' migrated `lastseentyp` from a `schar[COLNO][ROWNO]` array to a
+     * pointer macro (rm.h:623) and `doors` from `coord[DOORMAX]` to a pointer
+     * macro (mkroom.h:55). The reader was already updated to use the literal
+     * byte counts (restore.c:1129 lastseentyp, 1141 doors), but the writer
+     * still used `sizeof <name>` which now evaluates to sizeof(pointer)=8
+     * instead of the array size. Writer wrote 8 bytes; reader read 1680
+     * (lastseentyp) or 240 (doors). Excess bytes consumed by reader pulled
+     * subsequent records out of alignment, surfacing intermittently at
+     * N>=64 as `DEF_MREAD_SHORT` panics in restmonchn (the next record the
+     * misaligned reader hit was the monster chain, where buflen values
+     * decoded from random bytes asked for impossible payloads). */
+    bwrite(fd, (genericptr_t) lastseentyp, COLNO * ROWNO * sizeof(schar));
     bwrite(fd, (genericptr_t) &monstermoves, sizeof monstermoves);
     bwrite(fd, (genericptr_t) &upstair, sizeof (stairway));
     bwrite(fd, (genericptr_t) &dnstair, sizeof (stairway));
@@ -581,7 +593,7 @@ int mode;
     bwrite(fd, (genericptr_t) &updest, sizeof (dest_area));
     bwrite(fd, (genericptr_t) &dndest, sizeof (dest_area));
     bwrite(fd, (genericptr_t) &level.lflags, sizeof level.lflags);
-    bwrite(fd, (genericptr_t) doors, sizeof doors);
+    bwrite(fd, (genericptr_t) doors, DOORMAX * sizeof (coord));
     save_rooms(fd); /* no dynamic memory to reclaim */
 
     /* from here on out, saving also involves allocated memory cleanup */
@@ -1230,45 +1242,69 @@ register struct obj *otmp;
         bwrite(fd, (genericptr_t) &minusone, sizeof (int));
 }
 
+/* exp_039 agent_e: trace each buflen written/read in savemon/restmon so
+ * we can pinpoint the divergence at which the reader hits EOF. Activated
+ * by env var NLE_TRACE_MON=1; cheap when off (one TLS read + branch). */
+static int
+mon_trace_enabled(void)
+{
+    static int cached = -1;
+    if (cached < 0) {
+        const char *e = getenv("NLE_TRACE_MON");
+        cached = (e && *e == '1') ? 1 : 0;
+    }
+    return cached;
+}
+
 STATIC_OVL void
 savemon(fd, mtmp)
 int fd;
 struct monst *mtmp;
 {
     int buflen;
+    int trace = mon_trace_enabled();
+    int pid = current_nle_ctx ? current_nle_ctx->hackpid : -1;
 
     mtmp->mtemplit = 0; /* normally clear; if set here then a panic save
                          * is being written while bhit() was executing */
     buflen = (int) sizeof (struct monst);
+    if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=monst buflen=%d\n", pid, fd, buflen);
     bwrite(fd, (genericptr_t) &buflen, sizeof buflen);
     bwrite(fd, (genericptr_t) mtmp, buflen);
     if (mtmp->mextra) {
         buflen = MNAME(mtmp) ? (int) strlen(MNAME(mtmp)) + 1 : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=mname buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof buflen);
         if (buflen > 0)
             bwrite(fd, (genericptr_t) MNAME(mtmp), buflen);
         buflen = EGD(mtmp) ? (int) sizeof (struct egd) : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=egd buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof buflen);
         if (buflen > 0)
             bwrite(fd, (genericptr_t) EGD(mtmp), buflen);
         buflen = EPRI(mtmp) ? (int) sizeof (struct epri) : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=epri buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof buflen);
         if (buflen > 0)
             bwrite(fd, (genericptr_t) EPRI(mtmp), buflen);
         buflen = ESHK(mtmp) ? (int) sizeof (struct eshk) : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=eshk buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof(int));
         if (buflen > 0)
             bwrite(fd, (genericptr_t) ESHK(mtmp), buflen);
         buflen = EMIN(mtmp) ? (int) sizeof (struct emin) : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=emin buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof(int));
         if (buflen > 0)
             bwrite(fd, (genericptr_t) EMIN(mtmp), buflen);
         buflen = EDOG(mtmp) ? (int) sizeof (struct edog) : 0;
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=edog buflen=%d\n", pid, fd, buflen);
         bwrite(fd, (genericptr_t) &buflen, sizeof(int));
         if (buflen > 0)
             bwrite(fd, (genericptr_t) EDOG(mtmp), buflen);
         /* mcorpsenm is inline int rather than pointer to something,
            so doesn't need to be preceded by a length field */
+        if (trace) fprintf(stderr, "SAVE_MON pid=%d fd=%d kind=corpsenm\n", pid, fd);
         bwrite(fd, (genericptr_t) &MCORPSENM(mtmp), sizeof MCORPSENM(mtmp));
     }
 }
@@ -1280,6 +1316,16 @@ register struct monst *mtmp;
 {
     register struct monst *mtmp2;
     int minusone = -1;
+    int trace = mon_trace_enabled();
+    int pid = current_nle_ctx ? current_nle_ctx->hackpid : -1;
+    int count = 0;
+
+    if (trace) {
+        struct monst *t = mtmp;
+        while (t) { count++; t = t->nmon; }
+        fprintf(stderr, "SAVE_MCHN_BEGIN pid=%d fd=%d mode=%d count=%d head=%p\n",
+                pid, fd, mode, count, (void *)mtmp);
+    }
 
     while (mtmp) {
         mtmp2 = mtmp->nmon;
@@ -1303,6 +1349,9 @@ register struct monst *mtmp;
     }
     if (perform_bwrite(mode))
         bwrite(fd, (genericptr_t) &minusone, sizeof (int));
+    if (trace)
+        fprintf(stderr, "SAVE_MCHN_END pid=%d fd=%d mode=%d wrote_sentinel=%d\n",
+                pid, fd, mode, perform_bwrite(mode));
 }
 
 /* save traps; ftrap is the only trap chain so the 2nd arg is superfluous */

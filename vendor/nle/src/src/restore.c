@@ -367,6 +367,19 @@ boolean ghostly, frozen;
     return first;
 }
 
+/* exp_039 agent_e: trace mread sequence in restmon to compare against
+ * SAVE_MON output. NLE_TRACE_MON=1 to enable. */
+static int
+rest_mon_trace_enabled(void)
+{
+    static int cached = -1;
+    if (cached < 0) {
+        const char *e = getenv("NLE_TRACE_MON");
+        cached = (e && *e == '1') ? 1 : 0;
+    }
+    return cached;
+}
+
 /* restore one monster */
 STATIC_OVL void
 restmon(fd, mtmp)
@@ -374,6 +387,8 @@ int fd;
 struct monst *mtmp;
 {
     int buflen;
+    int trace = rest_mon_trace_enabled();
+    int pid = current_nle_ctx ? current_nle_ctx->hackpid : -1;
 
     mread(fd, (genericptr_t) mtmp, sizeof(struct monst));
 
@@ -385,42 +400,49 @@ struct monst *mtmp;
 
         /* mname - monster's name */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=mname buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) { /* includes terminating '\0' */
             new_mname(mtmp, buflen);
             mread(fd, (genericptr_t) MNAME(mtmp), buflen);
         }
         /* egd - vault guard */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=egd buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) {
             newegd(mtmp);
             mread(fd, (genericptr_t) EGD(mtmp), sizeof(struct egd));
         }
         /* epri - temple priest */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=epri buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) {
             newepri(mtmp);
             mread(fd, (genericptr_t) EPRI(mtmp), sizeof(struct epri));
         }
         /* eshk - shopkeeper */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=eshk buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) {
             neweshk(mtmp);
             mread(fd, (genericptr_t) ESHK(mtmp), sizeof(struct eshk));
         }
         /* emin - minion */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=emin buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) {
             newemin(mtmp);
             mread(fd, (genericptr_t) EMIN(mtmp), sizeof(struct emin));
         }
         /* edog - pet */
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=edog buflen=%d\n", pid, fd, buflen);
         if (buflen > 0) {
             newedog(mtmp);
             mread(fd, (genericptr_t) EDOG(mtmp), sizeof(struct edog));
         }
         /* mcorpsenm - obj->corpsenm for mimic posing as corpse or
            statue (inline int rather than pointer to something) */
+        if (trace) fprintf(stderr, "REST_MON pid=%d fd=%d kind=corpsenm\n", pid, fd);
         mread(fd, (genericptr_t) &MCORPSENM(mtmp), sizeof MCORPSENM(mtmp));
     } /* mextra */
 }
@@ -433,14 +455,23 @@ boolean ghostly;
     register struct monst *mtmp, *mtmp2 = 0;
     register struct monst *first = (struct monst *) 0;
     int offset, buflen;
+    int trace = rest_mon_trace_enabled();
+    int pid = current_nle_ctx ? current_nle_ctx->hackpid : -1;
+    int iter = 0;
+
+    if (trace)
+        fprintf(stderr, "REST_MCHN_BEGIN pid=%d fd=%d ghostly=%d\n", pid, fd, (int) ghostly);
 
     while (1) {
         mread(fd, (genericptr_t) &buflen, sizeof(buflen));
+        if (trace)
+            fprintf(stderr, "REST_MCHN pid=%d fd=%d iter=%d gate_buflen=%d\n", pid, fd, iter, buflen);
         if (buflen == -1)
             break;
 
         mtmp = newmonst();
         restmon(fd, mtmp);
+        iter++;
         if (!first)
             first = mtmp;
         else
