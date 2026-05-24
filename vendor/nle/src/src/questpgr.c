@@ -38,8 +38,12 @@ nle_qtlist_alloc(struct qtlists **target)
 #include "wintty.h"
 #endif
 
-/* from sp_lev.c, for deliver_splev_message() */
-extern char *lev_message;
+/* Cluster BK — lev_message migrated to per-env nle_ctx_t. Was a NON-static
+ * cross-TU heap pointer freed here in deliver_splev_message; env B's level
+ * entry could free() env A's still-pending lev_message → dangling UAF.
+ * Routing the macro to the same per-env slot as sp_lev.c eliminates the
+ * cross-env free. */
+#define lev_message (current_nle_ctx->s_sp_lev_message_p)
 
 static void NDECL(dump_qtlist);
 static void FDECL(Fread, (genericptr_t, int, int, dlb *));

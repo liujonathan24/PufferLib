@@ -133,8 +133,11 @@ typedef struct nle_globals {
     const char         *multi_reason;       /* was decl.c ('Speed', 'Slowness', ...) */
     int                 occtime;            /* was decl.c (occupation duration) */
     /* stage 3f — level-building + input replay state */
-    int                 nroom;              /* was decl.c (rooms on current level) */
-    int                 nsubroom;           /* was decl.c (subrooms in shop/temple) */
+    /* Cluster BK — renamed from `nroom`/`nsubroom` so the per-env macros in
+     * decl.h (`#define nroom (current_nle_ctx->s_nroom)`) can route bare
+     * references without expanding inside `current_nle_ctx->nroom`. */
+    int                 s_nroom;            /* was decl.c (rooms on current level) */
+    int                 s_nsubroom;         /* was decl.c (subrooms in shop/temple) */
     int                 doorindex_v;        /* macro: doorindex (cluster V) */
     boolean             in_mklev_v;         /* macro: in_mklev (cluster V) */
     int                 in_doagain_v;       /* macro: in_doagain (cluster V) */
@@ -974,6 +977,47 @@ typedef struct nle_globals {
     void *               s_muse_m_p;           /* muse.c: struct musable */
     int                  s_muse_trapx;         /* muse.c: trapx */
     int                  s_muse_trapy;         /* muse.c: trapy */
+
+    /* Cluster BK — sp_lev / track / mkmaze per-action globals migrated.
+     *
+     * sp_lev.c lev_message/lregions/num_lregions: NON-static cross-TU
+     * globals. lev_message is a malloc'd char* set in sp_lev.c:2997 and
+     * freed in questpgr.c:714 (deliver_splev_message). lregions is a
+     * lev_region* freed in mkmaze.c:649. With N envs in one process,
+     * env A's pending lev_message could be free()d by env B's level
+     * entry, leaving env A with a dangling pointer (UAF) — the most
+     * plausible source of intermittent obs=0x4 corruption.
+     *
+     * sp_lev.c xstart/ystart/xsize/ysize: bounding box for special-level
+     * region currently loading. Was static NEARDATA (file-scope TLS);
+     * if two envs concurrently gen a special level on the same thread,
+     * the box gets clobbered → out-of-bounds levl[][] write.
+     *
+     * track.c utcnt/utpnt: index counters for utrack[] (already migrated
+     * to s_utrack). The counter staying TLS while the array is per-env
+     * means an OMP resume on a different thread reads 0 — env B then
+     * writes past env A's UTSZ buffer into adjacent ctx fields.
+     *
+     * mkmaze.c bbubbles/ebubbles + xmin/ymin/xmax/ymax: head/tail
+     * pointers of the water-level bubble linked list plus its bounds.
+     * Was static (process-global). Two envs entering water level
+     * concurrently would clobber each other's lists. struct bubble is
+     * opaque here; mkmaze.c casts the void* to its own type. */
+    char                *s_sp_lev_message_p;        /* sp_lev.c lev_message */
+    struct nle_lev_region_s *s_sp_lregions_p;       /* sp_lev.c lregions */
+    int                  s_sp_num_lregions;         /* sp_lev.c num_lregions */
+    signed char          s_sp_xstart;               /* sp_lev.c xstart (xchar) */
+    signed char          s_sp_ystart;               /* sp_lev.c ystart (xchar) */
+    char                 s_sp_xsize;                /* sp_lev.c xsize */
+    char                 s_sp_ysize;                /* sp_lev.c ysize */
+    int                  s_utcnt;                   /* track.c utcnt (utrack count) */
+    int                  s_utpnt;                   /* track.c utpnt (utrack write idx) */
+    void                *s_bbubbles;                /* mkmaze.c bbubbles (struct bubble *) */
+    void                *s_ebubbles;                /* mkmaze.c ebubbles (struct bubble *) */
+    int                  s_water_xmin;              /* mkmaze.c xmin (water-level bound) */
+    int                  s_water_ymin;              /* mkmaze.c ymin */
+    int                  s_water_xmax;              /* mkmaze.c xmax */
+    int                  s_water_ymax;              /* mkmaze.c ymax */
 } nle_ctx_t;
 
 /*

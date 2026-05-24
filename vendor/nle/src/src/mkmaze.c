@@ -38,9 +38,14 @@ nle_get_bughack(void)
 #define bughack   (*nle_get_bughack())
 #define wportal   (current_nle_ctx->s_wportal)
 
-/* from sp_lev.c, for fixup_special() */
-extern lev_region *lregions;
-extern int num_lregions;
+/* Cluster BK — lregions/num_lregions are NON-static cross-TU globals that
+ * were freed in mkmaze.c:649 against the heap pointer set in sp_lev.c.
+ * Migrated to per-env nle_ctx_t fields; the extern decls are replaced
+ * with macros routing to current_nle_ctx (same per-env slot as sp_lev.c). */
+#define lregions       ((lev_region *) current_nle_ctx->s_sp_lregions_p)
+#define num_lregions   (current_nle_ctx->s_sp_num_lregions)
+#define set_lregions(p) \
+    (current_nle_ctx->s_sp_lregions_p = (struct nle_lev_region_s *) (p))
 /* for preserving the insect legs when wallifying baalz level */
 /* bughack moved to nle_ctx_t (Cluster AU group 3) — see macro above. */
 
@@ -318,7 +323,7 @@ d_level *lev;
          * if there are rooms and this a branch, let place_branch choose
          * the branch location (to avoid putting branches in corridors).
          */
-        if (rtype == LR_BRANCH && current_nle_ctx->nroom) {
+        if (rtype == LR_BRANCH && current_nle_ctx->s_nroom) {
             place_branch(Is_branchlev(&u.uz), 0, 0);
             return;
         }
@@ -645,8 +650,10 @@ fixup_special()
        stolen_booty();
     }
 
-    if (lregions)
-        free((genericptr_t) lregions), lregions = 0;
+    if (lregions) {
+        free((genericptr_t) lregions);
+        set_lregions(0);
+    }
     num_lregions = 0;
 }
 
@@ -1407,10 +1414,19 @@ fumaroles()
  * other source files, but they are all so nicely encapsulated here.
  */
 
-static struct bubble *bbubbles, *ebubbles;
+/* Cluster BK — water-level bubble linked-list head/tail + bounds were
+ * file-scope statics. Two envs concurrently entering the water level
+ * (Plane of Water) would clobber each other's lists. Migrated to per-env.
+ * NB: this block is below bound_digging() (which has its own locals named
+ * xmin/xmax/ymin/ymax) so the macros only affect code from here downward. */
+#define bbubbles (*(struct bubble **) &current_nle_ctx->s_bbubbles)
+#define ebubbles (*(struct bubble **) &current_nle_ctx->s_ebubbles)
 
 /* wportal moved to nle_ctx_t (Cluster AU group 3) */
-static int xmin, ymin, xmax, ymax; /* level boundaries */
+#define xmin (current_nle_ctx->s_water_xmin)
+#define ymin (current_nle_ctx->s_water_ymin)
+#define xmax (current_nle_ctx->s_water_xmax)
+#define ymax (current_nle_ctx->s_water_ymax)
 /* bubble movement boundaries */
 #define bxmin (xmin + 1)
 #define bymin (ymin + 1)

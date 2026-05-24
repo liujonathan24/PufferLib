@@ -214,12 +214,27 @@ extern int min_rx, max_rx, min_ry, max_ry; /* from mkmap.c */
 #define SpLev_Map ((char (*)[ROWNO]) current_nle_ctx->s_SpLev_Map_p)
 
 static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
-static NEARDATA xchar xstart, ystart;
-static NEARDATA char xsize, ysize;
+/* Cluster BK — per-env special-level bounding box (was static NEARDATA).
+ * Two envs concurrently generating a special level on the same OS thread
+ * would clobber the TLS box → out-of-bounds levl[][] write. */
+#define xstart  (current_nle_ctx->s_sp_xstart)
+#define ystart  (current_nle_ctx->s_sp_ystart)
+#define xsize   (current_nle_ctx->s_sp_xsize)
+#define ysize   (current_nle_ctx->s_sp_ysize)
 
-char *lev_message = 0;
-lev_region *lregions = 0;
-int num_lregions = 0;
+/* Cluster BK — per-env special-level message + lregions table. Were
+ * NON-static cross-TU process-global heap pointers; env B's level entry
+ * would free() env A's still-pending lev_message → UAF crash candidate
+ * for intermittent obs=0x4 corruption. The cross-TU externs in mkmaze.c
+ * and questpgr.c now route to the same per-env macro. */
+#define lev_message    (current_nle_ctx->s_sp_lev_message_p)
+#define lregions       ((lev_region *) current_nle_ctx->s_sp_lregions_p)
+#define num_lregions   (current_nle_ctx->s_sp_num_lregions)
+/* lregions reassignment needs a writable lvalue; the cast above is
+ * read-only. set_lregions(p) below routes lvalue writes through the
+ * underlying ctx pointer. */
+#define set_lregions(p) \
+    (current_nle_ctx->s_sp_lregions_p = (struct nle_lev_region_s *) (p))
 
 /* Cluster AP Part 2: per-env level-gen state. Were __thread; OMP coroutine-
  * resume hazard causes worker thread to see zero/stale TLS values.
@@ -814,7 +829,7 @@ link_doors_rooms()
                    directive, set/clear levl[][].horizontal for it */
                 set_door_orientation(x, y);
 
-                for (tmpi = 0; tmpi < current_nle_ctx->nroom; tmpi++) {
+                for (tmpi = 0; tmpi < current_nle_ctx->s_nroom; tmpi++) {
                     maybe_add_door(x, y, &rooms[tmpi]);
                     for (m = 0; m < rooms[tmpi].nsubrooms; m++) {
                         maybe_add_door(x, y, rooms[tmpi].sbrooms[m]);
@@ -828,7 +843,7 @@ fill_rooms()
 {
     int tmpi, m;
 
-    for (tmpi = 0; tmpi < current_nle_ctx->nroom; tmpi++) {
+    for (tmpi = 0; tmpi < current_nle_ctx->s_nroom; tmpi++) {
         if (rooms[tmpi].needfill)
             fill_room(&rooms[tmpi], (rooms[tmpi].needfill == 2));
         for (m = 0; m < rooms[tmpi].nsubrooms; m++)
@@ -1227,10 +1242,10 @@ xchar rtype, rlit;
                    + rn2(hx - (lx > 0 ? lx : 3) - dx - xborder + 1);
             yabs = ly + (ly > 0 ? ylim : 2)
                    + rn2(hy - (ly > 0 ? ly : 2) - dy - yborder + 1);
-            if (ly == 0 && hy >= (ROWNO - 1) && (!current_nle_ctx->nroom || !rn2(current_nle_ctx->nroom))
+            if (ly == 0 && hy >= (ROWNO - 1) && (!current_nle_ctx->s_nroom || !rn2(current_nle_ctx->s_nroom))
                 && (yabs + dy > ROWNO / 2)) {
                 yabs = rn1(3, 2);
-                if (current_nle_ctx->nroom < 4 && dy > 1)
+                if (current_nle_ctx->s_nroom < 4 && dy > 1)
                     dy--;
             }
             if (!check_room(&xabs, &dx, &yabs, &dy, vault)) {
@@ -1308,12 +1323,12 @@ xchar rtype, rlit;
     split_rects(r1, &r2);
 
     if (!vault) {
-        smeq[current_nle_ctx->nroom] = current_nle_ctx->nroom;
+        smeq[current_nle_ctx->s_nroom] = current_nle_ctx->s_nroom;
         add_room(xabs, yabs, xabs + wtmp - 1, yabs + htmp - 1, rlit, rtype,
                  FALSE);
     } else {
-        rooms[current_nle_ctx->nroom].lx = xabs;
-        rooms[current_nle_ctx->nroom].ly = yabs;
+        rooms[current_nle_ctx->s_nroom].lx = xabs;
+        rooms[current_nle_ctx->s_nroom].ly = yabs;
     }
     return TRUE;
 }
@@ -2364,7 +2379,7 @@ fix_stair_rooms()
         && !((dnstairs_room->lx <= xdnstair && xdnstair <= dnstairs_room->hx)
              && (dnstairs_room->ly <= ydnstair
                  && ydnstair <= dnstairs_room->hy))) {
-        for (i = 0; i < current_nle_ctx->nroom; i++) {
+        for (i = 0; i < current_nle_ctx->s_nroom; i++) {
             croom = &rooms[i];
             if ((croom->lx <= xdnstair && xdnstair <= croom->hx)
                 && (croom->ly <= ydnstair && ydnstair <= croom->hy)) {
@@ -2372,14 +2387,14 @@ fix_stair_rooms()
                 break;
             }
         }
-        if (i == current_nle_ctx->nroom)
+        if (i == current_nle_ctx->s_nroom)
             panic("Couldn't find dnstair room in fix_stair_rooms!");
     }
     if (xupstair
         && !((upstairs_room->lx <= xupstair && xupstair <= upstairs_room->hx)
              && (upstairs_room->ly <= yupstair
                  && yupstair <= upstairs_room->hy))) {
-        for (i = 0; i < current_nle_ctx->nroom; i++) {
+        for (i = 0; i < current_nle_ctx->s_nroom; i++) {
             croom = &rooms[i];
             if ((croom->lx <= xupstair && xupstair <= croom->hx)
                 && (croom->ly <= yupstair && yupstair <= croom->hy)) {
@@ -2387,7 +2402,7 @@ fix_stair_rooms()
                 break;
             }
         }
-        if (i == current_nle_ctx->nroom)
+        if (i == current_nle_ctx->s_nroom)
             panic("Couldn't find upstair room in fix_stair_rooms!");
     }
 }
@@ -2527,10 +2542,10 @@ struct mkroom *mkr;
     xchar rtype = (!r->chance || rn2(100) < r->chance) ? r->rtype : OROOM;
 
     if (mkr) {
-        aroom = &subrooms[current_nle_ctx->nsubroom];
+        aroom = &subrooms[current_nle_ctx->s_nsubroom];
         okroom = create_subroom(mkr, r->x, r->y, r->w, r->h, rtype, r->rlit);
     } else {
-        aroom = &rooms[current_nle_ctx->nroom];
+        aroom = &rooms[current_nle_ctx->s_nroom];
         okroom = create_room(r->x, r->y, r->w, r->h, r->xalign, r->yalign,
                              rtype, r->rlit);
     }
@@ -4591,10 +4606,10 @@ struct sp_coder *coder;
                       sizeof(lev_region) * num_lregions);
         Free(lregions);
         num_lregions++;
-        lregions = newl;
+        set_lregions(newl);
     } else {
         num_lregions = 1;
-        lregions = (lev_region *) alloc(sizeof(lev_region));
+        set_lregions((lev_region *) alloc(sizeof(lev_region)));
     }
     (void) memcpy(&lregions[num_lregions - 1], tmplregion,
                   sizeof(lev_region));
@@ -4657,7 +4672,7 @@ struct sp_coder *coder;
        an actual room to be created (such rooms are used to
        control placement of migrating monster arrivals) */
     room_not_needed = (OV_i(rtype) == OROOM && !irregular && !prefilled);
-    if (room_not_needed || current_nle_ctx->nroom >= MAXNROFROOMS) {
+    if (room_not_needed || current_nle_ctx->s_nroom >= MAXNROFROOMS) {
         region tmpregion;
         if (!room_not_needed)
             impossible("Too many rooms on new level!");
@@ -4676,7 +4691,7 @@ struct sp_coder *coder;
         return;
     }
 
-    troom = &rooms[current_nle_ctx->nroom];
+    troom = &rooms[current_nle_ctx->s_nroom];
 
     /* mark rooms that must be filled, but do it later */
     if (OV_i(rtype) != OROOM)
@@ -4687,8 +4702,8 @@ struct sp_coder *coder;
     if (irregular) {
         min_rx = max_rx = dx1;
         min_ry = max_ry = dy1;
-        smeq[current_nle_ctx->nroom] = current_nle_ctx->nroom;
-        flood_fill_rm(dx1, dy1, current_nle_ctx->nroom + ROOMOFFSET, OV_i(rlit), TRUE);
+        smeq[current_nle_ctx->s_nroom] = current_nle_ctx->s_nroom;
+        flood_fill_rm(dx1, dy1, current_nle_ctx->s_nroom + ROOMOFFSET, OV_i(rlit), TRUE);
         add_room(min_rx, min_ry, max_rx, max_ry, FALSE, OV_i(rtype), TRUE);
         troom->rlit = OV_i(rlit);
         troom->irregular = TRUE;
@@ -4928,7 +4943,12 @@ spo_map(coder)
 struct sp_coder *coder;
 {
     static const char nhFunc[] = "spo_map";
-    mazepart tmpmazepart;
+    /* Cluster BK: xsize/ysize/xstart/ystart are now macros expanding to
+     * current_nle_ctx->s_sp_*. Capture struct mazepart's .xsize/.ysize
+     * fields into bare locals BEFORE any reference to the macro-named
+     * tokens, so the struct member accesses don't get rewritten. */
+    char mp_xsize, mp_ysize;
+    schar mp_zaligntyp, mp_halign, mp_valign;
     struct opvar *mpxs, *mpys, *mpmap, *mpa, *mpkeepr, *mpzalign;
     xchar halign, valign;
     xchar tmpxstart, tmpystart, tmpxsize, tmpysize;
@@ -4938,24 +4958,24 @@ struct sp_coder *coder;
         || !OV_pop_i(mpkeepr) || !OV_pop_i(mpzalign) || !OV_pop_c(mpa))
         return;
 
-    tmpmazepart.xsize = OV_i(mpxs);
-    tmpmazepart.ysize = OV_i(mpys);
-    tmpmazepart.zaligntyp = OV_i(mpzalign);
+    mp_xsize = (char) OV_i(mpxs);
+    mp_ysize = (char) OV_i(mpys);
+    mp_zaligntyp = (schar) OV_i(mpzalign);
 
     upc = get_unpacked_coord(OV_i(mpa), ANY_LOC);
-    tmpmazepart.halign = upc.x;
-    tmpmazepart.valign = upc.y;
+    mp_halign = (schar) upc.x;
+    mp_valign = (schar) upc.y;
 
     tmpxsize = xsize;
     tmpysize = ysize;
     tmpxstart = xstart;
     tmpystart = ystart;
 
-    halign = tmpmazepart.halign;
-    valign = tmpmazepart.valign;
-    xsize = tmpmazepart.xsize;
-    ysize = tmpmazepart.ysize;
-    switch (tmpmazepart.zaligntyp) {
+    halign = mp_halign;
+    valign = mp_valign;
+    xsize = mp_xsize;
+    ysize = mp_ysize;
+    switch (mp_zaligntyp) {
     default:
     case 0:
         break;
@@ -4997,13 +5017,13 @@ struct sp_coder *coder;
         if (!coder->croom) {
             xstart = 1;
             ystart = 0;
-            xsize = COLNO - 1 - tmpmazepart.xsize;
-            ysize = ROWNO - tmpmazepart.ysize;
+            xsize = COLNO - 1 - mp_xsize;
+            ysize = ROWNO - mp_ysize;
         }
         get_location_coord(&halign, &valign, ANY_LOC, coder->croom,
                            OV_i(mpa));
-        xsize = tmpmazepart.xsize;
-        ysize = tmpmazepart.ysize;
+        xsize = mp_xsize;
+        ysize = mp_ysize;
         xstart = halign;
         ystart = valign;
         break;

@@ -785,15 +785,12 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
  * `&flags` would be `current_nle_ctx->flags_ptr` itself, so the memcpy
  * would corrupt rather than help. Removing is mandatory, not optional.)
  *
- * What remains: nroom / nsubroom are still NEARDATA __thread globals
- * (not yet macro-redirected) and so still need the swap pattern to
- * propagate between OS threads. The dungeon_save baseline-capture is
- * also retained for cross-env defaults like BASE_WINDOW==0 invariant in
- * NetHackRL ctor.
- *
- * The nle_tls_loaded fast-path is retired alongside the flags swap: now
- * that the only per-step copies are nroom/nsubroom (two ints), the
- * fast-path's complexity outweighs its benefit. */
+ * Cluster BK: nroom / nsubroom were the last NEARDATA __thread globals
+ * still being swap-copied per step. With the BK migration to per-env
+ * macros over current_nle_ctx->s_nroom/s_nsubroom (renamed for macro
+ * safety), the swap is now empty modulo dungeon_save baseline capture
+ * (retained for cross-env defaults like BASE_WINDOW==0 invariant in
+ * NetHackRL ctor). */
 
 static void
 nle_swap_in(nle_ctx_t *nle)
@@ -815,15 +812,9 @@ nle_swap_in(nle_ctx_t *nle)
         if (nle_baseline && nle->dungeon_save)
             *(struct nle_dungeon_save *) nle->dungeon_save = *nle_baseline;
     }
-    /* nroom/nsubroom: still NEARDATA __thread globals. Pull the current
-     * thread's value into a transient slot before this env writes its
-     * own — that way, when a different env later resumes on this thread,
-     * its nroom is restored from its own slot. This used to be gated by
-     * an eviction `nle_tls_loaded` check; with the flags swap gone the
-     * per-step cost is just two int loads/stores, so we do it
-     * unconditionally to keep the path simple and correct. */
-    nroom = nle->nroom;
-    nsubroom = nle->nsubroom;
+    /* Cluster BK — nroom/nsubroom no longer require a per-step swap;
+     * they're now per-env macros over the same ctx field that this swap
+     * used to copy in/out of. Drops two cache-line bounces per step. */
     if (nle->dungeon_save)
         nle_dungeon_load_from((struct nle_dungeon_save *) nle->dungeon_save);
 }
@@ -833,17 +824,14 @@ struct nle_dungeon_save *nle_baseline = NULL;
 static void
 nle_swap_out(nle_ctx_t *nle)
 {
-    /* Cluster AW-full: writeback NEARDATA-thread globals (nroom/nsubroom)
-     * into the env's slot so a subsequent swap_in on a different thread
-     * sees the right values. The flags-memcpy that used to live here is
-     * gone — flags is now per-env via macro; no copying needed.
+    /* Cluster BK — nroom/nsubroom writeback removed; both are now per-env
+     * macros (Cluster BK migration). The flags-memcpy that lived here is
+     * also long gone — flags is per-env via macro.
      *
      * dungeon_save is captured here on first call (nle_start path) so
      * the env owns a saved level structure before any swap_in eviction. */
     if (!nle)
         return;
-    nle->nroom = nroom;
-    nle->nsubroom = nsubroom;
     if (!nle->dungeon_save) {
         nle->dungeon_save = calloc(1, sizeof(struct nle_dungeon_save));
         if (nle->dungeon_save)

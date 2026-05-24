@@ -41,8 +41,18 @@ NEARDATA struct fruit *ffruit = (struct fruit *) 0;
 #endif
 /* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
+/* Cluster BK — nroom/nsubroom were NEARDATA __thread globals that the
+ * per-step swap in nle.c copied in and out of the env's nle_ctx_t slot.
+ * The struct field has existed since stage 3f (nle.h:136-137); this
+ * migration drops the storage from decl.c and rewires decl.h (which is
+ * the canonical extern point) to a per-env macro. The corresponding
+ * swap in nle_swap_in/out (nle.c:825/845) is removed. Build-tool
+ * binaries (makedefs, lev_comp) need the storage; they are now declared
+ * under #ifdef NLE_OBJECTS_GLOBAL alongside other cluster V/W stubs. */
+#ifdef NLE_OBJECTS_GLOBAL
 NEARDATA int nroom = 0;
 NEARDATA int nsubroom = 0;
+#endif
 
 /* maze limits must be even; masking off lowest bit guarantees that */
 int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;

@@ -1140,8 +1140,8 @@ boolean ghostly;
     /* stage 7': `doors` is now a `coord *` macro, not an array. */
     mread(fd, (genericptr_t) doors, DOORMAX * sizeof(coord));
     rest_rooms(fd); /* No joke :-) */
-    if (current_nle_ctx->nroom)
-        doorindex = rooms[current_nle_ctx->nroom - 1].fdoor + rooms[current_nle_ctx->nroom - 1].doorct;
+    if (current_nle_ctx->s_nroom)
+        doorindex = rooms[current_nle_ctx->s_nroom - 1].fdoor + rooms[current_nle_ctx->s_nroom - 1].doorct;
     else
         doorindex = 0;
 

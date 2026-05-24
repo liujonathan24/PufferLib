@@ -52,8 +52,20 @@ E int bases[MAXOCLASSES];
 #define bases (current_nle_ctx->s_bases_p)
 #endif
 
+#ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA int nroom;
 E NEARDATA int nsubroom;
+#else
+/* Cluster BK — nroom/nsubroom migrated to per-env nle_ctx_t. Drops the
+ * nle_swap_in/out pair in nle.c and removes the cross-thread asymmetric-
+ * write hazard (mklev.c wrote the __thread global; mkroom.c wrote
+ * current_nle_ctx->nroom — readers couldn't tell which view was current
+ * after an OMP yield mid-mklev). The ctx field was renamed from `nroom`
+ * to `s_nroom` so the macro can route bare references through it without
+ * the recursive expansion `current_nle_ctx->(current_nle_ctx->nroom)`. */
+#define nroom    (current_nle_ctx->s_nroom)
+#define nsubroom (current_nle_ctx->s_nsubroom)
+#endif
 
 #define WARNCOUNT 6 /* number of different warning levels */
 E nhsym warnsyms[WARNCOUNT];
