@@ -99,6 +99,14 @@ extern int amii_numcolors;
 /* current_nle_ctx->restoring migrated to nle_ctx_t (refactor stage 3d). */
 /* oldfruit/omoves migrated to nle_ctx_t (Cluster AU group 1). */
 
+/* exp_038 hypothesis 1: enforce identical struct sizes between save.c and
+ * restore.c. Sizes verified to match save.c (see save.c comment block). */
+#if defined(__GNUC__) || defined(__clang__)
+_Static_assert(sizeof(struct eshk)  == 4936, "restore.c: sizeof(struct eshk) drifted");
+_Static_assert(sizeof(struct monst) ==  144, "restore.c: sizeof(struct monst) drifted");
+_Static_assert(sizeof(struct obj)   ==   96, "restore.c: sizeof(struct obj) drifted");
+#endif
+
 #define Is_IceBox(o) ((o)->otyp == ICE_BOX ? TRUE : FALSE)
 
 /* Recalculate level.objs[x][y], since this info was not saved. */
