@@ -508,18 +508,16 @@ NetHackRL::fill_obs(nle_obs *obs)
         }
     }
     if (obs->blstats) {
-        if (!u.dz) {
-            /* Tricky hack: On "You descend the stairs.--More--" we are
-               technically on the next floor, but we don't see it yet.
-               But x, y needs to be updated at every step (not just when
-               blstats changes for other reasons). But if we update it
-               on the descend message, it will be the new position.
-               u.dz stays nonzero for the env step after, too, but there
-               blstats will be updated. */
-            blstats_[NLE_BL_X] = u.ux - 1; /* x coordinate, 1 <= ux <= cols */
-            blstats_[NLE_BL_Y] = u.uy;     /* y coordinate, 0 <= uy < rows */
-            blstats_[NLE_BL_TIME] = moves;
-        }
+        /* exp_039: refresh ALL blstats fields every step, not just X/Y/TIME.
+         * Pre-exp_039, blstats_ was populated lazily by status_update_method
+         * via the bot() -> bot_via_windowport -> rl_status_update -> BL_FLUSH
+         * path. exp_039 disabled status_updates for ~15-30% SPS, but that
+         * also disabled bot() and therefore the update_blstats() pump — so
+         * the agent silently received HP=HPMAX=DEPTH=AC=...=0 for the entire
+         * iter-9 stability matrix run. Fix: call update_blstats()
+         * unconditionally here so the agent always gets fresh stats
+         * regardless of whether iflags.status_updates is on or off. */
+        update_blstats();
         std::memcpy(obs->blstats, &blstats_[0], sizeof(blstats_));
     }
     if (obs->inv_glyphs) {
