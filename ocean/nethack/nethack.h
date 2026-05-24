@@ -210,7 +210,13 @@ static const int NETHACK_ACTION_TABLE[NETHACK_NUM_ACTIONS] = {
     "autopickup,color,disclose:+i +a +v +g +c +o," \
     "mention_walls,nobones,nocmdassist,nolegacy,nosparkle," \
     "pickup_burden:unencumbered,pickup_types:$?!/," \
-    "runmode:teleport,showexp,showscore,time"
+    "runmode:teleport,showexp,showscore,time," \
+    /* exp_039: disable bot() status renderer. The botl.c chain feeds
+     * iflags.status_updates -> bot_via_windowport ->
+     * eval_notify_windowport_field -> anything_to_s -> sprintf, eating
+     * ~5% of user CPU formatting a status line nothing reads. The agent
+     * gets stats via update_blstats() reading u.X / youmonst directly. */ \
+    "!status_updates"
 
 typedef struct Log {
     float perf;

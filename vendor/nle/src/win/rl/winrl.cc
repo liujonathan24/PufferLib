@@ -735,14 +735,18 @@ NetHackRL::status_update_method(int fldidx, genericptr_t ptr, int,
         return;
     }
 
-    char *text = (char *) ptr;
-    const char *src = text;
-    char buf[BUFSZ];
-    if (fldidx == BL_GOLD) {
-        // Handle gold glyph.
-        src = decode_mixed(buf, text);
-    }
-    status_[fldidx] = make_libc_string(src);
+    /* exp_039: status_[] is write-only in this build — no caller reads it.
+     * Per perf-record, the make_libc_string allocation + decode_mixed call
+     * showed up at ~5-7% combined user CPU (sprintf machinery upstream in
+     * bot/eval_notify_windowport_field + the per-field std::basic_string
+     * alloc here). Skip the allocation entirely; if a future caller needs
+     * the formatted string, restore from the git history of this hunk.
+     * blstats_[] (the actual agent-facing data) is still populated via
+     * update_blstats() on the BL_FLUSH/BL_RESET branch above. */
+    (void) ptr;
+    (void) percent;
+    (void) color;
+    (void) colormasks;
 }
 
 void
