@@ -842,6 +842,20 @@ nle_swap_out(nle_ctx_t *nle)
 nle_ctx_t *
 nle_step(nle_ctx_t *nle, nle_obs *obs)
 {
+    /* exp_039: prefetch the env context aggressively. Under puffer's
+     * round-robin OMP step pattern, each c_step touches a different env's
+     * 72 KB nle_ctx_t cold from L2/L3 — that single-pattern alone is
+     * empirically 10x slower than tight per-env step loops (multi_threaded
+     * env-loop = 1.5M SPS vs round-robin = 155K SPS).
+     * Hint the L1 prefetcher to start loading the struct head and a few
+     * commonly-touched fields BEFORE the actual reads begin. Locality=3
+     * (high temporal locality) to keep them around. Adjacent cache lines
+     * (the first 4 lines of nle_ctx_t hold u_ptr, flags_ptr, iflags_ptr,
+     * s7_level_p, nle_moves, nle_monstermoves — all hot every step). */
+    __builtin_prefetch((const char *) nle +   0, 0, 3);
+    __builtin_prefetch((const char *) nle +  64, 0, 3);
+    __builtin_prefetch((const char *) nle + 128, 0, 3);
+    __builtin_prefetch((const char *) nle + 192, 0, 3);
     current_nle_ctx = nle;
     nle_swap_in(nle);
     nle->observation = obs;
