@@ -385,6 +385,27 @@ static int nethack_make_vardir(const char* source_hackdir, char* out_buf, size_t
     char src[4096], dst[4096];
     snprintf(src, sizeof(src), "%s/nhdat", abs_source);
     snprintf(dst, sizeof(dst), "%s/nhdat", dir);
+
+    // Fail-fast: verify the source nhdat actually exists before creating the
+    // symlink. symlink(2) succeeds for dangling links, so without this check
+    // a broken NETHACKDIR (or a cwd-shifted relative default) surfaces 100ms
+    // later as a libnethack panic in init_dungeons("Cannot open dungeon
+    // description - 'dungeon'..."), which looks like a concurrency crash but
+    // is actually a config error. See exp_033_cluster_az/REDIAG.md.
+    char resolved[4096];
+    char cwd_dbg[2048] = "(unknown)";
+    getcwd(cwd_dbg, sizeof(cwd_dbg));
+    if (realpath(src, resolved) == NULL || access(resolved, R_OK) != 0) {
+        fprintf(stderr,
+                "nethack: NETHACKDIR is misconfigured.\n"
+                "  Expected to find nhdat at: %s\n"
+                "  (source_hackdir=\"%s\", cwd=\"%s\")\n"
+                "  realpath/access failed: %s\n"
+                "  Set NETHACKDIR to an ABSOLUTE path pointing at a directory\n"
+                "  containing nhdat (e.g. <repo>/vendor/nle/nethackdir).\n",
+                src, source_hackdir, cwd_dbg, strerror(errno));
+        exit(1);
+    }
     if (symlink(src, dst) != 0) return -1;
     const char* touched[] = {"perm", "record", "logfile", "xlogfile"};
     for (size_t i = 0; i < 4; i++) {
