@@ -355,6 +355,20 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* body-slot pointers (s9_uwep, s9_uarm, etc.) zero-init'd by calloc;
      * that matches the original decl.c NULL initializer. */
 
+    /* Cluster BJ: per-env `struct musable` (muse.c). Allocate via a small
+     * helper so the struct definition stays local to muse.c — nle.c
+     * doesn't need to see it. Bytes are zeroed (matches original
+     * file-scope `static struct musable m;` zero-init). trapx/trapy live
+     * inline as ints on nle_ctx_t (already zero-init by calloc). */
+    {
+        extern void nle_muse_alloc(void **);
+        nle_muse_alloc(&nle->s_muse_m_p);
+        if (!nle->s_muse_m_p) {
+            fprintf(stderr, "init_nle: failed to allocate s_muse_m_p\n");
+            abort();
+        }
+    }
+
     /* Cluster AU group 2 — non-zero initializers for migrated invent/
      * pickup file-statics. Only cached_pickinv_win needs init (was
      * `static winid cached_pickinv_win = WIN_ERR;` and WIN_ERR == -1,

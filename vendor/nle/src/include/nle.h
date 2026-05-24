@@ -961,6 +961,19 @@ typedef struct nle_globals {
     signed char          s_under_water_lasty;  /* display.c under_water() (xchar) */
     boolean              s_under_water_dela;   /* display.c under_water() */
     boolean              s_under_ground_dela;  /* display.c under_ground() */
+
+    /* Cluster BJ: muse.c file-statics. `struct musable m` and `trapx/trapy`
+     * were process-global writes on the per-monster-turn path in muse.c
+     * (called from find_offensive/defensive/misc and use_*). With N>=192
+     * envs stepping in parallel, two envs' monsters could both stomp m
+     * concurrently, leaving one with another env's `m.offensive` pointer
+     * and crashing in use_offensive() at muse.c:1421 on a stale heap
+     * struct. m_using was already migrated in Cluster BF; this completes
+     * the muse.c migration. struct musable is opaque here; muse.c casts
+     * the void* to its own struct. */
+    void *               s_muse_m_p;           /* muse.c: struct musable */
+    int                  s_muse_trapx;         /* muse.c: trapx */
+    int                  s_muse_trapy;         /* muse.c: trapy */
 } nle_ctx_t;
 
 /*

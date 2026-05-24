@@ -44,7 +44,13 @@ STATIC_DCL boolean FDECL(muse_unslime, (struct monst *, struct obj *,
 STATIC_DCL int FDECL(cures_sliming, (struct monst *, struct obj *));
 STATIC_DCL boolean FDECL(green_mon, (struct monst *));
 
-static struct musable {
+/* Cluster BJ: musable / trapx / trapy migrated to nle_ctx_t to remove
+ * the last per-monster-turn process-global writes in muse.c. The
+ * `struct musable` type stays file-local; its storage lives in
+ * `current_nle_ctx->s_muse_m_p` (allocated in init_nle below — registered
+ * via the helper `nle_muse_alloc` in nle.c). Macros below rewrite every
+ * bare `m`, `trapx`, `trapy` reference in this file to the per-env slot. */
+struct musable {
     struct obj *offensive;
     struct obj *defensive;
     struct obj *misc;
@@ -52,8 +58,11 @@ static struct musable {
     /* =0, no capability; otherwise, different numbers.
      * If it's an object, the object is also set (it's 0 otherwise).
      */
-} m;
-static int trapx, trapy;
+};
+
+#define m     (*(struct musable *) current_nle_ctx->s_muse_m_p)
+#define trapx (current_nle_ctx->s_muse_trapx)
+#define trapy (current_nle_ctx->s_muse_trapy)
 /* (Cluster AU group 4: zap_oseen migrated to current_nle_ctx->s_zap_oseen
  * via macro at top of file; original `static boolean zap_oseen;` removed.
  * Comment retained for context:)
@@ -2609,6 +2618,16 @@ struct monst *mon;
         break;
     }
     return FALSE;
+}
+
+/* Cluster BJ: per-env allocator for muse.c `struct musable`. Called from
+ * init_nle (nle.c) at env-create time. The struct type is local to this
+ * file; we expose only this helper to keep the include graph tight. */
+void
+nle_muse_alloc(void **slot)
+{
+    if (!slot) return;
+    *slot = calloc(1, sizeof(struct musable));
 }
 
 /*muse.c*/
