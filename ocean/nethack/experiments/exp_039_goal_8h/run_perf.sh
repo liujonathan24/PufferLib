@@ -14,9 +14,11 @@ export PATH=$CUDA_HOME/bin:$PATH
 export LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/2024.2/lib:$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}
 export PYTHONUNBUFFERED=1
 export NETHACKDIR="$(pwd)/vendor/nle/nethackdir"
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 source .venv/bin/activate
 ulimit -c 0
-DIR=ocean/nethack/experiments/exp_038_goal_8h
+DIR=ocean/nethack/experiments/exp_039_goal_8h
 mkdir -p $DIR/cores
 LOG=$DIR/sps_${TAG}_n${N}.out
 ERR=$DIR/sps_${TAG}_n${N}.err
