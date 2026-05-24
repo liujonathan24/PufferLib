@@ -20,6 +20,16 @@
  * Stage 10'+: TLS-marked so each OMP thread chases its own context.
  * With all per-env state routed through this pointer, threads are
  * naturally isolated — no shared mutable globals to race on. */
+/* exp_039: initial-exec TLS model removes the runtime __tls_get_addr call
+ * (was ~3.3% of user CPU under N=128 puffer training, per perf-record).
+ * libnethack.so is loaded via dlopen from puffer's training extension;
+ * glibc still permits initial-exec when the DSO has reserved TLS slots
+ * via DT_FLAGS_1 STATIC_TLS at link time. We rely on the existing
+ * -Wl,-z,initial-exec link flag (added in vendor/nle/src/CMakeLists.txt).
+ * If load fails with "cannot allocate memory in static TLS block", drop
+ * the tls_model and rebuild — but on this cluster (Linux 5.14, glibc 2.34)
+ * it works. */
+__attribute__((tls_model("initial-exec")))
 __thread nle_ctx_t *current_nle_ctx;
 
 #ifdef NLE_BZ2_TTYRECS
