@@ -385,3 +385,30 @@ These hold today; future changes must preserve them.
   bound (`tty_chars` / `tty_colors` / `tty_cursor`). Re-enable by
   binding those obs channels — see `nethack_pack_obs` in
   `ocean/nethack/nethack.h`.
+
+## 10. Behavior change: `!status_updates`
+
+The `NETHACK_DEFAULT_OPTIONS` string passed to every env at start
+includes a trailing `"!status_updates"` token (commit `ce74ba2a`).
+This sets `iflags.status_updates = FALSE`, which:
+1. Short-circuits `bot()` at `botl.c:241` (the status-line formatter).
+2. Short-circuits `recalc_mapseen()` at `dungeon.c:2467` via the
+   `if (!iflags.status_updates) return;` early-return.
+
+Neither of those code paths produces output the agent reads
+(`blstats` comes from `update_blstats` reading `u.uX` directly;
+`chars`/`message` come from independent paths). But the flag
+**does** branch internal game-loop control flow (e.g.
+`allmain.c:378`'s `timebot()` call), so trajectories with the flag
+ON vs OFF diverge byte-for-byte after a few steps.
+
+Performance cost of reverting (status_updates=TRUE):
+
+| N    | OFF (current) | ON       | Cost |
+|------|---------------|----------|------|
+| 128  | 45–54K SPS    | 33–38K   | -30% |
+| 1024 | 62–64K SPS    | 48–58K   | -15% |
+
+The flag is load-bearing for perf. **Golden trajectories must be
+re-captured whenever this flag flips.** The current 16-seed
+`ocean/nethack/golden/` set is bound to `!status_updates`.

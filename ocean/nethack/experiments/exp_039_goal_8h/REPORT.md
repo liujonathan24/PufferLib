@@ -2,6 +2,46 @@
 
 **Start**: 2026-05-24 04:27 EDT  **Elapsed at iter-7**: ~2h 35m
 
+## Behavior change vs pre-session
+
+**`!status_updates` added to `NETHACK_DEFAULT_OPTIONS`** (commit `ce74ba2a`).
+Sets `iflags.status_updates = FALSE` at env start. Short-circuits
+`bot()` at `botl.c:241`, skipping the entire `bot_via_windowport →
+eval_notify_windowport_field → anything_to_s → sprintf` chain that
+emits the formatted status line into the windowport. This also gates
+the `recalc_mapseen` early-return at `dungeon.c:2467` (added in commit
+`4440a55e`).
+
+Observable consequences for the RL agent:
+- The agent's `blstats` obs (HP, score, depth, etc.) is unchanged —
+  populated by `update_blstats` (`winrl.cc:686-714`) reading
+  `u.uX` / `youmonst` directly, NOT through the bot/eval_notify chain.
+- The agent's `message` obs is unchanged — it's filled from
+  `toplines` (`winrl.cc:506`), which `pline()` writes to directly.
+- The agent's `chars`/`colors`/`glyphs`/`specials` obs are unchanged.
+- **But**: `iflags.status_updates` is an `if`-gate that branches
+  internal game-loop paths (e.g. `allmain.c:378` skips a `timebot()`
+  call). The May-22 goldens captured before this flip therefore
+  diverge byte-for-byte from current HEAD's replay. **All 16 May-22
+  goldens FAIL against this build.** We re-captured against current
+  HEAD (commit `c8f5604e`): 16/16 record, 16/16 replay-all PASS, and
+  the previously-documented 3 reset-hang seeds (4, 5, 16) now complete
+  cleanly thanks to BH/BI/BJ/BK.
+
+Quantified perf cost of reverting `!status_updates` (in case future
+maintainers want the May-22 obs contract back):
+
+| N    | status_updates=FALSE (current) | status_updates=TRUE | Cost |
+|------|-------------------------------|---------------------|------|
+| 128  | 45–54K SPS                    | 33–38K SPS          | -30% |
+| 1024 | 62–64K SPS                    | 48–58K SPS          | -15% |
+
+Net: the change is responsible for **+15–30% SPS** depending on N. It is
+load-bearing for the perf target. If you need the May-22 obs contract
+back, remove the trailing `"!status_updates"` token in
+`ocean/nethack/nethack.h:NETHACK_DEFAULT_OPTIONS`, rebuild, and accept
+the SPS regression + re-capture goldens against TRUE.
+
 ## TL;DR — goal status
 
 | Goal sub-condition          | Status | Evidence |
