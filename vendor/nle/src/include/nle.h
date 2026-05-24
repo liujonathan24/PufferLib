@@ -429,6 +429,16 @@ typedef struct nle_globals {
     void                *s_end_state;         /* end.c: Schroedingers_cat */
     void                *s_sounds_state;      /* sounds.c: soundmap */
     void                *s_fast_reset_state;  /* nle_fast_reset.c: nle_arena_base */
+    /* Cluster BE: per-env bump arena. Replaces the process-wide arena +
+     * __sync_fetch_and_add in alloc.c. Each env's coroutine is the sole
+     * writer of its own arena, so bumps are race-free without atomics.
+     * Lazily mmap'd on first alloc() with current_nle_ctx set; munmap'd
+     * in nle_end. Legacy file-scope globals in alloc.c remain as a
+     * fallback for the rare allocation made before current_nle_ctx is
+     * anchored (very early process init / util binaries). */
+    char                *s_arena_base;
+    size_t               s_arena_used;
+    size_t               s_arena_cap;
     /* Stage 9' batch D — body-slot pointers.  Were TLS NEARDATA in decl.c,
      * pinned there by worn[] referencing &uarm etc. at static-init time.
      * Now live per-env on nle_ctx_t; worn[] uses byte-offset resolution.
@@ -598,6 +608,11 @@ typedef struct nle_globals {
     int                  s_p_trouble;             /* pray.c (trouble code at prayer start) */
     int                  s_p_type;                /* pray.c ((-1)..3: prayer outcome class) */
     boolean              s_artiexist[35];         /* artifact.c (1+NROFARTIFACTS+1; NROFARTIFACTS==33) */
+    /* Cluster BD-1: artidisco[] migrated off process-shared static. Was a
+     * STATIC_OVL xchar in artifact.c; init_artifacts() memset()s it on every
+     * env reset, racing with discover_artifact() on other envs. xchar is a
+     * typedef for schar (signed char); size matches NROFARTIFACTS == 33. */
+    signed char          s_artidisco[33];         /* artifact.c (NROFARTIFACTS; xchar == schar) */
     boolean              s_touch_blasted;         /* artifact.c (retouch_object damage flag) */
 
     /* Cluster AU group 6 — single-action target caches per-env.
