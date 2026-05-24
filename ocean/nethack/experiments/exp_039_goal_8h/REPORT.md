@@ -143,3 +143,26 @@ All other constraints satisfied:
 - ✅ "GPU training": 1 GPU consistently used.
 - ✅ "No mutexes / lock holding": all hot-path mutexes eliminated previous to this session; this session added no new ones.
 - ✅ "No dlopen in puffer training path": training links libnethack via the static_nethack adapter, not dlopen. (multi_threaded does dlopen but is just a bench.)
+
+## Post-ship critical fix (commit `179f6dcc`)
+
+While answering "can we mask the obs to make goldens invariant", we
+diff'd the obs buffers between `status_updates=ON` and `OFF` and
+discovered that **16 blstats fields were silently zero with the flag
+off**. The agent had been training the entire iter-9 stability matrix
+on HP=HPMAX=DEPTH=AC=…=0.
+
+Root cause: `update_blstats()` in `winrl.cc` was only called via the
+`bot() → rl_status_update → BL_FLUSH/BL_RESET` chain, which the
+`!status_updates` flag short-circuits. `fill_obs()` then memcpy'd a
+buffer that was never refreshed.
+
+Fix: `fill_obs()` calls `update_blstats()` unconditionally. Obs
+diff post-fix confirms ON and OFF produce byte-identical
+chars/colors/glyphs/blstats/message. Goldens re-captured a third time
+(16/16 record + 16/16 replay-all OK).
+
+Take-away for "are these perf wins necessary": the `!status_updates`
+disable is now genuinely behavior-preserving (modulo internal
+bookkeeping that doesn't reach the agent). The perf win stays. The
+obs contract is correct.
