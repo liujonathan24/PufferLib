@@ -250,6 +250,11 @@ typedef struct Nethack {
     nle_fr_destroy_fn  fn_fr_destroy;
     void* fr_snapshot;  // populated after first c_reset
 
+    // Lazy reset: c_reset sets this flag, c_step performs the actual reset.
+    // Guarantees reset and step run on the same OMP thread (NLE's coroutine
+    // captures the stack pointer; resetting on a different thread corrupts it).
+    int pending_reset;
+
     // NLE state
     nle_ctx_t* ctx;
     nle_obs obs;
@@ -731,20 +736,14 @@ static void nethack_slow_reset(Nethack* env) {
     PROF_END(reset_drain, PROF_RESET_DRAIN);
 }
 
-void c_reset(Nethack* env) {
+static void nethack_do_reset(Nethack* env) {
     PROF_INIT_IF_NEEDED();
     PROF_START(reset_total);
     PROF_COUNT(PROF_C_RESETS, 1);
 
 #if NETHACK_FAST_RESET
-    // Fast path: if a snapshot exists, restore it. Skips dlopen + nle_start
-    // + welcome drain entirely. Snapshot covers libnethack's writable
-    // segments + the fcontext stack + the nle_ctx_t struct.
     if (env->fr_snapshot && env->fn_fr_restore) {
         env->fn_fr_restore(env->ctx, env->fr_snapshot);
-        // Re-bind obs pointers since the restored .data clobbered any of NLE's
-        // internal obs-ptr caching (next nle_step rebinds via fcontext arg,
-        // but we still need the local struct re-bound for hook reads here).
         nethack_bind_obs(env);
         env->obs.done = 0;
         env->obs.in_normal_game = 0;
@@ -755,12 +754,9 @@ void c_reset(Nethack* env) {
     }
 #endif
 
-    // First reset (or fast-reset disabled): take the slow path.
     nethack_slow_reset(env);
 
 #if NETHACK_FAST_RESET
-    // After the first reset finishes, capture a snapshot so subsequent
-    // resets can use the fast path. Requires the patched libnethack.so.
     if (env->fn_fr_snapshot && env->fr_snapshot == NULL && env->ctx) {
         env->fr_snapshot = env->fn_fr_snapshot(env->ctx);
         if (env->fr_snapshot == NULL) {
@@ -782,7 +778,15 @@ void c_reset(Nethack* env) {
     PROF_END(reset_total, PROF_C_RESET_TOTAL);
 }
 
+void c_reset(Nethack* env) {
+    env->pending_reset = 1;
+}
+
 void c_step(Nethack* env) {
+    if (env->pending_reset) {
+        env->pending_reset = 0;
+        nethack_do_reset(env);
+    }
     PROF_INIT_IF_NEEDED();
     PROF_START(c_step_total);
     PROF_COUNT(PROF_C_STEPS, 1);

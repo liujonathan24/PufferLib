@@ -204,7 +204,6 @@ extern const char* cudaGetErrorString(cudaError_t);
 
 #define OMP_WAITING 5
 #define OMP_RUNNING 6
-#define OMP_RESET   7  /* Cluster AN: request pthread to c_reset its buffer's envs */
 
 // Forward declare env-provided functions (defined in binding.c after this include)
 void my_init(Env* env, Dict* kwargs);
@@ -263,27 +262,9 @@ static void* static_omp_threadmanager(void* arg) {
 
     printf("Num workers: %d\n", num_workers);
     while (true) {
-        /* Cluster AN: handle OMP_RESET by running c_reset on this buffer's
-         * envs from this very pthread. Ensures init and step happen on the
-         * same thread, so any TLS-captured state in NetHack's coroutine
-         * stays valid across yield/resume.
-         *
-         * Cluster BD: the previous reset_mu (process-wide pthread mutex
-         * around c_reset) is gone. With Cluster BD-1's artidisco migration
-         * and Clusters AT/AU/AV/AW/AX/AY/BA/BB/BC all done, NetHack's
-         * init no longer writes any process-shared state — each env's
-         * c_reset can run concurrently with every other env's c_reset
-         * (and with every other env's c_step). */
-        int st;
-        while ((st = atomic_load(&buffer_states[buf])) != OMP_RUNNING) {
+        while (atomic_load(&buffer_states[buf]) != OMP_RUNNING) {
             if (atomic_load(&threading->shutdown)) {
                 return NULL;
-            }
-            if (st == OMP_RESET) {
-                for (int i = env_start; i < env_start + env_count; i++) {
-                    c_reset(&envs[i]);
-                }
-                atomic_store(&buffer_states[buf], OMP_WAITING);
             }
         }
         cudaStream_t stream = vec->streams[buf];
@@ -582,23 +563,8 @@ int static_vec_count_aligned(StaticVec* vec, int tag_value, int reset_flags) {
 
 void static_vec_reset(StaticVec* vec) {
     Env* envs = (Env*)vec->envs;
-    if (vec->threading != NULL) {
-        /* Cluster AN: delegate to pthreads so each env's c_reset runs on the
-         * same pthread that will later c_step it. Avoids cross-thread
-         * coroutine resume which corrupts NetHack's TLS-captured state. */
-        StaticThreading* threading = vec->threading;
-        for (int b = 0; b < vec->buffers; b++) {
-            atomic_store(&threading->buffer_states[b], OMP_RESET);
-        }
-        for (int b = 0; b < vec->buffers; b++) {
-            while (atomic_load(&threading->buffer_states[b]) == OMP_RESET) {
-                if (atomic_load(&threading->shutdown)) return;
-            }
-        }
-    } else {
-        for (int i = 0; i < vec->size; i++) {
-            c_reset(&envs[i]);
-        }
+    for (int i = 0; i < vec->size; i++) {
+        c_reset(&envs[i]);
     }
     if (vec->gpu) {
         cudaMemcpy(vec->gpu_observations, vec->observations,
@@ -776,17 +742,10 @@ static inline void _static_vec_env_step(StaticVec* vec) {
     memset(vec->rewards, 0, vec->total_agents * sizeof(float));
     memset(vec->terminals, 0, vec->total_agents * sizeof(float));
     Env* envs = (Env*)vec->envs;
-#ifdef VEC_STEP_SERIALIZE
-    /* Diagnostic: force serial env stepping to isolate concurrency bugs. */
-    for (int i = 0; i < vec->size; i++) {
-        c_step(&envs[i]);
-    }
-#else
     #pragma omp parallel for schedule(static)
     for (int i = 0; i < vec->size; i++) {
         c_step(&envs[i]);
     }
-#endif
 }
 
 void gpu_vec_step(StaticVec* vec) {
