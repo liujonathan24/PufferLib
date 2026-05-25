@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define lastchk       (current_nle_ctx->s_ck_server_admin_msg_lastchk)
 
 #ifdef MAIL
@@ -65,7 +65,7 @@ extern struct passwd *FDECL(getpwuid, (int));
 #endif
 #endif
 #endif
-/* Cluster BB: process-static OK — these are dead code in our build because
+/* Process-static OK — these are dead code in our build because
  * the entire enclosing #ifdef MAIL block is compiled out (the nethack target
  * is built with -DNOMAIL via vendor/nle/src/build/CMakeFiles/nethack.dir/flags.make,
  * and include/unixconf.h:151 only defines MAIL when NOMAIL is undefined).
@@ -669,7 +669,7 @@ ck_server_admin_msg()
 {
 #ifdef SERVER_ADMIN_MSG
     static struct stat ost,nst;
-    /* Cluster AV-b4: lastchk migrated to nle_ctx_t */
+    /* Lastchk migrated to nle_ctx_t */
 
     if (moves < lastchk + SERVER_ADMIN_MSG_CKFREQ) return;
     lastchk = moves;

@@ -20,10 +20,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for Unaware macro */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define wholebuf (current_nle_ctx->s_dbridge_wholebuf)
 
-/* Cluster AU group 8 — misc-2: occupants[ENTITIES] migrated to
+/* Misc-2: occupants[ENTITIES] migrated to
  * nle_ctx_t.s_occupants. struct entity is forward-declared in nle.h; full
  * definition is local to this file (below), so we use lazy heap alloc.
  * The helper is declared (not defined) here; definition follows struct entity. */
@@ -301,7 +301,7 @@ struct entity {
 
 #define ENTITIES 2
 
-/* Cluster AU group 8 — misc-2: occupants[ENTITIES] now per-env on heap. */
+/* Misc-2: occupants[ENTITIES] now per-env on heap. */
 static struct entity *
 _au8_get_occupants(void)
 {
@@ -398,7 +398,7 @@ E_phrase(etmp, verb)
 struct entity *etmp;
 const char *verb;
 {
-    /* Cluster BA: wholebuf migrated to nle_ctx_t */
+    /* Wholebuf migrated to nle_ctx_t */
 
     Strcpy(wholebuf, is_u(etmp) ? "You" : Monnam(etmp->emon));
     if (!verb || !*verb)

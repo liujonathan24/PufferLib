@@ -1,6 +1,6 @@
 /* libc_allocator.h
  *
- * Cluster AZ fix: a minimal C++ allocator that routes through libc
+ * A minimal C++ allocator that routes through libc
  * std::malloc / std::free instead of through global operator new / delete.
  *
  * Why: libnethack.so overrides global operator new / delete in

@@ -36,8 +36,8 @@ struct dungeon;          /* include/dungeon.h (stage 6') */
 struct s_level;          /* include/dungeon.h (stage 6') */
 struct stairway;         /* include/dungeon.h (stage 6') */
 struct dest_area;        /* include/dungeon.h (stage 6') */
-struct tmp_glyph;        /* display.c file-local (Cluster AV-b3) */
-struct toptenentry;      /* topten.c file-local (Cluster AV-b3) */
+struct tmp_glyph;        /* display.c file-local */
+struct toptenentry;      /* topten.c file-local */
 struct nhcoord;          /* include/coord.h (stage 6'); typedef'd as `coord` */
 struct multishot;        /* include/decl.h (stage 9' batch C) */
 struct u_realtime;       /* include/you.h (stage 9' batch C) */
@@ -56,20 +56,20 @@ struct nle_rndmonst_state; /* makemon.c (rndmonst_state migration) */
 struct artifact;         /* include/artifact.h (artilist migration) */
 struct objclass;         /* include/objclass.h (objects migration) */
 struct objdescr;         /* include/objclass.h (obj_descr migration) */
-struct fruit;            /* include/youprop.h via hack.h — Cluster AU group 1 (restore.c oldfruit) */
-struct qtlists;          /* include/qtext.h — Cluster AU group 5 (questpgr.c qt_list) */
-struct dlb_handle;       /* include/dlb.h   — Cluster AU group 5 (questpgr.c msg_file; dlb is typedef'd to this) */
-struct engr;             /* include/engrave.h — Cluster AU group 6 (engrave.c head_engr) */
-struct litmon;           /* defined locally in src/read.c — Cluster AU group 6 (read.c gremlins) */
-struct nle_lev_region_s; /* Cluster AU group 3 (mkmaze.c bughack); tag added in include/sp_lev.h */
-union any;               /* include/wintype.h (`typedef union any anything;`) — Cluster AU group 7 (hack.c tmp_anything) */
-struct opvar;            /* include/sp_lev.h — Cluster AU group 7 (do_name.c gloc_filter_map) */
+struct fruit;            /* include/youprop.h via hack.h (restore.c oldfruit) */
+struct qtlists;          /* include/qtext.h (questpgr.c qt_list) */
+struct dlb_handle;       /* include/dlb.h (questpgr.c msg_file; dlb is typedef'd to this) */
+struct engr;             /* include/engrave.h (engrave.c head_engr) */
+struct litmon;           /* defined locally in src/read.c (read.c gremlins) */
+struct nle_lev_region_s; /* mkmaze.c bughack; tag added in include/sp_lev.h */
+union any;               /* include/wintype.h (`typedef union any anything;`) (hack.c tmp_anything) */
+struct opvar;            /* include/sp_lev.h (do_name.c gloc_filter_map) */
 
-/* Cluster AU group 8 — misc-2 forward decls. Pointers in nle_ctx_t, real
+/* Misc-2 forward decls. Pointers in nle_ctx_t, real
  * struct definitions remain local to their .c files (extralev.c, dbridge.c). */
 struct rogueroom;        /* src/extralev.c */
 struct entity;           /* src/dbridge.c */
-struct breadcrumbs;      /* include/decl.h — Cluster AX-fix-2 (ball.c bc[pu]breadcrumbs) */
+struct breadcrumbs;      /* include/decl.h (ball.c bc[pu]breadcrumbs) */
 
 /* `struct sinfo` was defined inline at the variable declaration in
  * decl.h. Moved here for the refactor (stage 3b) so nle_ctx_t can host
@@ -132,15 +132,55 @@ typedef struct nle_globals {
     boolean             in_steed_dismounting; /* was decl.c flag (steed) */
     const char         *multi_reason;       /* was decl.c ('Speed', 'Slowness', ...) */
     int                 occtime;            /* was decl.c (occupation duration) */
+    /* Per-env moveloop function pointers + occupation text (decl.c).
+     * Were process-globals — fatal under OMP T>1 (fn-ptr clobber → jump
+     * to garbage). `afternmv` is set/read ~41 sites, `occupation` ~14. */
+    int               (*afternmv_v)(void);
+    int               (*occupation_v)(void);
+    const char         *occtxt_v;
+    const char         *nomovemsg_v;
+    char               *configfile_v;
+    /* Per-env maze/map bounds (decl.c / mkmaze.c / mkmap.c / sp_lev.c).
+     * Written during level generation — fatal race under OMP T>1. */
+    int                 x_maze_max_v;
+    int                 y_maze_max_v;
+    int                 min_rx_v;
+    int                 max_rx_v;
+    int                 min_ry_v;
+    int                 max_ry_v;
+    /* Per-env steal state (steal.c / uhitm.c). */
+    unsigned            stealmid_v;
+    unsigned            stealoid_v;
+    /* Per-env level-transition scratch (do.c). */
+    /* save_dlevel: d_level is {schar dnum, schar dlevel}. Store as two schars. */
+    signed char         save_dlevel_dnum;
+    signed char         save_dlevel_dlevel;
+    /* Per-env pet preference (options.c / role.c). */
+    char                preferred_pet_v;
+    /* Per-env tty wait state (getline.c). */
+    int                 xwaitingforspace_v;
+    /* Per-env timed occupation callback (cmd.c timed_occ_fn).
+     * Function pointer — fatal race under OMP T>1. */
+    int               (*timed_occ_fn_v)(void);
+    /* Per-env lock-picking state (lock.c xlock struct).
+     * Contains door/box pointers — cross-env deref under T>1. */
+    /* Matches layout of struct xlock_s in lock.c exactly. */
+    void               *xlock_door_v;   /* struct rm * */
+    void               *xlock_box_v;    /* struct obj * */
+    int                 xlock_picktyp_v;
+    int                 xlock_chance_v;
+    int                 xlock_usedtime_v;
+    unsigned char       xlock_magic_key_v; /* boolean = uchar */
+    unsigned char       xlock_pad_[3];
     /* stage 3f — level-building + input replay state */
-    /* Cluster BK — renamed from `nroom`/`nsubroom` so the per-env macros in
+    /* Renamed from `nroom`/`nsubroom` so the per-env macros in
      * decl.h (`#define nroom (current_nle_ctx->s_nroom)`) can route bare
      * references without expanding inside `current_nle_ctx->nroom`. */
     int                 s_nroom;            /* was decl.c (rooms on current level) */
     int                 s_nsubroom;         /* was decl.c (subrooms in shop/temple) */
-    int                 doorindex_v;        /* macro: doorindex (cluster V) */
-    boolean             in_mklev_v;         /* macro: in_mklev (cluster V) */
-    int                 in_doagain_v;       /* macro: in_doagain (cluster V) */
+    int                 doorindex_v;        /* macro: doorindex */
+    boolean             in_mklev_v;         /* macro: in_mklev */
+    int                 in_doagain_v;       /* macro: in_doagain */
     /* stage 3g — combat / inventory transient flags */
     boolean             stoned;             /* was decl.c (monster being stoned) */
     boolean             unweapon;           /* was decl.c (player unwielded) */
@@ -158,14 +198,14 @@ typedef struct nle_globals {
     /* bhitpos — per-env throw/zap impact point. Stored as a pointer so
      * we can keep coord.h out of nle.h. Allocated in init_nle. */
     struct nhcoord      *bhitpos_p;
-    /* cluster W — per-env player identity buffers. PL_NSIZ=32, PL_CSIZ=20,
+    /* Per-env player identity buffers. PL_NSIZ=32, PL_CSIZ=20,
      * PL_FSIZ=32. Allocated inline (small enough). */
     char                 plname_v[32];        /* PL_NSIZ */
     char                 pl_character_v[32];  /* PL_CSIZ */
     char                 pl_race_v;
     char                 pl_fruit_v[32];      /* PL_FSIZ */
     char                 tune_v[6];
-    /* cluster X — pet name buffers and a couple of pointers. */
+    /* Pet name buffers and a couple of pointers. */
     char                 dogname_v[63];       /* PL_PSIZ */
     char                 catname_v[63];
     char                 horsename_v[63];
@@ -302,11 +342,11 @@ typedef struct nle_globals {
     void                *s_blstats_p;
     boolean              s_blinit;
     boolean              s_update_all;
-    /* cluster Z: per-env once-per-game init flags (formerly file-scope
+    /* Per-env once-per-game init flags (formerly file-scope
      * static booleans that tripped in shared-libnethack vecenv when env 2
      * inherited env 1's TRUE state). */
     char                 s_blstats_initalready; /* botl.c init_blstats */
-    /* cluster AA: vision.c transient computation state. These are set at
+    /* Vision.c transient computation state. These are set at
      * the top of view_from() and used by left_side/right_side recursively.
      * If a vecenv env yields mid-vision_recalc, another env will clobber
      * the statics, breaking the recursion → infinite loop. Moved per-env.
@@ -319,41 +359,41 @@ typedef struct nle_globals {
     char                *s_vis_cs_right;
     void               (*s_vis_func)();
     void                *s_vis_varg;
-    /* cluster AB: timeout.c timer queue — was __thread, broken under vecenv
+    /* Timeout.c timer queue — was __thread, broken under vecenv
      * because all envs share one thread; env A's timers fire while env B
      * holds the globals → "extract_nexthere: object lost" panic. */
     void                *s_timer_base;            /* timer_element * */
     unsigned long        s_timer_id;
-    /* cluster AG: light source list head (light.c light_base). Was
+    /* Light source list head (light.c light_base). Was
      * __thread; under vecenv env A's lights leaked into env B's
      * vision_recalc → impossible objects on the wrong levels →
      * eventual cascade in left_ptrs causing infinite recursion. */
     void                *s_light_base;            /* light_source * */
-    /* cluster AH: deferred-goto messages (do.c). Were __thread;
+    /* Deferred-goto messages (do.c). Were __thread;
      * env A schedules level change with messages, env B's deferred_goto
      * sees A's leftover strings (now potentially dangling). */
     char                *s_dfr_pre_msg;
     char                *s_dfr_post_msg;
-    /* cluster AI: region.c per-env region table (gas clouds, force-fields).
+    /* Region.c per-env region table (gas clouds, force-fields).
      * Was process-global (regions) + __thread (n/max). Cross-env contamination
      * was severe — env A's gas cloud could be applied to env B's monsters. */
     void                *s_regions;       /* NhRegion ** */
     int                  s_n_regions;
     int                  s_max_regions;
-    /* cluster AJ: assorted small __thread to per-env. */
+    /* Assorted small __thread to per-env. */
     unsigned             s_pline_flags;
     int                  s_polearm_range_min;
     int                  s_polearm_range_max;
     int                  s_lastinvnr;       /* invent.c menu nrf */
     int                  s_bcrestriction;   /* ball/chain */
     int                  s_mkot_trap_warn_count;
-    /* cluster AK: function-local static recursion guards (pline.c, hack.c). */
+    /* Function-local static recursion guards (pline.c, hack.c). */
     int                  s_pline_in_pline;
     int                  s_inspoteffects;
     int                  s_artifact_nesting;
-    /* cluster AL: vision recursion depth guard. */
+    /* Vision recursion depth guard. */
     int                  s_vision_recur_depth;
-    /* cluster AD: vision.c viz_rmin/viz_rmax. Set during vision_recalc;
+    /* Vision.c viz_rmin/viz_rmax. Set during vision_recalc;
      * if env A yields mid-recalc, env B overwrites these. (viz_array
      * itself already moved to nle_ctx_t->vision_array in stage 8'.) */
     char                *s_viz_rmin;
@@ -388,19 +428,29 @@ typedef struct nle_globals {
     /* per-env role/race description (role.c urole/urace). */
     void                *s_urole_p;
     void                *s_urace_p;
-    /* Cluster AM: per-env NetHackRL singleton (winrl.cc).
+    /* Per-env NetHackRL singleton (winrl.cc).
      * Was `static thread_local std::unique_ptr<NetHackRL> instance`. Under
      * PufferLib's OMP-parallel cpu_vec_step, worker threads have a null
      * thread_local instance and segfault in rl_nhgetch. Owned by this
      * pointer; nle_end deletes it via NetHackRL::destroy_for_ctx(). */
     void                *s_netHackRL_instance;
-    /* Cluster AM: per-env win-procedure trace deque (winrl.cc).
+    /* Per-env win-procedure trace deque (winrl.cc).
      * Was `thread_local std::deque<std::string> win_proc_calls`. Same OMP
      * coroutine-resume hazard as s_netHackRL_instance: push happens on
      * init thread, pop on worker thread → empty-deque pop_back UB. Owned
      * by this pointer; nle_end frees it via NetHackRL::destroy_for_ctx(). */
     void                *s_win_proc_calls;
-    /* Cluster AN: per-env tty backend state (win/tty/*.c).
+    /* Per-env prompt-state booleans (winrl.cc).
+     * Were file-scope globals — unsafe under OMP T>1. */
+    int                  s_in_yn_function;
+    int                  s_in_getlin;
+    /* Per-env artifact combat coordination (artifact.c).
+     * Was STATIC_OVL file-scope int — unsafe under OMP T>1. */
+    int                  s_spec_dbon_applies;
+    /* Per-env graphics mode (drawing.c).
+     * Was file-scope int — unsafe under OMP T>1. */
+    int                  s_currentgraphics;
+    /* Per-env tty backend state (win/tty/*.c).
      * Each file owns its own struct; void* here so nle.h doesn't have
      * to pull in MAX_PER_ROW, BUFSIZ, enum statusfields. Owned by the
      * respective .c file's accessor; nle_end frees via nle_tty_destroy_for_ctx().
@@ -419,7 +469,7 @@ typedef struct nle_globals {
     void                *s_wintty_state;
     void                *s_topl_state;
     void                *s_termcap_state;
-    /* Cluster AO: per-env src-file local state. Each `void*` is owned by
+    /* Per-env src-file local state. Each `void*` is owned by
      * the corresponding .c file; lazy-alloced through a file-local
      * accessor that resolves via current_nle_ctx. Same pattern as the
      * tty group above. Frees in nle_end. */
@@ -432,7 +482,20 @@ typedef struct nle_globals {
     void                *s_end_state;         /* end.c: Schroedingers_cat */
     void                *s_sounds_state;      /* sounds.c: soundmap */
     void                *s_fast_reset_state;  /* nle_fast_reset.c: nle_arena_base */
-    /* Cluster BE: per-env bump arena. Replaces the process-wide arena +
+    void                *s_botl_state;        /* botl.c */
+    void                *s_cmd_state;         /* cmd.c */
+    void                *s_do_name_state;     /* do_name.c */
+    void                *s_dokick_state;      /* dokick.c */
+    void                *s_do_wear_state;     /* do_wear.c */
+    void                *s_apply_state;       /* apply.c */
+    void                *s_rumors_state;      /* rumors.c */
+    void                *s_options_state;     /* options.c */
+    void                *s_rip_state;         /* rip.c */
+    void                *s_display_state;     /* display.c */
+    void                *s_windows_state;     /* windows.c */
+    void                *s_sp_lev_state;      /* sp_lev.c */
+    void                *s_pager_state;       /* pager.c */
+    /* Per-env bump arena. Replaces the process-wide arena +
      * __sync_fetch_and_add in alloc.c. Each env's coroutine is the sole
      * writer of its own arena, so bumps are race-free without atomics.
      * Lazily mmap'd on first alloc() with current_nle_ctx set; munmap'd
@@ -462,11 +525,11 @@ typedef struct nle_globals {
     struct obj          *s9_ublindf;
     struct obj          *s9_uball;
     struct obj          *s9_uchain;
-    /* Cluster AP: botl.c per-env status state.
+    /* Botl.c per-env status state.
      * cond_hilites[] was a plain static (process-global) unsigned long array;
      * it holds condition highlight masks computed per-env during render_status.
      * bl_hilite_moves and now_or_before_idx were __thread; broken under OMP
-     * vecenv for the same coroutine-resume reason as the Cluster AN group.
+     * vecenv for the same coroutine-resume reason as the tty backend group.
      * status_hilite_str / status_hilite_str_id were __thread linked-list
      * head+id; thread-local values are zero on worker threads after env was
      * init'd on main thread, so the list is lost and allocs leak. */
@@ -475,7 +538,7 @@ typedef struct nle_globals {
     int                  s_now_or_before_idx; /* botl.c now_or_before_idx */
     void                *s_status_hilite_str_p; /* botl.c status_hilite_str */
     int                  s_status_hilite_str_id; /* botl.c status_hilite_str_id */
-    /* Cluster AP: cmd.c per-env key-input queues.
+    /* Cmd.c per-env key-input queues.
      * pushq/saveq/phead/ptail/shead/stail were plain statics (process-global);
      * concurrent OMP envs sharing one thread could interleave reads/writes
      * from different envs' input replay sequences. */
@@ -485,7 +548,7 @@ typedef struct nle_globals {
     int                  s_ptail;           /* cmd.c ptail */
     int                  s_shead;           /* cmd.c shead */
     int                  s_stail;           /* cmd.c stail */
-    /* Cluster AP: wintty.c/getline.c per-env scratch.
+    /* Wintty.c/getline.c per-env scratch.
      * compress_str() cbuf was a function-local static used by tty_putstr
      * on every message output — a hot per-env buffer shared across envs.
      * tty_nhgetch nesting was __thread; marks re-entrant getc under UNIX.
@@ -493,13 +556,13 @@ typedef struct nle_globals {
     char                 s_compress_cbuf[256]; /* wintty.c compress_str cbuf, BUFSZ=256 */
     int                  s_tty_nhgetch_nesting; /* wintty.c tty_nhgetch nesting */
     boolean              s_suppress_history; /* getline.c suppress_history */
-    /* Cluster AP: cmd.c enlightenment-window state.
+    /* Cmd.c enlightenment-window state.
      * en_win was a plain static (process-global winid); concurrent envs
      * both running enlightenment (e.g. at game-over) would race on it.
      * en_via_menu was __thread; OMP cross-thread resume hazard. */
     short                s_en_win;           /* cmd.c en_win (winid=short) */
     boolean              s_en_via_menu;      /* cmd.c en_via_menu */
-    /* Cluster AP Part 2: remaining functional __thread variables.
+    /* Remaining functional __thread variables.
      * Each was __thread (broken under OMP coroutine-resume) or a plain
      * process-global static (racy under concurrent envs). */
     /* rumors.c oracle state — __thread (flg/loc) or plain static (cnt).
@@ -528,7 +591,7 @@ typedef struct nle_globals {
     /* windows.c last_winchoice — __thread; window-system choice during init;
      * used only at startup, but must be per-env if envs init concurrently. */
     void                *s_last_winchoice;   /* struct win_choices * */
-    /* Cluster AQ: makemon.c align_shift() per-env cache.
+    /* Makemon.c align_shift() per-env cache.
      * oldmoves and lev were `static NEARDATA` (plain process-global) inside
      * align_shift(). Two OMP threads in makemon() simultaneously race on
      * the oldmoves/lev update, corrupting lev and causing a SIGSEGV when
@@ -537,7 +600,7 @@ typedef struct nle_globals {
     long                 s_align_shift_oldmoves; /* makemon.c align_shift oldmoves */
     void                *s_align_shift_lev;      /* makemon.c align_shift lev (s_level*) */
 
-    /* Cluster AT-C: per-env dungeon graph + level-builder + key-cmd state.
+    /* Per-env dungeon graph + level-builder + key-cmd state.
      * Was: process-global mutable in dungeon.c/mklev.c/do.c/decl.c. With
      * N envs in one process, env A's dungeon graph would be walked by env
      * B's level transition code, causing the save_room(r=NULL) crash. */
@@ -550,7 +613,7 @@ typedef struct nle_globals {
     char                          s_made_branch;       /* boolean (mklev.c) */
     char                          s_at_ladder;         /* boolean (do.c) */
     void                         *s_save_cm;           /* struct ext_func_tab * (decl.c) */
-    /* Cluster AT-B: per-env level/save filename buffers and prefix table.
+    /* Per-env level/save filename buffers and prefix table.
      * Was: process-global `char lock[PL_NSIZ+14]`, `char SAVEF[SAVESIZE]`,
      * `char bones[]`, `char *fqn_prefix[PREFIX_COUNT]` in files.c/decl.c.
      * With N envs in one process, all envs collided on the same buffer:
@@ -564,7 +627,7 @@ typedef struct nle_globals {
     char                          s_bones[16];    /* "bonesnn.xxx" + slack */
     char                         *s_fqn_prefix[10]; /* PREFIX_COUNT */
 
-    /* Cluster AU group 1 — save/restore session state (save.c + restore.c).
+    /* Save/restore session state (save.c + restore.c).
      * Eleven file-statics that race across envs during c_reset save paths.
      * Direct fields on nle_ctx_t (no swap struct); macros at the top of
      * each .c file rewrite accesses to current_nle_ctx->s_<name>.
@@ -585,7 +648,7 @@ typedef struct nle_globals {
     struct fruit        *s_oldfruit;              /* restore.c (ghost-level fruit chain) */
     long                 s_omoves;                /* restore.c (ghost-level monstermoves) */
 
-    /* Cluster AU group 5 — quest/pray/artifact per-env state.
+    /* Quest/pray/artifact per-env state.
      * Nine file-statics across questpgr.c, pray.c, artifact.c that
      * race across envs in shared-libnethack vecenv (most notable:
      * artiexist[] leaking "Excalibur exists" across env universes).
@@ -611,14 +674,14 @@ typedef struct nle_globals {
     int                  s_p_trouble;             /* pray.c (trouble code at prayer start) */
     int                  s_p_type;                /* pray.c ((-1)..3: prayer outcome class) */
     boolean              s_artiexist[35];         /* artifact.c (1+NROFARTIFACTS+1; NROFARTIFACTS==33) */
-    /* Cluster BD-1: artidisco[] migrated off process-shared static. Was a
+    /* Artidisco[] migrated off process-shared static. Was a
      * STATIC_OVL xchar in artifact.c; init_artifacts() memset()s it on every
      * env reset, racing with discover_artifact() on other envs. xchar is a
      * typedef for schar (signed char); size matches NROFARTIFACTS == 33. */
     signed char          s_artidisco[33];         /* artifact.c (NROFARTIFACTS; xchar == schar) */
     boolean              s_touch_blasted;         /* artifact.c (retouch_object damage flag) */
 
-    /* Cluster AU group 6 — single-action target caches per-env.
+    /* Single-action target caches per-env.
      * Eight file-statics that hold the "current action target" between
      * tick N (action started) and tick N+1 (continuation / y-n prompt).
      * At N>=128 envs, env A's cache (e.g. telescroll = the scroll
@@ -639,7 +702,7 @@ typedef struct nle_globals {
     struct nhcoord      *s_utrack;                /* track.c (UTSZ=50 player-step ring; heap-alloc'd in init_nle to keep coord.h out of nle.h, matching s6_inv_pos_p / s7_doors_p / bhitpos_p pattern) */
     struct obj          *s_propellor;             /* weapon.c (ranged-weapon select cache) */
 
-    /* Cluster AU group 2 — invent.c + pickup.c per-env state.
+    /* Invent.c + pickup.c per-env state.
      * Ten file-statics that race across envs during inventory display,
      * sort, container loot, and object-class menu filtering. Direct
      * fields on nle_ctx_t (no swap struct); macros at the top of each
@@ -671,7 +734,7 @@ typedef struct nle_globals {
     long                 s_val_for_n_or_more;     /* pickup.c (n_or_more threshold) */
     char                 s_valid_menu_classes[24]; /* pickup.c (MAXOCLASSES+1+4+1) */
 
-    /* Cluster AU group 3 — level-build per-env
+    /* Level-build per-env
      *
      * File-statics from sp_lev.c / mkmaze.c / mkmap.c that hold transient
      * state during mklev() and special-level loading. With N>=128 PufferLib
@@ -691,7 +754,7 @@ typedef struct nle_globals {
                                                        * _Static_assert in
                                                        * sp_lev.c catches
                                                        * future drift. */
-    /* s_container_idx already declared in Cluster AP Part 2 block above */
+    /* s_container_idx already declared in the block above */
     struct monst                *s_invent_carrying_monster;
     int                          s_mines_prize_count;
     int                          s_soko_prize_count;
@@ -707,7 +770,7 @@ typedef struct nle_globals {
     char                        *s_new_locations;
     int                          s_n_loc_filled;
 
-    /* Cluster AU group 4 — combat tick per-env.
+    /* Combat tick per-env.
      * File-statics in mhitm.c / mhitu.c / mthrowu.c / muse.c that
      * carry state across a pline / Y-N prompt yield within one
      * combat tick. With N>=128 parallel envs, env A's pointer
@@ -721,7 +784,7 @@ typedef struct nle_globals {
     int           s_mesg_given;       /* mthrowu.c mesg_given */
     boolean       s_zap_oseen;        /* muse.c zap_oseen */
 
-    /* Cluster AU group 7 — misc-1 per-env. 14 file-scope statics scraped
+    /* Misc-1 per-env. 14 file-scope statics scraped
      * out of cmd.c, hack.c, display.c, vision.c, do_name.c, topten.c, end.c.
      * Direct ctx fields (no swap). Macros at the top of each .c file rewrite
      * accesses to current_nle_ctx->s_<name>. Pointers used where the type
@@ -748,13 +811,13 @@ typedef struct nle_globals {
     int                           s_via_naming;
     /* topten.c — `toptenwin` collides with `iflags.toptenwin` (flag.h field).
      * Macro renamed to `nle_toptenwin` inside topten.c; the field is still
-     * stored as s_toptenwin to keep the cluster-wide naming convention. */
+     * stored as s_toptenwin to keep the s_ naming convention. */
     long                          s_final_fpos;        /* UPDATE_RECORD_IN_PLACE — dead on UNIX */
     int                           s_toptenwin;         /* winid (typedef'd int) — TT scroll window */
     /* end.c */
     int                           s_vanq_sortmode;     /* VANQ_MLVL_MNDX default == 0, calloc OK */
 
-    /* Cluster AU group 8 — misc-2 per-env state.
+    /* Misc-2 per-env state.
      * Migrated from file-statics in files.c, mon.c, extralev.c, rect.c,
      * rumors.c, dbridge.c, polyself.c. All are persistent per-env scratch
      * for level building / config parsing / polymorph cycles. */
@@ -771,12 +834,12 @@ typedef struct nle_globals {
     struct entity  *s_occupants;            /* dbridge.c occupants[ENTITIES=2] (heap, lazy alloc'd) */
     int             s_sex_change_ok;        /* polyself.c sex_change_ok */
 
-    /* Cluster AV-b1 — function-local statics: rnd/trap/mkmaze */
+    /* Function-local statics: rnd/trap/mkmaze */
     unsigned                     s_rn2disprng_seed;        /* rnd.c rn2_on_display_rng (non-ISAAC64) */
     boolean                      s_dotrap_recursive_mine;  /* trap.c dotrap landmine recursion guard */
     boolean                      s_movebubbles_up;         /* mkmaze.c movebubbles up/down latch */
 
-    /* Cluster AV-b2 — function-local statics: hack/dog */
+    /* Function-local statics: hack/dog */
     long                          s_moverock_lastmovetime;     /* hack.c moverock */
     int                           s_domove_skates;             /* hack.c domove_core */
     signed char                   s_spoteffects_spotloc_x;     /* hack.c spoteffects (coord.x) */
@@ -785,14 +848,14 @@ typedef struct nle_globals {
     struct trap                  *s_spoteffects_spottrap;      /* hack.c spoteffects */
     unsigned                      s_spoteffects_spottraptyp;   /* hack.c spoteffects (NO_TRAP==0) */
     int                           s_makedog_petname_used;      /* dog.c makedog */
-    /* Cluster AV-b3 — function-local statics: display/topten */
+    /* Function-local statics: display/topten */
     struct tmp_glyph    *s_tmp_at_tglyph;               /* display.c tmp_at() animation list head */
     boolean              s_cls_in_cls;                  /* display.c cls() recursion guard */
     int                  s_flush_screen_flushing;       /* display.c flush_screen() recursion guard */
     int                  s_flush_screen_delay_flushing; /* display.c flush_screen() delay latch */
     struct toptenentry  *s_get_rnd_toptenentry_tt_buf;  /* topten.c get_rnd_toptenentry scratch (lazy-alloc) */
 
-    /* Cluster AX-fix-2 — residual race surfaces.
+    /* Residual race surfaces.
      * Final 7 file-statics flagged by the AX-fix-1 diagnostic that produce
      * incorrect gameplay (not crashes) until migrated. Direct ctx fields
      * (no swap); macros at top of each .c file rewrite bare-name accesses
@@ -802,7 +865,7 @@ typedef struct nle_globals {
      *  - s_eat_msgbuf is sized literally to 256 (== BUFSZ on this build)
      *    because nle.h is included by util TUs that don't pull hack.h;
      *    a _Static_assert in eat.c enforces BUFSZ == 256 (same precedent
-     *    as s_outbuf in save.c, Cluster AU group 1).
+     *    as s_outbuf in save.c).
      *  - s_bcpbreadcrumbs / s_bcubreadcrumbs use pointers (lazy alloc in
      *    ball.c) because struct breadcrumbs is defined in decl.h, which
      *    nle.h cannot include without re-defining it; forward-decl here
@@ -815,7 +878,7 @@ typedef struct nle_globals {
     struct breadcrumbs  *s_bcpbreadcrumbs;        /* ball.c (ball/chain trail, lazy alloc) */
     struct breadcrumbs  *s_bcubreadcrumbs;        /* ball.c (ball/chain trail, lazy alloc) */
 
-    /* Cluster AV-b4 — function-local statics (medium): single-action caches */
+    /* Function-local statics (medium): single-action caches */
     long                s_breakobj_lastmovetime;          /* dothrow.c breakobj */
     boolean             s_breakobj_peaceful_shk;          /* dothrow.c breakobj */
     long                s_elemental_clog_msgmv;           /* mon.c elemental_clog */
@@ -828,25 +891,25 @@ typedef struct nle_globals {
     boolean             s_hitum_cleave_clockwise;         /* uhitm.c hitum_cleave */
     long                s_ck_server_admin_msg_lastchk;    /* mail.c ck_server_admin_msg */
 
-    /* Cluster AX-fix-1+: residual file-statics flagged by AX diagnostic.
+    /* Residual file-statics flagged by AX diagnostic.
      * acid_ctx is opaque void* — struct h2o_ctx lives local in trap.c. */
     void                *s_acid_ctx;                      /* trap.c water_damage_chain ctx (heap, lazy) */
 
-    /* Cluster BB — persistent counters / gated-path statics that still race
+    /* Persistent counters / gated-path statics that still race
      * across envs in shared-libnethack vecenv. Direct fields; macros at the
      * top of each .c file rewrite bare-name accesses to current_nle_ctx->s_<name>.
      *  - jumping_is_magic: apply.c — set before walk_path callback path; races.
      *  - vmc_count:        pickup.c add_valid_menu_class — accumulates across calls.
      *  - topl_nxtidx / topl_initd: win/tty/topl.c — tty_getmsghistory / tty_putmsghistory
      *    persistent state, reached from RL frontend via winrl.cc rl_get/putmsghistory.
-     * (branch_id in dungeon.c reuses the already-existing s_branch_id_ctr field
-     *  from Cluster AT-C; no new field needed.) */
+     * (branch_id in dungeon.c reuses the already-existing s_branch_id_ctr
+     *  field; no new field needed.) */
     int                  s_jumping_is_magic;   /* apply.c get_valid_jump_position */
     int                  s_vmc_count;          /* pickup.c add_valid_menu_class */
     int                  s_topl_nxtidx;        /* topl.c tty_getmsghistory cursor */
     boolean              s_topl_initd;         /* topl.c tty_putmsghistory init flag */
 
-    /* Cluster BA — per-env return buffers for ~22 "returns pointer to
+    /* Per-env return buffers for ~22 "returns pointer to
      * internal static" functions. Each was a function-local static char buf:
      * racy under N>=2 vecenv when env A's mid-call buffer would be clobbered
      * by env B in the time between the function returning and the caller
@@ -885,7 +948,7 @@ typedef struct nle_globals {
     char                 s_uhitm_msgbuf[256];                      /* uhitm.c gulpum (BUFSZ) */
     unsigned char        s_vision_colbump[81 /* COLNO+1 = 80+1 */]; /* vision.c vision_recalc */
 
-    /* Cluster BC: save/restore-path dispatch tables and zerocomp read buffer.
+    /* Save/restore-path dispatch tables and zerocomp read buffer.
      * Were file-scope `static` in restore.c and save.c — process-globals.
      *
      * Root cause of N=1024 short-read panics: under PufferLib's OMP-parallel
@@ -933,7 +996,7 @@ typedef struct nle_globals {
     short                s_zc_inrunlength;
     int                  s_zc_mreadfd;
 
-    /* Cluster BF: 5 hot-path monster-turn statics migrated to per-env.
+    /* 5 hot-path monster-turn statics migrated to per-env.
      * Identified by audit; all on the monster-turn hot path and likely
      * sources of cross-env cache-line contention under OMP-128 stepping.
      * Direct ctx fields; macros at top of each .c file rewrite bare-name
@@ -948,7 +1011,7 @@ typedef struct nle_globals {
     boolean              s_disintegested;   /* mon.c (digested/disintegrated flag) */
     boolean              s_read_known;      /* read.c (cross-TU: detect.c) */
 
-    /* Cluster BG: per-action warm globals migrated to per-env.
+    /* Per-action warm globals migrated to per-env.
      * Written on per-action paths (less frequent than every tick) but
      * still race-prone across envs under OMP. */
     boolean              s_class_filter;       /* pickup.c filter trio */
@@ -965,20 +1028,20 @@ typedef struct nle_globals {
     boolean              s_under_water_dela;   /* display.c under_water() */
     boolean              s_under_ground_dela;  /* display.c under_ground() */
 
-    /* Cluster BJ: muse.c file-statics. `struct musable m` and `trapx/trapy`
+    /* Muse.c file-statics. `struct musable m` and `trapx/trapy`
      * were process-global writes on the per-monster-turn path in muse.c
      * (called from find_offensive/defensive/misc and use_*). With N>=192
      * envs stepping in parallel, two envs' monsters could both stomp m
      * concurrently, leaving one with another env's `m.offensive` pointer
      * and crashing in use_offensive() at muse.c:1421 on a stale heap
-     * struct. m_using was already migrated in Cluster BF; this completes
+     * struct. m_using was already migrated; this completes
      * the muse.c migration. struct musable is opaque here; muse.c casts
      * the void* to its own struct. */
     void *               s_muse_m_p;           /* muse.c: struct musable */
     int                  s_muse_trapx;         /* muse.c: trapx */
     int                  s_muse_trapy;         /* muse.c: trapy */
 
-    /* Cluster BK — sp_lev / track / mkmaze per-action globals migrated.
+    /* Sp_lev / track / mkmaze per-action globals migrated.
      *
      * sp_lev.c lev_message/lregions/num_lregions: NON-static cross-TU
      * globals. lev_message is a malloc'd char* set in sp_lev.c:2997 and
@@ -1018,6 +1081,16 @@ typedef struct nle_globals {
     int                  s_water_ymin;              /* mkmaze.c ymin */
     int                  s_water_xmax;              /* mkmaze.c xmax */
     int                  s_water_ymax;              /* mkmaze.c ymax */
+
+    /* role.c per-env state (pa[] + post_attribs). NUM_BP==4. */
+    char                 s_role_pa[4];              /* role.c pa[NUM_BP] */
+    char                 s_role_post_attribs;       /* role.c post_attribs */
+    /* Per-env trap launch state (trap.c launchplace). */
+    void                *s_launchplace_obj;
+    signed char          s_launchplace_x;
+    signed char          s_launchplace_y;
+    /* Per-env topten linked list head (topten.c). */
+    void                *s_tt_head;
 } nle_ctx_t;
 
 /*

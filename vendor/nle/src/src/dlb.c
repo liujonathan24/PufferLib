@@ -10,6 +10,7 @@
 
 #ifdef __DJGPP__
 #include <string.h>
+#include <unistd.h>
 #endif
 
 #define DATAPREFIX 4
@@ -144,7 +145,7 @@ library *lp; /* library pointer to fill in */
     if (lp->rev > DLB_MAX_VERS || lp->rev < DLB_MIN_VERS)
         return FALSE;
 
-    /* Cluster BI: dlb_libs[] is process-global, but the alloc() macro under
+    /* Dlb_libs[] is process-global, but the alloc() macro under
      * NLE_USE_ARENA_FREE places allocations into the *current env's* per-env
      * mmap'd arena (see alloc.c). When that first env later runs nle_end,
      * its arena is munmapped — and dlb_libs[i].dir / .sspace become dangling
@@ -326,6 +327,8 @@ const char *mode UNUSED;
         dp->start = start;
         dp->size = size;
         dp->mark = 0;
+        /* pread() in lib_dlb_fread handles thread-safe I/O
+         * without needing a separate file descriptor. */
         return TRUE;
     }
 
@@ -335,9 +338,9 @@ const char *mode UNUSED;
 /*ARGUSED*/
 STATIC_OVL int
 lib_dlb_fclose(dp)
-dlb *dp UNUSED;
+dlb *dp;
 {
-    /* nothing needs to be done */
+    /* pread() approach: no per-handle fd to close. */
     return 0;
 }
 
@@ -356,15 +359,13 @@ dlb *dp;
         return 0;
 
     pos = dp->start + dp->mark;
-    if (dp->lib->fmark != pos) {
-        fseek(dp->lib->fdata, pos, SEEK_SET); /* check for error??? */
-        dp->lib->fmark = pos;
-    }
-
-    nread = fread(buf, size, quan, dp->lib->fdata);
-    nbytes = nread * size;
+    /* Use pread() for thread safety — reads at offset without modifying
+     * the shared file position. dup() shares the file offset, so
+     * fseek+fread on dup'd fds still races. */
+    nbytes = pread(fileno(dp->lib->fdata), buf, (size_t)size * quan, pos);
+    if (nbytes < 0) nbytes = 0;
+    nread = nbytes / size;
     dp->mark += nbytes;
-    dp->lib->fmark += nbytes;
 
     return nread;
 }
@@ -480,7 +481,7 @@ const dlb_procs_t rsrc_dlb_procs = { rsrc_dlb_init,  rsrc_dlb_cleanup,
 #define do_dlb_ftell (*dlb_procs->dlb_ftell_proc)
 
 static const dlb_procs_t *dlb_procs;
-/* Cluster AN: dlb_initialized was `static __thread boolean`. dlb_libs[]
+/* Dlb_initialized was `static boolean`. dlb_libs[]
  * (above) is process-global; with __thread the init ran once per thread
  * and each re-ran lib_dlb_init which memsets dlb_libs[0]=0, racing with
  * other threads holding the old FILE*. Now process-global with a guard
@@ -514,9 +515,9 @@ dlb_init()
 void
 dlb_cleanup()
 {
-    /* Cluster AY: in a PufferLib vecenv, many envs share the process
+    /* In a PufferLib vecenv, many envs share the process
      * and the DLB file is open for the lifetime of the process. The
-     * previous code (Cluster AQ) called do_dlb_cleanup() on every
+     * previous code called do_dlb_cleanup() on every
      * nle_end and reset dlb_initialized=FALSE so the next nle_start
      * could re-run lib_dlb_init — which memset()s dlb_libs[0] and
      * re-opens the file. Another pthread mid-dlb_fopen on
@@ -527,7 +528,7 @@ dlb_cleanup()
      * identical across envs by design. Instead make cleanup a no-op
      * so dlb_libs[] stays valid and dlb_initialized stays TRUE for
      * the rest of the process lifetime. The OS reclaims the FILE* on
-     * process exit. Supersedes Cluster AQ. */
+     * process exit. */
     return;
 }
 

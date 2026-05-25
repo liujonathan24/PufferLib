@@ -141,8 +141,10 @@ register struct monst *mtmp;
 }
 
 /* steal armor after you finish taking it off */
-unsigned int stealoid; /* object to be stolen */
-unsigned int stealmid; /* monster doing the stealing */
+/* stealoid/stealmid — migrated to nle_ctx_t. File-local macros only
+ * (uhitm.c has an unrelated local `struct obj *stealoid`). */
+#define stealoid (current_nle_ctx->stealoid_v)
+#define stealmid (current_nle_ctx->stealmid_v)
 
 STATIC_PTR int
 stealarm(VOID_ARGS)

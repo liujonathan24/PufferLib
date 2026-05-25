@@ -8,7 +8,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env return buffer for dowipe() (renamed from `buf` to
+/* Per-env return buffer for dowipe() (renamed from `buf` to
  * avoid clobbering other `buf` locals in this TU). */
 #define dowipe_buf (current_nle_ctx->s_do_dowipe_buf)
 #include "lev.h"
@@ -938,7 +938,7 @@ int retry;
 }
 
 /* on a ladder, used in goto_level */
-/* Cluster AT-C: per-env (was static). do.c calls goto_level which
+/* Per-env (was static). do.c calls goto_level which
  * yields through pline; at_ladder must persist across the yield as
  * per-env state. */
 #define at_ladder (*(boolean *)&current_nle_ctx->s_at_ladder)
@@ -1150,7 +1150,8 @@ doup()
     return 1;
 }
 
-d_level save_dlevel = { 0, 0 };
+/* save_dlevel — migrated to nle_ctx_t (two schar fields). */
+#define save_dlevel (*(d_level *)&current_nle_ctx->save_dlevel_dnum)
 
 /* check that we can write out the current level */
 STATIC_OVL int
@@ -1718,7 +1719,7 @@ final_level()
     gain_guardian_angel();
 }
 
-/* Cluster AH: per-env (was __thread). Affects level-change pline() between
+/* Per-env (was __thread). Affects level-change pline() between
  * the schedule_goto() and deferred_goto() calls; env A's strings would
  * leak into env B's level change. */
 #define dfr_pre_msg  (current_nle_ctx->s_dfr_pre_msg)
@@ -1960,7 +1961,7 @@ int
 dowipe()
 {
     if (u.ucreamed) {
-        /* Cluster BA: dowipe_buf (was `buf`) migrated to nle_ctx_t */
+        /* Dowipe_buf (was `buf`) migrated to nle_ctx_t */
 
         Sprintf(dowipe_buf, "wiping off your %s", body_part(FACE));
         set_occupation(wipeoff, dowipe_buf, 0);

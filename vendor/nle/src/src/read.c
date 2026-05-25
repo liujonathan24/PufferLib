@@ -6,13 +6,13 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 6 — file-static migrated to nle_ctx_t.
+/* File-static migrated to nle_ctx_t.
  * 'struct litmon' is defined further down in this TU (~line 1899); the
  * macro is just textual, the type only needs to be visible at the
  * point of use (which is below the local struct definition). */
 #define gremlins (current_nle_ctx->s_gremlins)
 
-/* Cluster BF: scroll-id "known" flag per-env (was NON-static cross-TU
+/* Scroll-id "known" flag per-env (was NON-static cross-TU
  * boolean, extern in detect.c). Renamed to scr_known across read.c and
  * detect.c to avoid macro-clashing with struct field `obj->known`. */
 #define scr_known (current_nle_ctx->s_read_known)
@@ -24,7 +24,7 @@
     ((mndx) == urace.malenum \
      || (urace.femalenum != NON_PM && (mndx) == urace.femalenum))
 
-/* Cluster BF: scr_known (was `boolean known`) migrated to nle_ctx_t.
+/* Scr_known (was `boolean known`) migrated to nle_ctx_t.
  * Macro defined at top of file. */
 
 static const char readable[] = { ALL_CLASSES, SCROLL_CLASS,
@@ -1912,7 +1912,7 @@ struct litmon {
     struct monst *mon;
     struct litmon *nxt;
 };
-/* gremlins migrated to current_nle_ctx->s_gremlins (Cluster AU group 6).
+/* gremlins migrated to current_nle_ctx->s_gremlins.
  * Zero-initialization preserved by calloc() of nle_ctx_t. */
 
 /*

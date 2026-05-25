@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define offdelaybuf (current_nle_ctx->s_do_wear_offdelaybuf)
 
 static const char see_yourself[] = "see yourself";
@@ -87,7 +87,7 @@ struct obj *otmp;
 
 /* starting equipment gets auto-worn at beginning of new game,
    and we don't want stealth or displacement feedback then */
-/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard. */
+/* Per-env. Was __thread; OMP coroutine-resume hazard. */
 #define initial_don (current_nle_ctx->s_initial_don)
 
 /* putting on or taking off an item which confers stealth;
@@ -1402,7 +1402,24 @@ static const char clothes[] = {
 static const char accessories[] = {
     RING_CLASS, AMULET_CLASS, TOOL_CLASS, FOOD_CLASS, ARMOR_CLASS, 0
 };
-STATIC_VAR NEARDATA int Narmorpieces, Naccessories;
+/* Per-env do_wear.c state. Narmorpieces / Naccessories bundled. */
+struct nle_do_wear_state {
+    int _Narmorpieces;
+    int _Naccessories;
+};
+static struct nle_do_wear_state *
+nle_do_wear(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_do_wear_state *s = (struct nle_do_wear_state *) current_nle_ctx->s_do_wear_state;
+    if (!s) {
+        s = (struct nle_do_wear_state *) calloc(1, sizeof(struct nle_do_wear_state));
+        current_nle_ctx->s_do_wear_state = s;
+    }
+    return s;
+}
+#define Narmorpieces  (nle_do_wear()->_Narmorpieces)
+#define Naccessories  (nle_do_wear()->_Naccessories)
 
 /* assign values to Narmorpieces and Naccessories */
 STATIC_OVL void
@@ -1582,7 +1599,7 @@ int
 armoroff(otmp)
 struct obj *otmp;
 {
-    /* Cluster BA: offdelaybuf migrated to nle_ctx_t */
+    /* Offdelaybuf migrated to nle_ctx_t */
     int delay = -objects[otmp->otyp].oc_delay;
     const char *what = 0;
 

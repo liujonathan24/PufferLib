@@ -15,10 +15,10 @@ STATIC_OVL void NDECL(placebc_core);
 STATIC_OVL void NDECL(unplacebc_core);
 STATIC_DCL boolean FDECL(check_restriction, (int));
 
-/* Cluster AJ: per-env (was __thread). Ball/chain placement restriction. */
+/* Per-env (was __thread). Ball/chain placement restriction. */
 #define bcrestriction (current_nle_ctx->s_bcrestriction)
 #ifdef BREADCRUMBS
-/* Cluster AX-fix-2: bc[pu]breadcrumbs per-env via nle_ctx_t.
+/* Bc[pu]breadcrumbs per-env via nle_ctx_t.
  * Stored as pointers (lazy alloc) because nle.h only forward-declares
  * struct breadcrumbs (its full definition lives in decl.h AFTER nle.h
  * is included, so inline embedding would not compile when nle.h is

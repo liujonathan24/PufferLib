@@ -14,8 +14,8 @@
 #include "dlb.h"
 #include "sp_lev.h"
 
-/* Cluster AU group 3 — file-statics migrated to nle_ctx_t for per-env
- * isolation. See nle.h `Cluster AU group 3` block. The macros route every
+/* File-statics migrated to nle_ctx_t for per-env
+ * isolation. See nle.h block. The macros route every
  * existing direct-name access through current_nle_ctx->s_<name>. */
 #define mines_prize_count           (current_nle_ctx->s_mines_prize_count)
 #define soko_prize_count            (current_nle_ctx->s_soko_prize_count)
@@ -28,7 +28,7 @@
 /* MAX_CONTAINMENT is in sp_lev.h (==10). The nle.h ctx field is sized to
  * a literal 10 to avoid pulling sp_lev.h into nle.h. Catch future drift. */
 _Static_assert(MAX_CONTAINMENT == 10,
-               "Cluster AU group 3: s_container_obj sized to 10 in nle.h "
+               "s_container_obj sized to 10 in nle.h "
                "but MAX_CONTAINMENT changed; update nle.h");
 
 #ifdef _MSC_VER
@@ -207,14 +207,18 @@ STATIC_DCL boolean FDECL(sp_level_coder, (sp_lev *));
 
 extern struct engr *head_engr;
 
-extern int min_rx, max_rx, min_ry, max_ry; /* from mkmap.c */
+/* min_rx, max_rx, min_ry, max_ry — migrated to nle_ctx_t (mkmap.c). */
+#define min_rx (current_nle_ctx->min_rx_v)
+#define max_rx (current_nle_ctx->max_rx_v)
+#define min_ry (current_nle_ctx->min_ry_v)
+#define max_ry (current_nle_ctx->max_ry_v)
 
 /* positions touched by level elements explicitly defined in the des-file */
 /* SpLev_Map — per-env special-level positions migrated to nle_ctx_t. */
 #define SpLev_Map ((char (*)[ROWNO]) current_nle_ctx->s_SpLev_Map_p)
 
 static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
-/* Cluster BK — per-env special-level bounding box (was static NEARDATA).
+/* Per-env special-level bounding box (was static NEARDATA).
  * Two envs concurrently generating a special level on the same OS thread
  * would clobber the TLS box → out-of-bounds levl[][] write. */
 #define xstart  (current_nle_ctx->s_sp_xstart)
@@ -222,7 +226,7 @@ static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
 #define xsize   (current_nle_ctx->s_sp_xsize)
 #define ysize   (current_nle_ctx->s_sp_ysize)
 
-/* Cluster BK — per-env special-level message + lregions table. Were
+/* Per-env special-level message + lregions table. Were
  * NON-static cross-TU process-global heap pointers; env B's level entry
  * would free() env A's still-pending lev_message → UAF crash candidate
  * for intermittent obs=0x4 corruption. The cross-TU externs in mkmaze.c
@@ -236,7 +240,7 @@ static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
 #define set_lregions(p) \
     (current_nle_ctx->s_sp_lregions_p = (struct nle_lev_region_s *) (p))
 
-/* Cluster AP Part 2: per-env level-gen state. Were __thread; OMP coroutine-
+/* Per-env level-gen state. Were __thread; OMP coroutine-
  * resume hazard causes worker thread to see zero/stale TLS values.
  * NOTE: icedpools is NOT macro-replaced here because struct linfo (sp_lev.h:343)
  * also has an icedpools field; a bare `#define icedpools` would corrupt the
@@ -244,7 +248,7 @@ static aligntyp ralign[3] = { AM_CHAOTIC, AM_NEUTRAL, AM_LAWFUL };
 #define splev_init_present (current_nle_ctx->s_splev_init_present)
 #define sp_icedpools       (current_nle_ctx->s_icedpools)
 #define container_idx      (current_nle_ctx->s_container_idx)
-/* Cluster AU group 3: per-env mid-build statics that race when N envs
+/* Per-env mid-build statics that race when N envs
  * run in one process. Direct ctx fields; macros below. */
 #define mines_prize_count       (current_nle_ctx->s_mines_prize_count)
 #define soko_prize_count        (current_nle_ctx->s_soko_prize_count)
@@ -3907,8 +3911,24 @@ int dir;
                 selection_setpoint(x, y, ov, 1);
 }
 
-STATIC_VAR int FDECL((*selection_flood_check_func), (int, int));
-/* floodfillchk_match_under_typ moved to nle_ctx_t (Cluster AU group 3) */
+/* Per-env sp_lev.c state. selection_flood_check_func bundled into
+ * one struct, lazily allocated via nle_sp_lev(). */
+struct nle_sp_lev_state {
+    int (*_selection_flood_check_func)(int, int);
+};
+static struct nle_sp_lev_state *
+nle_sp_lev(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_sp_lev_state *s = (struct nle_sp_lev_state *) current_nle_ctx->s_sp_lev_state;
+    if (!s) {
+        s = (struct nle_sp_lev_state *) calloc(1, sizeof(struct nle_sp_lev_state));
+        current_nle_ctx->s_sp_lev_state = s;
+    }
+    return s;
+}
+#define selection_flood_check_func (nle_sp_lev()->_selection_flood_check_func)
+/* floodfillchk_match_under_typ moved to nle_ctx_t */
 
 void
 set_selection_floodfillchk(f)
@@ -4943,7 +4963,7 @@ spo_map(coder)
 struct sp_coder *coder;
 {
     static const char nhFunc[] = "spo_map";
-    /* Cluster BK: xsize/ysize/xstart/ystart are now macros expanding to
+    /* Xsize/ysize/xstart/ystart are now macros expanding to
      * current_nle_ctx->s_sp_*. Capture struct mazepart's .xsize/.ysize
      * fields into bare locals BEFORE any reference to the macro-named
      * tokens, so the struct member accesses don't get rewritten. */

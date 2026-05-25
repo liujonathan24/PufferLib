@@ -6,10 +6,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define msgbuf (current_nle_ctx->s_uhitm_msgbuf)
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define clockwise     (current_nle_ctx->s_hitum_cleave_clockwise)
 
 STATIC_DCL boolean FDECL(known_hitum, (struct monst *, struct obj *, int *,
@@ -31,11 +31,11 @@ STATIC_DCL boolean FDECL(hmonas, (struct monst *));
 STATIC_DCL void FDECL(nohandglow, (struct monst *));
 STATIC_DCL boolean FDECL(shade_aware, (struct obj *));
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
 /* Used to flag attacks caused by Stormbringer's maliciousness.
- * Cluster AO: per-env. */
+ * per-env. */
 struct nle_uhitm_state { boolean _override_confirmation; };
 static struct nle_uhitm_state *nle_uhitm(void) {
     if (!current_nle_ctx) return NULL;
@@ -547,7 +547,7 @@ struct attack *uattk; /* ... but we don't enforce that here; Null works ok */
        are non-consecutive, hero will sometimes start a series of attacks
        with a backswing--that doesn't impact actual play, just spoils the
        simulation attempt a bit */
-    /* Cluster AV-b4: clockwise migrated to nle_ctx_t */
+    /* Clockwise migrated to nle_ctx_t */
     unsigned i;
     coord save_bhitpos;
     int count, umort, x = u.ux, y = u.uy;
@@ -2131,7 +2131,7 @@ gulpum(mdef, mattk)
 register struct monst *mdef;
 register struct attack *mattk;
 {
-    /* Cluster BA: msgbuf migrated to nle_ctx_t (per-env). nomovemsg stores
+    /* Msgbuf migrated to nle_ctx_t (per-env). nomovemsg stores
      * a pointer into msgbuf; with per-env storage that pointer is stable
      * for the env's own subsequent step (it was racy across envs before). */
     register int tmp;

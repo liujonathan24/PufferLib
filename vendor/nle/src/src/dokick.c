@@ -10,12 +10,30 @@
     (martial_bonus() || is_bigfoot(youmonst.data) \
      || (uarmf && uarmf->otyp == KICKING_BOOTS))
 
-static NEARDATA struct rm *maploc, nowhere;
-static const char *gate_str;
+/* Per-env dokick.c state. maploc / nowhere / gate_str bundled into one struct. */
+struct nle_dokick_state {
+    struct rm *_maploc;
+    struct rm  _nowhere;
+    const char *_gate_str;
+};
+static struct nle_dokick_state *
+nle_dokick(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_dokick_state *s = (struct nle_dokick_state *) current_nle_ctx->s_dokick_state;
+    if (!s) {
+        s = (struct nle_dokick_state *) calloc(1, sizeof(struct nle_dokick_state));
+        current_nle_ctx->s_dokick_state = s;
+    }
+    return s;
+}
+#define maploc   (nle_dokick()->_maploc)
+#define nowhere  (nle_dokick()->_nowhere)
+#define gate_str (nle_dokick()->_gate_str)
 
 /* kickedobj (decl.c) tracks a kicked object until placed or destroyed */
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
 STATIC_DCL void FDECL(kickdmg, (struct monst *, BOOLEAN_P));

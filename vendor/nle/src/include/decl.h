@@ -13,8 +13,13 @@
  * to #include "nle.h" themselves (decl.h does NOT pull it in to avoid
  * forcing fcontext into util-binary include paths). */
 
+#ifdef NLE_OBJECTS_GLOBAL
 E int NDECL((*occupation));
 E int NDECL((*afternmv));
+#else
+#define occupation (current_nle_ctx->occupation_v)
+#define afternmv   (current_nle_ctx->afternmv_v)
+#endif
 
 E const char *hname;
 /* `hackpid` migrated to nle_ctx_t (stage 3c). Callers use
@@ -26,7 +31,7 @@ E char *catmore;
 #endif /* DEF_PAGER */
 
 #ifdef NLE_PER_ENV_FILES
-/* Cluster AO — SAVEF, lock, fqn_prefix migrated to nle_ctx_t. Macros
+/* SAVEF, lock, fqn_prefix migrated to nle_ctx_t. Macros
  * below redirect the legacy identifier so existing call sites in
  * libnethack.so see the per-env field. Util binaries (lev_main,
  * recover, ...) build without NLE_PER_ENV_FILES and keep their own
@@ -40,7 +45,7 @@ E char SAVEF[];
 E char SAVEP[];
 #endif
 
-/* max size of a windowtype option */
+/* Max size of a windowtype option */
 #define WINTYPELEN 16
 E char chosen_windowtype[WINTYPELEN];
 
@@ -48,7 +53,7 @@ E char chosen_windowtype[WINTYPELEN];
 /* Build-tool view: regular writable global (matches objects[]). */
 E int bases[MAXOCLASSES];
 #else
-/* bases — per-env object-class base-index table migrated to nle_ctx_t. */
+/* Bases — per-env object-class base-index table migrated to nle_ctx_t. */
 #define bases (current_nle_ctx->s_bases_p)
 #endif
 
@@ -56,7 +61,7 @@ E int bases[MAXOCLASSES];
 E NEARDATA int nroom;
 E NEARDATA int nsubroom;
 #else
-/* Cluster BK — nroom/nsubroom migrated to per-env nle_ctx_t. Drops the
+/* Nroom/nsubroom migrated to per-env nle_ctx_t. Drops the
  * nle_swap_in/out pair in nle.c and removes the cross-thread asymmetric-
  * write hazard (mklev.c wrote the __thread global; mkroom.c wrote
  * current_nle_ctx->nroom — readers couldn't tell which view was current
@@ -67,21 +72,26 @@ E NEARDATA int nsubroom;
 #define nsubroom (current_nle_ctx->s_nsubroom)
 #endif
 
-#define WARNCOUNT 6 /* number of different warning levels */
+#define WARNCOUNT 6 /* Number of different warning levels */
 E nhsym warnsyms[WARNCOUNT];
 
+#ifdef NLE_OBJECTS_GLOBAL
 E int x_maze_max, y_maze_max;
+#else
+#define x_maze_max (current_nle_ctx->x_maze_max_v)
+#define y_maze_max (current_nle_ctx->y_maze_max_v)
+#endif
 
-/* in_doagain — per-env, migrated to nle_ctx_t (cluster V). */
+/* In_doagain — per-env, migrated to nle_ctx_t (cluster V). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA int in_doagain;
 #else
 #define in_doagain (current_nle_ctx->in_doagain_v)
 #endif
 
-struct dgn_topology { /* special dungeon levels for speed */
+struct dgn_topology { /* Special dungeon levels for speed */
     d_level d_oracle_level;
-    d_level d_bigroom_level; /* unused */
+    d_level d_bigroom_level; /* Unused */
     d_level d_rogue_level;
     d_level d_medusa_level;
     d_level d_stronghold_level;
@@ -91,9 +101,9 @@ struct dgn_topology { /* special dungeon levels for speed */
     d_level d_wiz3_level;
     d_level d_juiblex_level;
     d_level d_orcus_level;
-    d_level d_baalzebub_level; /* unused */
-    d_level d_asmodeus_level;  /* unused */
-    d_level d_portal_level;    /* only in goto_level() [do.c] */
+    d_level d_baalzebub_level; /* Unused */
+    d_level d_asmodeus_level;  /* Unused */
+    d_level d_portal_level;    /* Only in goto_level() [do.c] */
     d_level d_sanctum_level;
     d_level d_earth_level;
     d_level d_water_level;
@@ -108,10 +118,10 @@ struct dgn_topology { /* special dungeon levels for speed */
     d_level d_mineend_level;
     d_level d_sokoend_level;
 };
-/* dungeon_topology migrated to nle_ctx_t (stage 6'). */
+/* Dungeon_topology migrated to nle_ctx_t (stage 6'). */
 #define dungeon_topology (*current_nle_ctx->s6_topology_p)
-/* macros for accessing the dungeon levels by their old names */
-/* clang-format off */
+/* Macros for accessing the dungeon levels by their old names */
+/* Clang-format off */
 #define oracle_level            (dungeon_topology.d_oracle_level)
 #define bigroom_level           (dungeon_topology.d_bigroom_level)
 #define rogue_level             (dungeon_topology.d_rogue_level)
@@ -142,9 +152,9 @@ struct dgn_topology { /* special dungeon levels for speed */
 #define knox_level              (dungeon_topology.d_knox_level)
 #define mineend_level           (dungeon_topology.d_mineend_level)
 #define sokoend_level           (dungeon_topology.d_sokoend_level)
-/* clang-format on */
+/* Clang-format on */
 
-/* dnstair/upstair/dnladder/upladder/sstairs migrated to nle_ctx_t (stage 6'). */
+/* Dnstair/upstair/dnladder/upladder/sstairs migrated to nle_ctx_t (stage 6'). */
 #define dnstair  (*current_nle_ctx->s6_dnstair_p)
 #define upstair  (*current_nle_ctx->s6_upstair_p)
 #define xdnstair (dnstair.sx)
@@ -161,21 +171,21 @@ struct dgn_topology { /* special dungeon levels for speed */
 
 #define sstairs  (*current_nle_ctx->s6_sstairs_p)
 
-/* updest/dndest migrated to nle_ctx_t (stage 6'). */
+/* Updest/dndest migrated to nle_ctx_t (stage 6'). */
 #define updest (*current_nle_ctx->s6_updest_p)
 #define dndest (*current_nle_ctx->s6_dndest_p)
 
-/* inv_pos / dungeons / sp_levchn migrated to nle_ctx_t (stage 6'). */
+/* Inv_pos / dungeons / sp_levchn migrated to nle_ctx_t (stage 6'). */
 #define inv_pos   (*current_nle_ctx->s6_inv_pos_p)
 #define dungeons  (current_nle_ctx->s6_dungeons_p)
 #define sp_levchn (current_nle_ctx->s6_sp_levchn)
 #define dunlev_reached(x) (dungeons[(x)->dnum].dunlev_ureached)
 
 #include "quest.h"
-/* quest_status — stage 9' batch C migrated to nle_ctx_t. */
+/* Quest_status — stage 9' batch C migrated to nle_ctx_t. */
 #define quest_status (*current_nle_ctx->s9c_quest_status_p)
 
-/* pl_character/pl_race/pl_fruit/tune — per-env, migrated to nle_ctx_t
+/* Pl_character/pl_race/pl_fruit/tune — per-env, migrated to nle_ctx_t
  * (cluster W). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char pl_character[PL_CSIZ];
@@ -189,7 +199,7 @@ E NEARDATA char tune[6];
 #define tune         (current_nle_ctx->tune_v)
 #endif
 
-/* ffruit — per-env fruit list head, migrated to nle_ctx_t (cluster X). */
+/* Ffruit — per-env fruit list head, migrated to nle_ctx_t (cluster X). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA struct fruit *ffruit;
 #else
@@ -197,7 +207,7 @@ E NEARDATA struct fruit *ffruit;
 #endif
 
 #define MAXLINFO (MAXDUNGEON * MAXLEVEL)
-/* level_info — stage 7' partial migrated to nle_ctx_t. */
+/* Level_info — stage 7' partial migrated to nle_ctx_t. */
 #define level_info (current_nle_ctx->s7_level_info_p)
 
 /* `struct sinfo program_state` moved to nle_ctx_t (refactor stage 3b).
@@ -214,15 +224,15 @@ E const char ynNaqchars[];
 
 E const char disclosure_options[];
 
-/* smeq[] — per-env room-equivalence work array migrated to nle_ctx_t. */
+/* Smeq[] — per-env room-equivalence work array migrated to nle_ctx_t. */
 #define smeq (current_nle_ctx->s_smeq_p)
-/* doorindex — per-env, migrated to nle_ctx_t (cluster V). */
+/* Doorindex — per-env, migrated to nle_ctx_t (cluster V). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA int doorindex;
 #else
 #define doorindex (current_nle_ctx->doorindex_v)
 #endif
-/* save_cm — per-env, migrated to nle_ctx_t (cluster X). */
+/* Save_cm — per-env, migrated to nle_ctx_t (cluster X). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char *save_cm;
 #else
@@ -230,26 +240,26 @@ E NEARDATA char *save_cm;
 #endif
 
 struct kinfo {
-    struct kinfo *next; /* chain of delayed killers */
-    int id;             /* uprop keys to ID a delayed killer */
-    int format;         /* one of the killer formats */
+    struct kinfo *next; /* Chain of delayed killers */
+    int id;             /* Uprop keys to ID a delayed killer */
+    int format;         /* One of the killer formats */
 #define KILLED_BY_AN 0
 #define KILLED_BY 1
 #define NO_KILLER_PREFIX 2
-    char name[BUFSZ]; /* actual killer name */
+    char name[BUFSZ]; /* Actual killer name */
 };
-/* killer — stage 9' batch C migrated to nle_ctx_t. The struct
+/* Killer — stage 9' batch C migrated to nle_ctx_t. The struct
  * u_conduct.killer field was renamed to u_conduct.killcount in you.h
  * to free the `killer` token for this macro. */
 #define killer (*current_nle_ctx->s9c_killer_p)
 
-/* plname — per-env player name, migrated to nle_ctx_t (cluster W). */
+/* Plname — per-env player name, migrated to nle_ctx_t (cluster W). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char plname[PL_NSIZ];
 #else
 #define plname (current_nle_ctx->plname_v)
 #endif
-/* dogname/catname/horsename — per-env pet names, migrated to nle_ctx_t
+/* Dogname/catname/horsename — per-env pet names, migrated to nle_ctx_t
  * (cluster X). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA char dogname[];
@@ -260,11 +270,23 @@ E NEARDATA char horsename[];
 #define catname   (current_nle_ctx->catname_v)
 #define horsename (current_nle_ctx->horsename_v)
 #endif
+#ifdef NLE_OBJECTS_GLOBAL
 E char preferred_pet;
-E const char *occtxt; /* defined when occupation != NULL */
+#else
+#define preferred_pet (current_nle_ctx->preferred_pet_v)
+#endif
+#ifdef NLE_OBJECTS_GLOBAL
+E const char *occtxt;
+#else
+#define occtxt (current_nle_ctx->occtxt_v)
+#endif
+#ifdef NLE_OBJECTS_GLOBAL
 E const char *nomovemsg;
+#else
+#define nomovemsg (current_nle_ctx->nomovemsg_v)
+#endif
 #ifdef NLE_PER_ENV_FILES
-/* Cluster AO — `lock` redirects to current_nle_ctx->s_lock. See nle.h
+/* `lock` redirects to current_nle_ctx->s_lock. See nle.h
  * for the per-env field and the rationale (cross-env level-file clash
  * from a process-shared lock buffer). */
 #define lock        (current_nle_ctx->s_lock)
@@ -280,15 +302,15 @@ struct multishot {
     short o;
     boolean s;
 };
-/* m_shot — stage 9' batch C migrated to nle_ctx_t. */
+/* M_shot — stage 9' batch C migrated to nle_ctx_t. */
 #define m_shot (*current_nle_ctx->s9c_m_shot_p)
 
-/* moves/monstermoves/wailmsg — stage 9' migrated to nle_ctx_t. */
+/* Moves/monstermoves/wailmsg — stage 9' migrated to nle_ctx_t. */
 #define moves        (current_nle_ctx->nle_moves)
 #define monstermoves (current_nle_ctx->nle_monstermoves)
 #define wailmsg      (current_nle_ctx->nle_wailmsg)
 
-/* in_mklev — per-env, migrated to nle_ctx_t (cluster V). */
+/* In_mklev — per-env, migrated to nle_ctx_t (cluster V). */
 #ifdef NLE_OBJECTS_GLOBAL
 E NEARDATA boolean in_mklev;
 #else
@@ -302,7 +324,7 @@ E NEARDATA boolean in_mklev;
 E const int shield_static[];
 
 #include "spell.h"
-/* spl_book — stage 9' batch C migrated to nle_ctx_t. */
+/* Spl_book — stage 9' batch C migrated to nle_ctx_t. */
 #define spl_book (current_nle_ctx->s9c_spl_book_p)
 
 #include "color.h"
@@ -310,10 +332,10 @@ E const int shield_static[];
 E const int zapcolors[];
 #endif
 
-E const struct class_sym def_oc_syms[MAXOCLASSES]; /* default class symbols */
-E uchar oc_syms[MAXOCLASSES];                      /* current class symbols */
-E const struct class_sym def_monsyms[MAXMCLASSES]; /* default class symbols */
-E uchar monsyms[MAXMCLASSES];                      /* current class symbols */
+E const struct class_sym def_oc_syms[MAXOCLASSES]; /* Default class symbols */
+E uchar oc_syms[MAXOCLASSES];                      /* Current class symbols */
+E const struct class_sym def_monsyms[MAXMCLASSES]; /* Default class symbols */
+E uchar monsyms[MAXMCLASSES];                      /* Current class symbols */
 
 #include "obj.h"
 /* Body-slot pointers — stage 9' batch D migrated to nle_ctx_t.
@@ -322,9 +344,9 @@ E uchar monsyms[MAXMCLASSES];                      /* current class symbols */
 #ifdef NLE_OBJECTS_GLOBAL
 /* Build-tool view: regular writable globals (lev_comp, makedefs, etc.) */
 E NEARDATA struct obj *uarm, *uarmc, *uarmh, *uarms, *uarmg, *uarmf,
-    *uarmu, /* under-wear, so to speak */
+    *uarmu, /* Under-wear, so to speak */
     *uamul, *uleft, *uright, *ublindf, *uwep, *uswapwep, *uquiver;
-E NEARDATA struct obj *uchain; /* defined only when punished */
+E NEARDATA struct obj *uchain; /* Defined only when punished */
 E NEARDATA struct obj *uball;
 #else
 #define uarm     (current_nle_ctx->s9_uarm)
@@ -341,10 +363,10 @@ E NEARDATA struct obj *uball;
 #define uwep     (current_nle_ctx->s9_uwep)
 #define uswapwep (current_nle_ctx->s9_uswapwep)
 #define uquiver  (current_nle_ctx->s9_uquiver)
-#define uchain   (current_nle_ctx->s9_uchain)  /* defined only when punished */
+#define uchain   (current_nle_ctx->s9_uchain)  /* Defined only when punished */
 #define uball    (current_nle_ctx->s9_uball)
 #endif
-/* invent / uskin / current_wand / thrownobj / kickedobj / migrating_objs /
+/* Invent / uskin / current_wand / thrownobj / kickedobj / migrating_objs /
  * billobjs migrated direct (no static-init refs to address-of). */
 #define invent         (current_nle_ctx->invent_p)
 #define uskin          (current_nle_ctx->uskin_p)
@@ -354,10 +376,10 @@ E NEARDATA struct obj *uball;
 #define migrating_objs (current_nle_ctx->migrating_objs_p)
 #define billobjs       (current_nle_ctx->billobjs_p)
 
-E const struct obj zeroobj; /* for init; also, &zeroobj is used
+E const struct obj zeroobj; /* For init; also, &zeroobj is used
                                       * as special value */
 
-E const anything zeroany;   /* init'd and defined in decl.c */
+E const anything zeroany;   /* Init'd and defined in decl.c */
 
 #include "you.h"
 /* Player state migrated to nle_ctx_t (stage 4 — was 'struct you u' here).
@@ -366,9 +388,9 @@ E const anything zeroany;   /* init'd and defined in decl.c */
  * extern declaration of `current_nle_ctx`; this is already the case in
  * every src/*.c via the refactor's universal include pattern. */
 #define u (*current_nle_ctx->u_ptr)
-/* ubirthday — stage 9' migrated to nle_ctx_t. */
+/* Ubirthday — stage 9' migrated to nle_ctx_t. */
 #define ubirthday (current_nle_ctx->nle_ubirthday)
-/* urealtime — stage 9' batch C migrated to nle_ctx_t. */
+/* Urealtime — stage 9' batch C migrated to nle_ctx_t. */
 #define urealtime (*current_nle_ctx->s9c_urealtime_p)
 
 #include "onames.h"
@@ -376,10 +398,10 @@ E const anything zeroany;   /* init'd and defined in decl.c */
 #include "pm.h"
 #endif
 
-E const struct monst zeromonst; /* for init of new or temp monsters */
-/* youmonst — stage 9' batch C migrated to nle_ctx_t. */
+E const struct monst zeromonst; /* For init of new or temp monsters */
+/* Youmonst — stage 9' batch C migrated to nle_ctx_t. */
 #define youmonst (*current_nle_ctx->s9c_youmonst_p)
-/* mydogs / migrating_mons — stage 9' migrated to nle_ctx_t. */
+/* Mydogs / migrating_mons — stage 9' migrated to nle_ctx_t. */
 #define mydogs         (current_nle_ctx->mydogs_p)
 #define migrating_mons (current_nle_ctx->migrating_mons_p)
 
@@ -391,16 +413,16 @@ struct nle_mvitals_t {
     uchar died;
     uchar mvflags;
 };
-/* mvitals — stage 9' batch C migrated to nle_ctx_t (array of NUMMONS). */
+/* Mvitals — stage 9' batch C migrated to nle_ctx_t (array of NUMMONS). */
 #define mvitals (current_nle_ctx->s9c_mvitals_p)
 
-/* domove_attempting / domove_succeeded — stage 9' migrated to nle_ctx_t. */
+/* Domove_attempting / domove_succeeded — stage 9' migrated to nle_ctx_t. */
 #define domove_attempting (current_nle_ctx->nle_domove_attempting)
 #define domove_succeeded  (current_nle_ctx->nle_domove_succeeded)
 #define DOMOVE_WALK         0x00000001
 #define DOMOVE_RUSH         0x00000002
 
-/* c_color_names — read-only color-name table; non-TLS, shared. */
+/* C_color_names — read-only color-name table; non-TLS, shared. */
 struct c_color_names {
     const char *const c_black, *const c_amber, *const c_golden,
         *const c_light_blue, *const c_red, *const c_green, *const c_silver,
@@ -439,11 +461,11 @@ E struct c_common_strings {
 #define Never_mind c_common_strings.c_Never_mind
 #define vision_clears c_common_strings.c_vision_clears
 #define the_your c_common_strings.c_the_your
-/* fakename[] used occasionally so vtense() won't be fooled by an assigned
+/* Fakename[] used occasionally so vtense() won't be fooled by an assigned
    name ending in 's' */
 #define fakename c_common_strings.c_fakename
 
-/* material strings */
+/* Material strings */
 E const char *materialnm[];
 
 /* Monster name articles */
@@ -468,7 +490,7 @@ E const char *materialnm[];
 #define WIN_MAP     (current_nle_ctx->win_map)
 #define WIN_INVEN   (current_nle_ctx->win_inven)
 
-/* pline (et al) for a single string argument (suppress compiler warning) */
+/* Pline (et al) for a single string argument (suppress compiler warning) */
 #define pline1(cstr) pline("%s", cstr)
 #define Your1(cstr) Your("%s", cstr)
 #define You1(cstr) You("%s", cstr)
@@ -477,14 +499,14 @@ E const char *materialnm[];
 #define Sprintf1(buf, cstr) Sprintf(buf, "%s", cstr)
 #define panic1(cstr) panic("%s", cstr)
 
-/* toplines — stage 8' migrated to nle_ctx_t (macro). */
+/* Toplines — stage 8' migrated to nle_ctx_t (macro). */
 #define toplines (current_nle_ctx->top_lines)
 #ifndef TCAP_H
-/* tc_gbl_data — stage 8' migrated to nle_ctx_t. Struct tag renamed
+/* Tc_gbl_data — stage 8' migrated to nle_ctx_t. Struct tag renamed
  * to nle_tcap_t to free the `tc_gbl_data` token for the macro. */
 struct nle_tcap_t {
-    char *tc_AS, *tc_AE; /* graphics start and end (tty font swapping) */
-    int tc_LI, tc_CO;    /* lines and columns */
+    char *tc_AS, *tc_AE; /* Graphics start and end (tty font swapping) */
+    int tc_LI, tc_CO;    /* Lines and columns */
 };
 #define tc_gbl_data (*current_nle_ctx->s8_tcap_p)
 #define AS tc_gbl_data.tc_AS
@@ -493,7 +515,7 @@ struct nle_tcap_t {
 #define CO tc_gbl_data.tc_CO
 #endif
 
-/* xxxexplain[] is in drawing.c */
+/* Xxxexplain[] is in drawing.c */
 E const char *const monexplain[], invisexplain[], *const oclass_names[];
 
 /* Some systems want to use full pathnames for some subsets of file names,
@@ -505,27 +527,27 @@ E const char *const monexplain[], invisexplain[], *const oclass_names[];
 #define LEVELPREFIX 1
 #define SAVEPREFIX 2
 #define BONESPREFIX 3
-#define DATAPREFIX 4 /* this one must match hardcoded value in dlb.c */
+#define DATAPREFIX 4 /* This one must match hardcoded value in dlb.c */
 #define SCOREPREFIX 5
 #define LOCKPREFIX 6
 #define SYSCONFPREFIX 7
 #define CONFIGPREFIX 8
 #define TROUBLEPREFIX 9
 #define PREFIX_COUNT 10
-/* used in files.c; xxconf.h can override if needed */
+/* Used in files.c; xxconf.h can override if needed */
 #ifndef FQN_MAX_FILENAME
 #define FQN_MAX_FILENAME 512
 #endif
 
 #if defined(NOCWD_ASSUMPTIONS) || defined(VAR_PLAYGROUND)
-/* the bare-bones stuff is unconditional above to simplify coding; for
+/* The bare-bones stuff is unconditional above to simplify coding; for
  * ports that actually use prefixes, add some more localized things
  */
 #define PREFIXES_IN_USE
 #endif
 
 #ifdef NLE_PER_ENV_FILES
-/* Cluster AO — `fqn_prefix` redirects to current_nle_ctx->s_fqn_prefix.
+/* `fqn_prefix` redirects to current_nle_ctx->s_fqn_prefix.
  * Each env now keeps its own pointer table; the strings themselves
  * live in nle->settings.hackdir (which is already per-env). */
 #define fqn_prefix  (current_nle_ctx->s_fqn_prefix)
@@ -539,12 +561,12 @@ E boolean fqn_prefix_locked[PREFIX_COUNT];
 E const char *fqn_prefix_names[PREFIX_COUNT];
 #endif
 
-/* Cluster BC: sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
+/* Sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
  * sfcap is const-after-init (build capabilities) and remains shared. */
 E NEARDATA struct savefile_info sfcap;
 
 struct opvar {
-    xchar spovartyp; /* one of SPOVAR_foo */
+    xchar spovartyp; /* One of SPOVAR_foo */
     union {
         char *str;
         long l;
@@ -557,11 +579,11 @@ struct autopickup_exception {
     boolean grab;
     struct autopickup_exception *next;
 };
-/* apelist — stage 9' migrated to nle_ctx_t. */
+/* Apelist — stage 9' migrated to nle_ctx_t. */
 #define apelist (current_nle_ctx->apelist_p)
 
 struct plinemsg_type {
-    xchar msgtype;  /* one of MSGTYP_foo */
+    xchar msgtype;  /* One of MSGTYP_foo */
     struct nhregex *regex;
     char *pattern;
     struct plinemsg_type *next;
@@ -571,7 +593,7 @@ struct plinemsg_type {
 #define MSGTYP_NOREP    1
 #define MSGTYP_NOSHOW   2
 #define MSGTYP_STOP     3
-/* bitmask for callers of hide_unhide_msgtypes() */
+/* Bitmask for callers of hide_unhide_msgtypes() */
 #define MSGTYP_MASK_REP_SHOW ((1 << MSGTYP_NOREP) | (1 << MSGTYP_NOSHOW))
 
 E struct plinemsg_type *plinemsg_types;

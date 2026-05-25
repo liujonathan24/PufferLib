@@ -7,7 +7,7 @@
 #include "nle.h" /* current_nle_ctx, refactor */
 #include <stdatomic.h>
 
-/* Cluster AY: PufferLib vecenv has many pthreads, and each new env calls
+/* PufferLib vecenv has many pthreads, and each new env calls
  * choose_windows() during its nle_start. The body of choose_windows()
  * rewrites the global `windowprocs` struct. Other pthreads that are
  * mid-c_step can read torn function pointers and indirect-call to
@@ -90,6 +90,29 @@ STATIC_DCL int FDECL(dump_select_menu, (winid, int, MENU_ITEM_P **));
 STATIC_DCL void FDECL(dump_putstr, (winid, int, const char *));
 #endif /* DUMPLOG */
 
+/* Per-env windows.c state. Replaces file-scope statics. */
+struct nle_windows_state {
+    struct window_procs _dumplog_windowprocs_backup;
+    FILE *_dumplog_file;
+    time_t _dumplog_now;
+    void (*_previnterface_exit_nhwindows)(const char *);
+};
+static struct nle_windows_state *
+nle_windows(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_windows_state *s = (struct nle_windows_state *) current_nle_ctx->s_windows_state;
+    if (!s) {
+        s = (struct nle_windows_state *) calloc(1, sizeof(struct nle_windows_state));
+        current_nle_ctx->s_windows_state = s;
+    }
+    return s;
+}
+#define dumplog_windowprocs_backup (nle_windows()->_dumplog_windowprocs_backup)
+#define dumplog_file               (nle_windows()->_dumplog_file)
+#define dumplog_now                (nle_windows()->_dumplog_now)
+#define previnterface_exit_nhwindows (nle_windows()->_previnterface_exit_nhwindows)
+
 /* windowprocs is a table of function pointers set ONCE at init time
  * (windows.c:263 — `windowprocs = *winchoices[i].procs;`) and read
  * thereafter. Dropping NEARDATA makes it a single process-shared
@@ -171,7 +194,7 @@ struct winlink {
 };
 /* NB: this chain does not contain the terminal real window system pointer */
 
-static __thread struct winlink *chain = 0;
+static struct winlink *chain = 0;
 
 static struct winlink *
 wl_new()
@@ -209,7 +232,7 @@ wl_addtail(struct winlink *wl)
 }
 #endif /* WINCHAIN */
 
-/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard
+/* Per-env. Was __thread; OMP coroutine-resume hazard
  * during window-system init on worker threads. */
 #define last_winchoice \
     ((struct win_choices *) current_nle_ctx->s_last_winchoice)
@@ -275,7 +298,7 @@ const char *s;
     int i;
     char *tmps = 0;
 
-    /* Cluster AY: idempotent init -- only the first caller assigns
+    /* Idempotent init -- only the first caller assigns
      * windowprocs; later callers (other vecenv envs in other pthreads)
      * spin until ready and return without touching the global. */
     {
@@ -305,7 +328,7 @@ const char *s;
             if (winchoices[i].ini_routine)
                 (*winchoices[i].ini_routine)(WININIT);
             set_last_winchoice(&winchoices[i]);
-            /* Cluster AY: signal other pthreads that windowprocs is now
+            /* Signal other pthreads that windowprocs is now
              * fully initialized so their spin-wait can complete. */
             atomic_store(&windowprocs_init_state, 2);
             return;
@@ -363,7 +386,7 @@ const char *s;
             || WINDOWPORT("safe-startup"))
         nh_terminate(EXIT_SUCCESS);
 
-    /* Cluster AY: fallback exit path -- still mark ready so other
+    /* Fallback exit path -- still mark ready so other
      * spinning pthreads can proceed. */
     atomic_store(&windowprocs_init_state, 2);
 }
@@ -643,7 +666,7 @@ static struct window_procs hup_procs = {
     genl_can_suspend_no,
 };
 
-static void FDECL((*previnterface_exit_nhwindows), (const char *)) = 0;
+/* previnterface_exit_nhwindows — migrated to nle_windows_state */
 
 /* hangup has occurred; switch to no-op user interface */
 void
@@ -1164,11 +1187,10 @@ unsigned long *colormasks UNUSED;
     putmixed(WIN_STATUS, 0, newbot2); /* putmixed() due to GOLD glyph */
 }
 
-STATIC_VAR struct window_procs dumplog_windowprocs_backup;
-STATIC_VAR FILE *dumplog_file;
+/* dumplog_windowprocs_backup, dumplog_file — migrated to nle_windows_state */
 
 #ifdef DUMPLOG
-STATIC_VAR time_t dumplog_now;
+/* dumplog_now — migrated to nle_windows_state */
 
 char *
 dump_fmtstr(fmt, buf, fullsubs)

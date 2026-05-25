@@ -39,7 +39,7 @@ STATIC_DCL void FDECL(mk_knox_portal, (XCHAR_P, XCHAR_P));
 #define create_vault() create_room(-1, -1, 2, 2, -1, -1, VAULT, TRUE)
 #define init_vault() vault_x = -1
 #define do_vault() (vault_x != -1)
-/* Cluster AT-C: per-env (was static file-scope). mklev() yields through
+/* Per-env (was static file-scope). mklev() yields through
  * pline/menu prompts; with N envs running in one process, env A's value
  * was visible to env B's continuation. */
 #define vault_x     (*(xchar *)&current_nle_ctx->s_vault_x)
@@ -1062,7 +1062,7 @@ struct mkroom *croom;
     /* also skip if this is non-rectangular (it _must_ be done already) */
     if ((int) levl[lowx][lowy].roomno == roomno || croom->irregular)
         return;
-    /* Cluster AT: guard against degenerate room dimensions that would make
+    /* Guard against degenerate room dimensions that would make
      * the "sides" and "edges" loops below (which use `+= (h - lo + 2)` as
      * the step) advance by zero or negative — observed under multi-env
      * level generation with certain seeds. NetHack core assumes lowx<=hix
@@ -1119,7 +1119,7 @@ coord *mp;
 {
     struct mkroom *croom = 0;
 
-    /* Cluster AT: nroom should be > 0 here (mklev's mkroom pass) but the
+    /* Nroom should be > 0 here (mklev's mkroom pass) but the
      * `<= 0` and `== 0` paths both fall to mazexy. Guards against the rare
      * case where prior level-gen left nroom negative (observed under
      * multi-env training). */
@@ -1137,7 +1137,7 @@ coord *mp;
         } else
             croom = &rooms[rn2(nroom)];
 
-        /* Cluster AT: cap the somexy retry loop so a room with degenerate
+        /* Cap the somexy retry loop so a room with degenerate
          * dimensions (which hits rn2(<=0) inside somex/somey) cannot
          * spin forever logging impossible(). After N tries, fall through. */
         int sxy_tries = 0;

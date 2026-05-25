@@ -12,7 +12,7 @@
  * structure eventually.
  */
 
-/* Cluster AI: per-env region storage. Was process-global + __thread —
+/* Per-env region storage. Was process-global + __thread —
  * env A's gas clouds leaked into env B's effect-of-being-in-cloud check. */
 #define regions     (*(NhRegion ***)&current_nle_ctx->s_regions)
 #define n_regions   (current_nle_ctx->s_n_regions)

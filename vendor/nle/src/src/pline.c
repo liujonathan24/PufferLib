@@ -12,7 +12,7 @@
                               * result will then be truncated to BUFSZ-1 */
 
 /* TLS — per-thread message state. */
-/* Cluster AJ: per-env (was __thread). pline modifier bitfield. */
+/* Per-env (was __thread). pline modifier bitfield. */
 #define pline_flags (current_nle_ctx->s_pline_flags)
 /* prevmsg — per-env message-repeat suppression buffer. */
 #define prevmsg (current_nle_ctx->s_prevmsg)
@@ -125,7 +125,7 @@ pline
 VA_DECL(const char *, line)
 #endif /* USE_STDARG | USE_VARARG */
 {       /* start of vpline() or of nested block in USE_OLDARG's pline() */
-    /* Cluster AK: was process-shared function-local static — env A would
+    /* Was process-shared function-local static — env A would
      * leak in_pline=1 across yields into env B's pline, suppressing
      * legitimate output. Per-env now. */
     #define in_pline (current_nle_ctx->s_pline_in_pline)
@@ -267,8 +267,8 @@ VA_DECL(const char *, line)
     return;
 }
 
-/* Cluster AO: per-env work buffer for You(), &c and verbalize().
- * Was `static __thread char *you_buf` + `int you_buf_siz`. Across envs
+/* Per-env work buffer for You(), &c and verbalize().
+ * Was `static char *you_buf` + `int you_buf_siz`. Across envs
  * sharing a pthread, env A's heap pointer survived in TLS and env B's
  * You_buf() could free env A's buffer. Now stored per-env. */
 struct nle_pline_state {
@@ -544,7 +544,7 @@ VA_DECL(const char *, s)
 }
 
 #if defined(MSGHANDLER) && (defined(POSIX_TYPES) || defined(__GNUC__))
-static __thread boolean use_pline_handler = TRUE;
+static boolean use_pline_handler = TRUE;
 
 static void
 execplinehandler(line)

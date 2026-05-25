@@ -26,7 +26,7 @@ struct proto_dungeon {
     int n_brs;  /* number of tmpbranch entries */
 };
 
-/* Cluster AT-C: per-env dungeon graph DIRECT in nle_ctx_t. Was process-
+/* Per-env dungeon graph DIRECT in nle_ctx_t. Was process-
  * global mutable state; with N envs in one process, env A's branch list
  * and dungeon count were visible to env B's level transitions, causing
  * save_room(r=NULL) when env B walked env A's half-built dungeon graph.
@@ -40,7 +40,7 @@ struct nle_globals; /* forward */
 #define n_dgns        (current_nle_ctx->s_n_dgns)
 #define dgn_branches  (*(branch **)&current_nle_ctx->s_branches)
 #define mapseenchn    (*(mapseen **)&current_nle_ctx->s_mapseenchn)
-/* Cluster BB: add_branch branch_id counter — monotonic IDs would otherwise
+/* Add_branch branch_id counter — monotonic IDs would otherwise
  * collide across envs. Reuse pre-existing Cluster-AT-C s_branch_id_ctr slot. */
 #define branch_id     (current_nle_ctx->s_branch_id_ctr)
 
@@ -502,7 +502,7 @@ int dgn;
 int child_entry_level;
 struct proto_dungeon *pd;
 {
-    /* Cluster BB: branch_id migrated to current_nle_ctx->s_branch_id_ctr. */
+    /* Branch_id migrated to current_nle_ctx->s_branch_id_ctr. */
     int branch_num;
     branch *new_branch;
 

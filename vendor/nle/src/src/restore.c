@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <string.h>
 
-/* Cluster AU group 1 — per-env restore state. Same direct-ctx pattern
+/* Per-env restore state. Same direct-ctx pattern
  * as save.c; see vendor/nle/src/include/nle.h for the fields. */
 #define oldfruit (current_nle_ctx->s_oldfruit)
 #define omoves   (current_nle_ctx->s_omoves)
@@ -51,7 +51,7 @@ STATIC_OVL void FDECL(restore_msghistory, (int));
 STATIC_DCL void FDECL(reset_oattached_mids, (BOOLEAN_P));
 STATIC_DCL void FDECL(rest_levl, (int, BOOLEAN_P));
 
-/* Cluster BC: `restoreprocs` migrated to nle_ctx_t. Was file-scope static
+/* `restoreprocs` migrated to nle_ctx_t. Was file-scope static
  * struct; mutated by set_restpref() / validate() and read by mread().
  * Under OMP vecenv, env B's set_restpref could swap env A's restore_mread
  * mid-restore, causing wrong-codec short-read panics. Per-env init is in
@@ -61,7 +61,7 @@ STATIC_DCL void FDECL(rest_levl, (int, BOOLEAN_P));
 #define restoreprocs_restore_minit    (current_nle_ctx->s_restoreprocs_restore_minit)
 #define restoreprocs_restore_mread    (current_nle_ctx->s_restoreprocs_restore_mread)
 #define restoreprocs_restore_bclose   (current_nle_ctx->s_restoreprocs_restore_bclose)
-/* Cluster BC: sfrestinfo / sfsaveinfo per-env (was process-global in decl.c).
+/* Sfrestinfo / sfsaveinfo per-env (was process-global in decl.c).
  * Cast over the 3 contiguous ulongs in nle_ctx_t so existing struct-field
  * uses (`sfrestinfo.sfi1`) and address-of uses keep working. */
 #define sfrestinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfrestinfo_sfi1))
@@ -83,7 +83,7 @@ struct bucket {
 STATIC_DCL void NDECL(clear_id_mapping);
 STATIC_DCL void FDECL(add_id_mapping, (unsigned, unsigned));
 
-/* Cluster AP Part 2: per-env restore ID-map. Were __thread; OMP coroutine-
+/* Per-env restore ID-map. Were __thread; OMP coroutine-
  * resume on a different thread would see empty TLS during savefile restore. */
 #define n_ids_mapped (current_nle_ctx->s_n_ids_mapped)
 #define id_map       ((struct bucket *) current_nle_ctx->s_id_map)
@@ -97,7 +97,7 @@ extern int amii_numcolors;
 #include "display.h"
 
 /* current_nle_ctx->restoring migrated to nle_ctx_t (refactor stage 3d). */
-/* oldfruit/omoves migrated to nle_ctx_t (Cluster AU group 1). */
+/* oldfruit/omoves migrated to nle_ctx_t. */
 
 /* exp_038 hypothesis 1: enforce identical struct sizes between save.c and
  * restore.c. Sizes verified to match save.c (see save.c comment block). */
@@ -1573,7 +1573,7 @@ reset_restpref()
         set_restpref("!rlecomp");
 }
 
-/* Cluster BC: per-env init for the migrated `restoreprocs` table. Called
+/* Per-env init for the migrated `restoreprocs` table. Called
  * from init_nle (nle.c) before any restore/level-load path can run. Must
  * mirror the original file-scope static initializer in restore.c. */
 void
@@ -1640,7 +1640,7 @@ const char *suitename;
 #ifndef ZEROCOMP_BUFSIZ
 #define ZEROCOMP_BUFSIZ BUFSZ
 #endif
-/* Cluster BC: zerocomp read-side buffer migrated to nle_ctx_t. Was a
+/* Zerocomp read-side buffer migrated to nle_ctx_t. Was a
  * single file-scope `static` shared by all envs in-process; two concurrent
  * envs decoding savefiles would clobber each other's mreadfd and partial
  * buffer, producing wrong-codec short reads downstream. Per-env init: all

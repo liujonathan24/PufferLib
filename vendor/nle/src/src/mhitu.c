@@ -7,7 +7,7 @@
 #include "nle.h" /* current_nle_ctx */
 #include "artifact.h"
 
-/* Cluster AU group 4 — combat tick per-env (mhitu.c statics). */
+/* Combat tick per-env (mhitu.c statics). */
 #define mon_currwep (current_nle_ctx->s_mon_currwep)
 #define dieroll     (current_nle_ctx->s_dieroll_mhitu)
 
@@ -27,7 +27,7 @@ STATIC_DCL void FDECL(hitmsg, (struct monst *, struct attack *));
 
 /* See comment in mhitm.c.  If we use this a lot it probably should be */
 /* changed to a parameter to mhitu. */
-/* (Cluster AU group 4: dieroll migrated to current_nle_ctx->s_dieroll_mhitu
+/* (dieroll migrated to current_nle_ctx->s_dieroll_mhitu
  * via macro at top of file; original `static int dieroll;` removed.) */
 
 STATIC_OVL void

@@ -22,7 +22,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 8 — misc-2 per-env redirect (polyself.c) */
+/* Misc-2 per-env redirect (polyself.c) */
 #define sex_change_ok (current_nle_ctx->s_sex_change_ok)
 
 STATIC_DCL void FDECL(check_strangling, (BOOLEAN_P));
@@ -39,7 +39,7 @@ STATIC_VAR const char no_longer_petrify_resistant[] =
 
 /* controls whether taking on new form or becoming new man can also
    change sex (ought to be an arg to polymon() and newman() instead).
-   Migrated to nle_ctx_t.s_sex_change_ok (Cluster AU group 8). */
+   Migrated to nle_ctx_t.s_sex_change_ok. */
 
 /* update the youmonst.data structure pointer and intrinsics */
 void

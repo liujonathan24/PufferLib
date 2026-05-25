@@ -11,16 +11,16 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define msgmv         (current_nle_ctx->s_elemental_clog_msgmv)
 #include "mfndpos.h"
 #include <ctype.h>
 
-/* Cluster AU group 8 — misc-2 per-env redirects (mon.c) */
+/* Misc-2 per-env redirects (mon.c) */
 #define animal_list       (current_nle_ctx->s_animal_list)
 #define animal_list_count (current_nle_ctx->s_animal_list_count)
 
-/* Cluster BF: monster-death flags per-env (were STATIC_VAR boolean). */
+/* Monster-death flags per-env (were STATIC_VAR boolean). */
 #define vamp_rise_msg (current_nle_ctx->s_vamp_rise_msg)
 #define disintegested (current_nle_ctx->s_disintegested)
 
@@ -1807,7 +1807,7 @@ struct monst *m;
         /* [no action needed for x->mcorpsenm] */
 
         free((genericptr_t) x);
-        /* Cluster AV-a root fix (replaces the whack-a-mole has_eshk()
+        /* Root fix (replaces the whack-a-mole has_eshk()
          * guards at every ESHK callsite): under NLE_USE_ARENA_FREE the
          * free()s above are no-ops — the mextra slot and its sub-structs
          * remain mapped in the never-reclaimed arena. Nulling m->mextra
@@ -2681,7 +2681,7 @@ elemental_clog(mon)
 struct monst *mon;
 {
     int m_lev = 0;
-    /* Cluster AV-b4: msgmv migrated to nle_ctx_t */
+    /* Msgmv migrated to nle_ctx_t */
     struct monst *mtmp, *m1, *m2, *m3, *m4, *m5, *zm;
 
     if (In_endgame(&u.uz)) {
@@ -3283,8 +3283,8 @@ struct monst *mon;
     }
 }
 
-/* animal_list / animal_list_count migrated to nle_ctx_t.s_animal_list[_count]
- * (Cluster AU group 8). The buffer is allocated lazily by mon_animal_list.
+/* animal_list / animal_list_count migrated to nle_ctx_t.s_animal_list[_count].
+ * The buffer is allocated lazily by mon_animal_list.
  * Macros at the top of this file rewrite both names to current_nle_ctx fields. */
 
 void

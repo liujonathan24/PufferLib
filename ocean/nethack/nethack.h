@@ -25,12 +25,9 @@ static inline int nethack_memfd_create(const char* name, unsigned int flags) {
 // ---------------------------------------------------------------------------
 // NLE minimal API
 // ---------------------------------------------------------------------------
-// We opaquely declare nle_ctx_t and the function pointer types so each
-// Nethack instance can dlopen its own private copy of libnethack.so, giving
-// each env its own copy of NetHack's many global variables. This is the same
-// trick NLE Python uses (memfd_create + copy + dlopen). The standalone
-// binary therefore does NOT link -lnethack — it locates libnethack.so at
-// runtime via NETHACK_LIBPATH (default: ./vendor/nle/lib/libnethack.so).
+// All per-env mutable state lives in nle_ctx_t. libnethack.so is linked
+// directly (no dlopen). Each env gets its own nle_ctx_t + private memory
+// arena; a thread-local pointer (current_nle_ctx) anchors field access.
 #define NLE_ALLOW_SEEDING 1
 #include "nleobs.h"
 
@@ -61,7 +58,7 @@ extern void       nle_fr_destroy(void*);
 #endif
 
 // Build flag: -DNETHACK_FAST_RESET=1 enables the snapshot/restore path.
-// Default is OFF as of Cluster AS — the fast-reset machinery in
+// Default is OFF — the fast-reset machinery in
 // vendor/nle/src/src/nle_fast_reset.c is fundamentally unsafe for N>1
 // vecenv: nle_fr_restore memcpys back the SHARED bump-arena
 // (alloc.c:75 — "All envs share one arena") and libnethack.so's
@@ -136,6 +133,10 @@ extern void       nle_fr_destroy(void*);
 #endif
 #ifndef NETHACK_AUTODISMISS_MAX
 #define NETHACK_AUTODISMISS_MAX 64
+#endif
+
+#ifndef NETHACK_MAX_EPISODE_STEPS
+#define NETHACK_MAX_EPISODE_STEPS 10000
 #endif
 
 // Penalty applied to the reward when the agent's action triggers a sub-prompt
@@ -520,12 +521,6 @@ static int nethack_drain_prompts_cat(Nethack* env, ProfCounterId fn_step_counter
     return n;
 }
 
-// Backwards-compatible alias for non-c_step callers that don't care about
-// attribution. Counts toward "post_drain".
-static int nethack_drain_prompts(Nethack* env) {
-    return nethack_drain_prompts_cat(env, PROF_FN_STEPS_POST_DRAIN);
-}
-
 static void nethack_init_settings(Nethack* env) {
     memset(&env->settings, 0, sizeof(env->settings));
     const char* source = getenv("NETHACKDIR");
@@ -632,17 +627,9 @@ static void nethack_pack_obs(Nethack* env) {
 }
 
 static void nethack_add_log(Nethack* env) {
-    long score = 0, depth = env->prev_depth;
-#if NETHACK_USE_BLSTATS
-    score = env->blstats[NLE_BL_SCORE];
-    depth = env->blstats[NLE_BL_DEPTH];
-#else
-    score = env->hook_blstats[NLE_BL_SCORE];
-    depth = env->hook_blstats[NLE_BL_DEPTH];
-#endif
-    env->log.perf            += (float)score;
-    env->log.score           += (float)score;
-    env->log.depth           += (float)depth;
+    env->log.perf            += (float)env->prev_score;
+    env->log.score           += (float)env->prev_score;
+    env->log.depth           += (float)env->prev_depth;
     env->log.valid_moves     += (float)env->episode_valid_moves;
     env->log.illegal_actions += (float)env->episode_illegal_actions;
     env->log.new_tiles       += (float)env->episode_new_tiles;
@@ -679,20 +666,19 @@ static void nethack_reset_bookkeeping(Nethack* env) {
 // Slow path: dlopen + nle_start + drain welcome. Called on first c_reset
 // (and on every reset when NETHACK_FAST_RESET is disabled).
 //
-// Cluster BD: the previous process-wide nethack_slow_reset_mu is removed.
+// The previous process-wide nethack_slow_reset_mu is removed.
 // All named hazards it guarded are now safe under concurrent c_reset:
 //   - choose_windows / windowprocs: idempotent CAS-guarded first-init-wins
-//     in vendor/nle/src/src/windows.c (Cluster AY).
+//     in vendor/nle/src/src/windows.c.
 //   - dlb_init / dlb_libs[]: idempotent CAS-guarded first-init-wins in
-//     vendor/nle/src/src/dlb.c (Cluster AY).
+//     vendor/nle/src/src/dlb.c.
 //   - nle_baseline: lazily allocated empty `struct nle_dungeon_save` whose
-//     save/load functions are no-ops after the per-env migration; even a
-//     concurrent double-calloc only leaks one zero-filled blob (Cluster AY).
+//     save/load functions are no-ops; even a
+//     concurrent double-calloc only leaks one zero-filled blob.
 //   - init_artifacts memset of artidisco[]: artidisco is now per-env on
-//     nle_ctx_t (Cluster BD-1; see previous commit).
+//     nle_ctx_t (see previous commit).
 //   - All "many libnethack `.data` globals" called out in the original
-//     comment: migrated in Clusters AT, AU, AV-a/b, AW, AW-full, AX-fix-2,
-//     BA, BB, BC. Every write reached from nle_start -> init_nle ->
+//     comment: now fully migrated. Every write reached from nle_start -> init_nle ->
 //     mainloop -> unixmain -> moveloop -> init_nethack / u_init /
 //     init_dungeons / init_objects / init_artifacts now targets a
 //     current_nle_ctx->s_* field (or a same-value-every-time process-shared
@@ -800,7 +786,9 @@ void c_step(Nethack* env) {
     PROF_INIT_IF_NEEDED();
     PROF_START(c_step_total);
     PROF_COUNT(PROF_C_STEPS, 1);
+#if NETHACK_PROFILE
     unsigned long fn_step_calls_before = g_prof.counters[PROF_FN_STEPS_TOTAL];
+#endif
     int action_idx = (int)env->actions[0];
     if (action_idx < 0) action_idx = 0;
     if (action_idx >= NETHACK_NUM_ACTIONS) action_idx = NETHACK_NUM_ACTIONS - 1;
@@ -834,18 +822,22 @@ void c_step(Nethack* env) {
     int illegal = yn_or_getlin || msg_is_prompt;
     PROF_START(post_drain);
     if (illegal) {
-        // ESC the prompt out. Loop up to MAX iterations: some prompts chain
-        // ("What direction?" -> after ESC -> "--More--").
+        // Auto-dismiss prompts the agent can't handle:
+        //   yn_function (misc[0]): answer 'y' — commit to the action the agent chose
+        //   getlin (misc[1]): ESC — can't type a string
+        //   --More-- / trailing '?': ESC
         for (int i = 0; i < NETHACK_AUTODISMISS_MAX; i++) {
-            int still_prompt = (env->hook_misc[0] || env->hook_misc[1] || env->hook_misc[2]);
-            // Also check trailing '?' on the latest message.
+            int is_yn   = env->hook_misc[0];
+            int is_getlin = env->hook_misc[1];
+            int is_xwait  = env->hook_misc[2];
+            int still_prompt = (is_yn || is_getlin || is_xwait);
             if (!still_prompt) {
                 const unsigned char* m2 = nethack_msg(env);
                 int e = 0; while (e < NLE_MESSAGE_SIZE && m2[e]) e++;
                 while (e > 0 && m2[e-1] == ' ') e--;
                 if (e == 0 || m2[e-1] != '?') break;
             }
-            env->obs.action = 27;  // ESC
+            env->obs.action = is_yn ? 'y' : 27;  // yn→yes, everything else→ESC
             env->ctx = env->fn_step(env->ctx, &env->obs);
             PROF_COUNT(PROF_FN_STEPS_TOTAL, 1);
             PROF_COUNT(PROF_FN_STEPS_POST_DRAIN, 1);
@@ -922,13 +914,15 @@ void c_step(Nethack* env) {
     }
 
     if (illegal) reward += env->illegal_penalty;
-    env->prev_score = score;
-    env->prev_depth = depth;
+    if (!env->obs.done) {
+        env->prev_score = score;
+        env->prev_depth = depth;
+    }
 
     env->rewards[0] = reward;
     env->episode_return += reward;
 
-    if (env->obs.done) {
+    if (env->obs.done || env->episode_length >= NETHACK_MAX_EPISODE_STEPS) {
         env->terminals[0] = 1.0f;
         nethack_add_log(env);
         PROF_START(obs_pack_done);

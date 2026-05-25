@@ -5,7 +5,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 5 — per-env prayer-in-flight state. Were three
+/* Per-env prayer-in-flight state. Were three
  * file-statics (p_aligntyp, p_trouble, p_type) set when prayer started
  * and read when the deferred prayer_done callback fired; across envs
  * one env's prayer could complete with another env's god. */
@@ -57,7 +57,7 @@ static const char *godvoices[] = {
 };
 
 /* values calculated when prayer starts, and used when completed
- * — migrated to nle_ctx_t (Cluster AU group 5); see macros at top of file. */
+ * — migrated to nle_ctx_t; see macros at top of file. */
 
 #define PIOUS 20
 #define DEVOUT 14

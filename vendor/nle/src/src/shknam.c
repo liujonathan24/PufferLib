@@ -882,7 +882,7 @@ boolean
 shkname_is_pname(mtmp)
 struct monst *mtmp;
 {
-    /* Cluster AV-a: defensive guard. dealloc_mextra() can leave mtmp->isshk
+    /* Defensive guard. dealloc_mextra() can leave mtmp->isshk
      * set with mtmp->mextra == NULL; callers should has_eshk(mtmp) first
      * but this is a leaf utility called from many paths and a NULL deref
      * here is a process-killing segfault. Treat missing eshk as "no

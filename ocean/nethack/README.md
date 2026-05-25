@@ -1,20 +1,140 @@
 # NetHack environment for PufferLib
 
 C-level NLE binding for the PufferLib RL framework. Each env owns a
-private `dlopen`-copy of `libnethack.so` so NetHack's many globals stay
-isolated per-env. Auto-dismiss for menu prompts, compile-time
-observation selection, reward shaping, profiler hooks.
+per-env `nle_ctx_t` holding all of NetHack's mutable game state, with a
+private 64 MB memory arena. `libnethack.so` is linked directly (no
+dlopen). Auto-dismiss for prompts, compile-time observation selection,
+reward shaping, multi-threaded OMP stepping.
 
-See `SETUP.md` for build instructions and `experiments/` for the
-performance analysis log.
+---
+
+## Full setup (from scratch on any HPC)
+
+### 1. Clone PufferLib + vendored NLE
+
+```bash
+git clone https://github.com/PufferAI/PufferLib.git && cd PufferLib
+git checkout 4.0
+
+# Clone the modified NLE into vendor/nle
+git clone https://github.com/liujonathan24/NetHack.git vendor/nle
+```
+
+### 2. Python environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[nethack]"    # installs pufferlib + nethack deps (torch, numpy, wandb, etc.)
+```
+
+If `[nethack]` extras aren't defined yet, use:
+```bash
+pip install -e .
+pip install bz2file           # if system libbz2 headers missing
+```
+
+### 3. System modules (cluster-specific)
+
+You need a C compiler (clang preferred, gcc works), CUDA toolkit, and
+an OpenMP runtime. On Princeton Della:
+
+```bash
+module load cudatoolkit/12.8 intel-oneapi/2024.2
+```
+
+On other clusters, find equivalents for:
+- **CUDA**: `nvcc` for GPU training backend
+- **OpenMP**: `libiomp5.so` (Intel) or `libgomp.so` (GCC) — needed at link and runtime
+- **clang** (optional but preferred): `build.sh` uses clang flags by default. Set `CC=gcc` if clang isn't available, but note `-ferror-limit` must be removed from `build.sh`.
+
+### 4. Build libnethack.so
+
+```bash
+# First-time only: configure cmake
+cd vendor/nle/src
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cd ../../../..
+
+# Build (always from repo root)
+make -C vendor/nle/src/build nethack -j$(nproc)
+```
+
+Produces `vendor/nle/src/build/libnethack.so` and data files in
+`vendor/nle/src/build/dat/` (including `nhdat`).
+
+If cmake fails with missing `bz2`, install libbz2-dev
+(`apt install libbz2-dev` or `yum install bzip2-devel`).
+
+### 5. Build PufferLib C extension (_C.so)
+
+```bash
+bash build.sh nethack          # auto-detects CUDA; falls back to CPU
+```
+
+Produces `pufferlib/_C.cpython-*.so`. If you get linker errors about
+`-liomp5`, make sure the Intel OpenMP module is loaded.
+
+### 6. Set NETHACKDIR
+
+Point to the directory containing `nhdat`:
+
+```bash
+export NETHACKDIR=$(pwd)/vendor/nle/src/build/dat
+```
+
+### 7. Verify
+
+```bash
+# Quick training test (runs on login node if GPU available)
+puffer train nethack \
+    --vec.total-agents 64 --vec.num-buffers 1 --vec.num-threads 4 \
+    --train.gpus 1 --train.total-timesteps 1000000 --train.minibatch-size 64
+
+# Interactive play
+./live_view -i
+
+# Random agent viewer
+./live_view --random --steps 200
+```
+
+### 8. SLURM training
+
+```bash
+sbatch sweep_nethack.slurm     # hyperparameter sweep
+# or single run:
+puffer train nethack --wandb \
+    --vec.total-agents 4096 --vec.num-buffers 1 --vec.num-threads 16 \
+    --train.gpus 1 --train.total-timesteps 1000000000
+```
+
+### Rebuild after code changes
+
+```bash
+make -C vendor/nle/src/build nethack -j$(nproc)   # if vendor/nle changed
+bash build.sh nethack                               # always (relinks _C.so)
+```
+
+### Troubleshooting
+
+| Error | Fix |
+|---|---|
+| `clang: command not found` | `module load llvm` or set `CC=gcc` |
+| `cannot find -liomp5` | `module load intel-oneapi/2024.2` (or equivalent) |
+| `libiomp5.so: cannot open shared object file` | Same module, also at runtime |
+| `cannot allocate memory in static TLS block` | Too many `__thread` vars — rebuild libnethack |
+| `NETHACKDIR is misconfigured` | `export NETHACKDIR=$(pwd)/vendor/nle/src/build/dat` |
+| `ZeroDivisionError` in train | Need `--train.gpus 1` (even on CPU-only, the CUDA build requires it) |
+| Core dump / segfault at T>1 | Check that libnethack.so was rebuilt after latest source changes |
+
+---
 
 ## Observation (compile-time selectable, default = chars only)
 
 Each enabled field reserves a slice of a single flat `ByteTensor`
-observation buffer. Disabled fields are not allocated (no struct
-member), not bound (NLE skips writing them via its `if (ptr) ...`
-guards), and not packed into the obs tensor. Override defaults with
-`-DNETHACK_USE_<FIELD>=1`.
+observation buffer. Override defaults with `-DNETHACK_USE_<FIELD>=1` in
+build.sh's `EXTRA_CFLAGS`.
 
 | Field        | Default | Bytes/element | Total (one env)              |
 |--------------|--------:|--------------:|------------------------------|
@@ -28,45 +148,45 @@ guards), and not packed into the obs tensor. Override defaults with
 
 `OBS_SIZE` is the sum of enabled fields.
 
-## Action space (reduced, 23 actions)
+## Action space (18 actions)
 
 ```
  0  N            8  N_RUN         16  >  (down)
  1  S            9  S_RUN         17  <  (up)
- 2  W           10  W_RUN         18  .  (wait)
- 3  E           11  E_RUN         19  s  (search)
- 4  NW          12  NW_RUN        20  \r (MORE)
- 5  NE          13  NE_RUN        21  ESC
- 6  SW          14  SW_RUN        22  ,  (pickup)
+ 2  W           10  W_RUN
+ 3  E           11  E_RUN
+ 4  NW          12  NW_RUN
+ 5  NE          13  NE_RUN
+ 6  SW          14  SW_RUN
  7  SE          15  SE_RUN
 ```
 
 The 8 cardinal/intercardinal moves use vi-keys (kjhl ynbu). Long
-"run" versions are uppercase (KJHL YNBU). `\r` and `ESC` mostly exist
-to dismiss menus but the policy can use them.
+"run" versions are uppercase (KJHL YNBU).
 
-## Reward shaping (compile-time tunable)
+## Reward shaping (config-tunable via nethack.ini)
 
 ```
-reward = (blstats[SCORE] - prev_score)                 # game reward
-       + NETHACK_DEPTH_BONUS * (new_depth)             # default 1.0 per new dungeon level
-       + NETHACK_SCOUT_BONUS * (new_tile_this_level)   # default 0.1 per first visit
-       + NETHACK_ILLEGAL_PENALTY * (illegal_action)    # default -0.5 per sub-prompt trigger
+reward = score_coef    * (score - prev_score)          # game score delta
+       + descent_coef  * max(0, depth - prev_depth)    # new max depth bonus
+       + scout_coef    * (new_tile_this_level)          # exploration bonus
+       + illegal_penalty * (illegal_action)             # sub-prompt penalty
 ```
 
-`illegal_action` fires when the agent's keystroke triggers an
-`in_yn_function`, `in_getlin`, or message-ending-`?` sub-prompt that
-the harness then ESCs out of. The auto-dismiss for benign `--More--`
-prompts does *not* count as illegal.
+All coefficients are set in `config/nethack.ini` under `[env]`.
 
 ## Auto-dismiss hook
 
-After each agent action (and after the post-reset welcome screen) the
-harness inspects `misc[]` (`in_yn_function`, `in_getlin`,
-`xwaitingforspace`) plus a heuristic message-ends-in-`?` check. If a
-prompt is detected we drain it with `\r`/`ESC` so the next c_step
-lands at a real decision point. Capped at `NETHACK_AUTODISMISS_MAX=64`
-iterations.
+After each agent action, the harness inspects `misc[]`
+(`in_yn_function`, `in_getlin`, `xwaitingforspace`) plus a heuristic
+message-ends-in-`?` check:
+
+- `yn_function` prompts: auto-answered `y` (commit to the action)
+- `getlin` prompts: auto-dismissed with ESC
+- `--More--` / `xwaitforspace`: auto-dismissed with space/ESC
+
+Capped at `NETHACK_AUTODISMISS_MAX=64` iterations. Episodes also
+auto-reset after `NETHACK_MAX_EPISODE_STEPS=10000` steps.
 
 ## Per-episode log entries
 
@@ -76,45 +196,41 @@ iterations.
 | `depth`            | Final dungeon level                                    |
 | `episode_return`   | Sum of shaped reward                                   |
 | `episode_length`   | Number of c_steps                                      |
-| `valid_moves`      | c_steps where NetHack's turn counter actually advanced |
+| `valid_moves`      | c_steps where NetHack's turn counter advanced          |
 | `illegal_actions`  | c_steps where the agent triggered a sub-prompt         |
 | `new_tiles`        | Unique tiles entered this episode                      |
 
-## Standalone driver subcommands
+## Standalone tools
 
 ```bash
-./nethack                                  # interactive 50-step render
-./nethack 200                              # interactive N-step
-./nethack record OUT.txt 200 [random|wait] # ASCII trajectory log
-./nethack bench N [random|wait]            # quick throughput bench
-./nethack resets N                         # reset-only bench
-./nethack profile OUT.json N [policy] [seed]  # full profiler dump
+# Live viewer (interactive play)
+NETHACKDIR=$(pwd)/vendor/nle/src/build/dat ./live_view -i
+
+# Live viewer (random agent)
+NETHACKDIR=$(pwd)/vendor/nle/src/build/dat ./live_view --random --steps 500
+
+# Live viewer (replay a recorded trajectory)
+NETHACKDIR=$(pwd)/vendor/nle/src/build/dat ./live_view --replay path/to/recording.bin
 ```
 
-Policies: `random`, `wait` (`.`), `north` (`k`), `safe` (NSWE cycle).
-The profile subcommand requires a build with `EXTRA_CFLAGS=-DNETHACK_PROFILE=1`.
+Build live_view from source:
+```bash
+clang -O2 -I vendor/nle/src/include -I vendor/nle/src/build/include \
+    -I vendor/nle/src/third_party/deboost.context/include \
+    -DDEFAULT_WINDOW_SYS=\"rl\" -DDLB -DNLE_ALLOW_SEEDING \
+    -DNLE_PER_ENV_FILES=1 -DNLE_PER_ENV_FLAGS=1 -DNLE_USE_ARENA_FREE=1 \
+    -DNLE_USE_TILES -DNOCLIPPING -DNOCWD_ASSUMPTIONS -DNOMAIL -DNOTPARMDECL \
+    -DNETHACK_USE_BLSTATS=1 \
+    ocean/nethack/live_view.c -o live_view \
+    -L./vendor/nle/src/build -lnethack -lm -lbz2 -lpthread \
+    -Wl,-rpath=$(pwd)/vendor/nle/src/build
+```
 
-## Experiments
+## Performance
 
-Each `experiments/exp_NNN_*/` folder contains a `NOTES.md` documenting
-hypothesis → result → decision, plus the raw JSON profile output.
-
-Summary so far (see `RETROSPECTIVE_1.md`):
-- Single-thread harness ceiling: **~228 k c_steps/sec** with no resets
-  (`north` policy). NLE's `fn_step` is the floor at ~3-20 µs.
-- Reset cost: ~217 ms (180 ms `dlopen` + 36 ms `nle_start`). Dominates
-  wall time for random play (~85 %) because deaths are frequent.
-- Multi-process scaling: linear to ~16 procs, ~70 % eff at N=32, ~40 %
-  at N=128 (login node, contended).
-- Aggregate ceiling on this 128-core node: **~11 M c_steps/sec** at
-  N=128 north policy.
-- 1 M valid_moves/sec is achievable: at trained `valid/c_step ≈ 0.6`
-  needs ~32 cores; at random `≈ 0.37` needs ~64 cores.
-
-The single ongoing question is the **reset duty cycle during training**
-— how often does a learning agent actually die? That gates whether
-the reset-hiding worker pool is required or "nice to have".
-
-## Build
-
-See `SETUP.md`.
+| Configuration | SPS | Notes |
+|---|---|---|
+| N=512 T=4 (4M model) | 40K | GPU-bound (train=68%) |
+| N=4096 T=4 (4M model) | 128K | Balanced (env=66%, train=30%) |
+| N=4096 T=16 (4M model) | ~400K | More threads = more env throughput |
+| N=8192 T=64 B=2 (sweep) | ~1M | Full utilization with double-buffering |

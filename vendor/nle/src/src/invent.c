@@ -6,12 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env return buffers */
+/* Per-env return buffers */
 #define armcat (current_nle_ctx->s_invent_armcat)
 #define li     (current_nle_ctx->s_invent_li)
 #define altbuf (current_nle_ctx->s_invent_altbuf)
 
-/* Cluster AU group 2 — invent.c per-env state. The old `static T name;`
+/* Invent.c per-env state. The old `static T name;`
  * file-statics raced across N>=128 PufferLib envs sharing this library.
  * Each macro below rewrites every textual use of `name` in this TU to
  * the corresponding s_<name> slot in the active env's nle_ctx_t.
@@ -58,7 +58,7 @@ STATIC_DCL void FDECL(menu_identify, (int));
 STATIC_DCL boolean FDECL(tool_in_use, (struct obj *));
 STATIC_DCL char FDECL(obj_to_let, (struct obj *));
 
-/* Cluster AJ: per-env (was __thread). Inventory menu position. Init to 51
+/* Per-env (was __thread). Inventory menu position. Init to 51
  * in init_nle to preserve original semantics; calloc'd 0 is harmless too. */
 #define lastinvnr (current_nle_ctx->s_lastinvnr)
 
@@ -88,7 +88,7 @@ struct obj *obj;
         SCROLL_CLASS, SPBOOK_CLASS, GEM_CLASS, FOOD_CLASS, TOOL_CLASS,
         WEAPON_CLASS, ARMOR_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, 0,
     };
-    /* Cluster BA: armcat migrated to nle_ctx_t */
+    /* Armcat migrated to nle_ctx_t */
     const char *classorder;
     char *p;
     int k, otyp = obj->otyp, oclass = obj->oclass;
@@ -318,7 +318,7 @@ struct obj *obj;
 }
 
 /* set by sortloot() for use by sortloot_cmp(); reset by sortloot when done */
-/* sortlootmode migrated to nle_ctx_t->s_sortlootmode (Cluster AU group 2) */
+/* sortlootmode migrated to nle_ctx_t->s_sortlootmode */
 
 /* qsort comparison routine for sortloot() */
 STATIC_OVL int CFDECLSPEC
@@ -1915,7 +1915,7 @@ struct obj *otmp;
             : FALSE;
 }
 
-/* Cluster BG: safeq_xprn_ctx (set per-action by askchain, read by
+/* Safeq_xprn_ctx (set per-action by askchain, read by
  * safe_qbuf -> short_oname callbacks) migrated to per-env via nle_ctx_t.
  * Was: STATIC_VAR struct xprnctx { char let; boolean dot; } safeq_xprn_ctx;
  * Now: two scalar fields s_safeq_xprn_let / s_safeq_xprn_dot on nle_ctx_t;
@@ -2480,7 +2480,7 @@ boolean dot;     /* append period; (dot && cost => Iu) */
 long cost;       /* cost (for inventory of unpaid or expended items) */
 long quan;       /* if non-0, print this quantity, not obj->quan */
 {
-    /* Cluster BA: li migrated to nle_ctx_t (was `static char li[BUFSZ]`,
+    /* Li migrated to nle_ctx_t (was `static char li[BUFSZ]`,
      * formerly with an #ifdef LINT alias to a stack array — both branches
      * obsolete now that storage lives in the per-env ctx). */
     boolean use_invlet = (flags.invlet_constant
@@ -2559,8 +2559,8 @@ struct obj *list, **last_found;
 /* for perm_invent when operating on a partial inventory display, so that
    the persistent one doesn't get shrunk during filtering for item selection
    then regrown to full inventory, possibly being resized in the process */
-/* cached_pickinv_win migrated to nle_ctx_t->s_cached_pickinv_win
- * (Cluster AU group 2). Initialized to WIN_ERR in init_nle() (nle.c). */
+/* cached_pickinv_win migrated to nle_ctx_t->s_cached_pickinv_win.
+ * Initialized to WIN_ERR in init_nle() (nle.c). */
 
 void
 free_pickinv_cache()
@@ -3117,7 +3117,7 @@ dounpaid()
 }
 
 /* query objlist callback: return TRUE if obj type matches "this_type" */
-/* this_type migrated to nle_ctx_t->s_this_type (Cluster AU group 2) */
+/* this_type migrated to nle_ctx_t->s_this_type */
 
 STATIC_OVL boolean
 this_type_only(obj)
@@ -3328,7 +3328,7 @@ char *buf;
     struct rm *lev = &levl[x][y];
     int ltyp = lev->typ, cmap = -1;
     const char *dfeature = 0;
-    /* Cluster BA: altbuf migrated to nle_ctx_t */
+    /* Altbuf migrated to nle_ctx_t */
 
     if (IS_DOOR(ltyp)) {
         switch (lev->doormask) {
@@ -3939,8 +3939,8 @@ STATIC_VAR NEARDATA const char *names[] = {
 STATIC_VAR NEARDATA const char oth_symbols[] = { CONTAINED_SYM, '\0' };
 STATIC_VAR NEARDATA const char *oth_names[] = { "Bagged/Boxed items" };
 
-/* invbuf / invbufsiz migrated to nle_ctx_t->s_invbuf / s_invbufsiz
- * (Cluster AU group 2). Calloc-zero is the correct initial state. */
+/* invbuf / invbufsiz migrated to nle_ctx_t->s_invbuf / s_invbufsiz.
+ * Calloc-zero is the correct initial state. */
 
 char *
 let_to_name(let, unpaid, showsym)
@@ -4436,8 +4436,8 @@ register struct obj *obj;
 }
 
 /* query objlist callback: return TRUE if obj is at given location */
-/* `only` (coord) migrated to nle_ctx_t->s_only_x / s_only_y
- * (Cluster AU group 2). Access sites rewritten in-place — no macro, to
+/* `only` (coord) migrated to nle_ctx_t->s_only_x / s_only_y.
+ * Access sites rewritten in-place — no macro, to
  * keep coord.h out of nle.h (the .x/.y syntax can't be hidden behind
  * a single object-like macro). */
 

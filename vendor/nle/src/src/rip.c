@@ -70,7 +70,22 @@ static const char *rip_txt[] = {
 #define DEATH_LINE 8 /* *char[] line # for death description */
 #define YEAR_LINE 12 /* *char[] line # for year */
 
-static char **rip;
+/* Per-env rip.c state. Replaces file-scope static. */
+struct nle_rip_state {
+    char **_rip;
+};
+static struct nle_rip_state *
+nle_rip(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_rip_state *s = (struct nle_rip_state *) current_nle_ctx->s_rip_state;
+    if (!s) {
+        s = (struct nle_rip_state *) calloc(1, sizeof(struct nle_rip_state));
+        current_nle_ctx->s_rip_state = s;
+    }
+    return s;
+}
+#define rip (nle_rip()->_rip)
 
 STATIC_OVL void
 center(line, text)

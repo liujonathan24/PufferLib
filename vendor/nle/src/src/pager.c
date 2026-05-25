@@ -10,6 +10,25 @@
 #include "nle.h" /* current_nle_ctx, refactor */
 #include "dlb.h"
 
+/* Per-env pager.c state. Replaces function-local statics. */
+struct nle_pager_state {
+    char _look_buf[BUFSZ];
+    boolean _once;
+};
+static struct nle_pager_state *
+nle_pager(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_pager_state *s = (struct nle_pager_state *) current_nle_ctx->s_pager_state;
+    if (!s) {
+        s = (struct nle_pager_state *) calloc(1, sizeof(struct nle_pager_state));
+        current_nle_ctx->s_pager_state = s;
+    }
+    return s;
+}
+#define look_buf  (nle_pager()->_look_buf)
+#define once      (nle_pager()->_once)
+
 STATIC_DCL boolean FDECL(is_swallow_sym, (int));
 STATIC_DCL int FDECL(append_str, (char *, const char *));
 STATIC_DCL void FDECL(look_at_object, (char *, int, int, int));
@@ -819,7 +838,6 @@ struct permonst **for_supplement;
 {
     static const char mon_interior[] = "the interior of a monster",
                       unreconnoitered[] = "unreconnoitered";
-    static char look_buf[BUFSZ];
     char prefix[BUFSZ];
     int i, alt_i, j, glyph = NO_GLYPH,
         skipped_venom = 0, found = 0; /* count of matching syms found */
@@ -1867,7 +1885,6 @@ char *cbuf;
 int
 dowhatdoes()
 {
-    static boolean once = FALSE;
     char bufr[BUFSZ];
     char q, *reslt;
 

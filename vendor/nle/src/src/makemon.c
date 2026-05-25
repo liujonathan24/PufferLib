@@ -1486,7 +1486,7 @@ STATIC_OVL int
 align_shift(ptr)
 register struct permonst *ptr;
 {
-    /* Cluster AQ: was `static NEARDATA long oldmoves = 0L` and
+    /* Was `static NEARDATA long oldmoves = 0L` and
      * `static NEARDATA s_level *lev`. Two OMP threads in makemon() could
      * race on the update (one updates oldmoves/lev while the other reads),
      * corrupting the stale lev pointer and causing SIGSEGV.
@@ -1518,7 +1518,7 @@ register struct permonst *ptr;
     }
     return alshift;
 }
-/* Cluster AQ: undefine local macros after align_shift to avoid leaking
+/* Undefine local macros after align_shift to avoid leaking
  * them into subsequent functions in this translation unit. */
 #undef oldmoves
 #undef lev_cached

@@ -8,9 +8,9 @@
 #include "lev.h"
 #include <errno.h>
 #include <string.h>
-#include <sys/stat.h> /* exp_039 agent_d: DEF_BCLOSE_SIZE instrumentation */
+#include <sys/stat.h>
 
-/* Cluster AU group 1 — per-env save-session state. Macros rewrite
+/* Per-env save-session state. Macros rewrite
  * file-statics to direct nle_ctx_t fields so concurrent c_reset save
  * paths in N>=128 vecenv training don't trample each other's buffers.
  * See vendor/nle/src/include/nle.h for the field declarations. */
@@ -33,7 +33,7 @@
 
 #ifdef MFLOPPY
 long bytes_counted;
-/* count_only migrated to nle_ctx_t (Cluster AU group 1). */
+/* count_only migrated to nle_ctx_t. */
 #endif
 
 /* exp_038 hypothesis 1: enforce identical struct sizes between save.c and
@@ -80,7 +80,7 @@ STATIC_DCL void FDECL(zerocomp_bwrite, (int, genericptr_t, unsigned int));
 STATIC_DCL void FDECL(zerocomp_bputc, (int));
 #endif
 
-/* Cluster BC: `saveprocs` migrated to nle_ctx_t. Was file-scope static
+/* `saveprocs` migrated to nle_ctx_t. Was file-scope static
  * struct; mutated by set_savepref() per-env via options handlers and read
  * by bufon/bufoff/bflush/bwrite/bclose during savefile writes. Under OMP
  * vecenv this was racy: env B's set_savepref could swap env A's save_bwrite
@@ -94,7 +94,7 @@ STATIC_DCL void FDECL(zerocomp_bputc, (int));
 #define saveprocs_save_bflush   (current_nle_ctx->s_saveprocs_save_bflush)
 #define saveprocs_save_bwrite   (current_nle_ctx->s_saveprocs_save_bwrite)
 #define saveprocs_save_bclose   (current_nle_ctx->s_saveprocs_save_bclose)
-/* Cluster BC: sfsaveinfo (and sfrestinfo) per-env. */
+/* Sfsaveinfo (and sfrestinfo) per-env. */
 #define sfsaveinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfsaveinfo_sfi1))
 #define sfrestinfo  (*(struct savefile_info *)(&current_nle_ctx->s_sfrestinfo_sfi1))
 
@@ -104,7 +104,7 @@ STATIC_DCL void FDECL(zerocomp_bputc, (int));
 #define HUP
 #endif
 
-/* ustuck_id/usteed_id migrated to nle_ctx_t (Cluster AU group 1).
+/* ustuck_id/usteed_id migrated to nle_ctx_t.
  * They preserve monst ids across the save path. */
 
 int
@@ -406,7 +406,7 @@ void
 savestateinlock()
 {
     int fd, hpid;
-    /* Cluster BB: process-static OK — this function is inside #ifdef INSURANCE
+    /* Process-static OK — this function is inside #ifdef INSURANCE
      * (include/config.h:356 leaves INSURANCE undefined in our build), so the
      * whole savestateinlock() body is dead code. Leaving untouched preserves
      * the upstream-merge surface. */
@@ -571,7 +571,7 @@ int mode;
         goto skip_lots;
 
     savelevl(fd, (boolean) ((sfsaveinfo.sfi1 & SFI1_RLECOMP) == SFI1_RLECOMP));
-    /* Cluster BH (exp_039 agent_e): writer/reader byte-count mismatch.
+    /* (exp_039 agent_e): writer/reader byte-count mismatch.
      * Stage 7' migrated `lastseentyp` from a `schar[COLNO][ROWNO]` array to a
      * pointer macro (rm.h:623) and `doors` from `coord[DOORMAX]` to a pointer
      * macro (mkroom.h:55). The reader was already updated to use the literal
@@ -726,8 +726,8 @@ int fd;
     return;
 }
 
-/* bw_FILE migrated to nle_ctx_t (Cluster AU group 1) — macro at top of file. */
-/* Cluster AO: bw_fd / buffering per-env via nle_save_state. */
+/* bw_FILE migrated to nle_ctx_t — macro at top of file. */
+/* Bw_fd / buffering per-env via nle_save_state. */
 struct nle_save_state {
     int     _bw_fd;
     boolean _buffering;
@@ -892,32 +892,7 @@ int fd;
          * pushed bytes via write(2), so fsync should be a no-op here in
          * terms of correctness, but it ensures we surface EIO/ENOSPC as
          * an error rather than only after fclose has discarded info. */
-        if (fsync(save_fd) != 0 && errno != EINVAL /* pipe etc */) {
-            fprintf(stderr,
-                    "DEF_BCLOSE_FSYNC_FAIL pid=%d hackdir=%s fd=%d "
-                    "errno=%d (%s)\n",
-                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
-                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
-                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
-                    save_fd, errno, strerror(errno));
-            fflush(stderr);
-        }
-        /* exp_039 agent_d: capture the writer's truthful final-on-disk size
-         * just before fclose. Pair with reader's OPEN_LEVELFILE size to test
-         * Hypothesis 3 (something truncates the file post-close). */
-        {
-            struct stat _bcst;
-            long long pre_close_size = -1;
-            if (fstat(save_fd, &_bcst) == 0)
-                pre_close_size = (long long) _bcst.st_size;
-            fprintf(stderr,
-                    "DEF_BCLOSE_SIZE pid=%d hackdir=%s fd=%d size_before_close=%lld\n",
-                    current_nle_ctx ? current_nle_ctx->hackpid : -1,
-                    (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
-                        ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
-                    save_fd, pre_close_size);
-            fflush(stderr);
-        }
+        (void)fsync(save_fd);
         rc = fclose(bf);
         (void) end_pos_pre;
         if (rc != 0) {
@@ -954,12 +929,12 @@ int fd;
 #define ZEROCOMP_BUFSIZ BUFSZ
 #endif
 /* outbuf[ZEROCOMP_BUFSIZ], outbufp, outrunlength, bwritefd, compressing
- * migrated to nle_ctx_t (Cluster AU group 1). The struct field is sized
+ * migrated to nle_ctx_t. The struct field is sized
  * BUFSZ (256) on the assumption that ZEROCOMP_BUFSIZ == BUFSZ on every
  * config we build (UNIX); enforced by the static assert below. */
 #if defined(__GNUC__) || defined(__clang__)
 _Static_assert(ZEROCOMP_BUFSIZ == 256,
-               "Cluster AU group 1: nle_ctx_t::s_outbuf was sized 256 (BUFSZ)");
+               "nle_ctx_t::s_outbuf was sized 256 (BUFSZ)");
 #endif
 
 /*dbg()
@@ -1361,7 +1336,7 @@ int fd;
 register struct trap *trap;
 int mode;
 {
-    /* Cluster BB: const sentinel — read-only end-of-chain marker. Was a
+    /* Const sentinel — read-only end-of-chain marker. Was a
      * mutable file-local static; making it const moves it to .rodata and
      * eliminates the cross-env shared-mutable-state hazard. */
     static const struct trap zerotrap;
@@ -1388,7 +1363,7 @@ void
 savefruitchn(fd, mode)
 int fd, mode;
 {
-    /* Cluster BB: const sentinel — see zerotrap comment in savetrapchn(). */
+    /* Const sentinel — see zerotrap comment in savetrapchn(). */
     static const struct fruit zerofruit;
     register struct fruit *f2, *f1;
 
@@ -1473,7 +1448,7 @@ int fd;
     return;
 }
 
-/* Cluster BC: per-env init for the migrated `saveprocs` table and the
+/* Per-env init for the migrated `saveprocs` table and the
  * sfsaveinfo flag word. Called from init_nle (nle.c) before any save
  * path can run. Mirrors the original file-scope static initializer. */
 void

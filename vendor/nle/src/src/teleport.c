@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 6 — file-static migrated to nle_ctx_t.
+/* File-static migrated to nle_ctx_t.
  * non-null when teleporting via having read this scroll. */
 #define telescroll (current_nle_ctx->s_telescroll)
 

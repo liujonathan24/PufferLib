@@ -7,7 +7,7 @@
 #include "nle.h" /* current_nle_ctx */
 #include "lev.h"
 
-/* Cluster AO — the legacy `extern char bones[]` (defined in files.c) is
+/* The legacy `extern char bones[]` (defined in files.c) is
  * now per-env at current_nle_ctx->s_bones. We can't `#define bones ...`
  * here because flag.h declares `struct flag { ... boolean bones; ... }`
  * and the macro would clobber `flags.bones`. The two buffer references
@@ -22,11 +22,13 @@ STATIC_DCL void FDECL(goodfruit, (int));
 STATIC_DCL void FDECL(resetobjs, (struct obj *, BOOLEAN_P));
 STATIC_DCL boolean FDECL(fixuporacle, (struct monst *));
 
+/* save_dlevel — migrated to nle_ctx_t (do.c). */
+#define save_dlevel (*(d_level *)&current_nle_ctx->save_dlevel_dnum)
+
 STATIC_OVL boolean
 no_bones_level(lev)
 d_level *lev;
 {
-    extern d_level save_dlevel; /* in do.c */
     s_level *sptr;
 
     if (ledger_no(&save_dlevel))

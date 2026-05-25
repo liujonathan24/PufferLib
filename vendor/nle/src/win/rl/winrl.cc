@@ -16,7 +16,7 @@
 
 extern "C" {
 #include "hack.h"
-#include "nle.h" /* current_nle_ctx */
+#include "nle.h" /* Current_nle_ctx */
 }
 
 extern "C" {
@@ -27,7 +27,7 @@ extern "C" {
 #include "nleobs.h"
 }
 
-/* Cluster AZ: include/global.h defines `#define free(p) nle_arena_free(...)`
+/* Include/global.h defines `#define free(p) nle_arena_free(...)`
  * which would otherwise rewrite the std::free calls inside this file and the
  * libc_allocator.h template instantiations into arena frees — the exact
  * thing we are trying to avoid. Undef it here so the rest of this TU sees
@@ -51,9 +51,10 @@ extern "C" {
  * --More-- situation that enter/return (ironically not necessarily space)
  * is required to continue.
  */
-extern bool xwaitingforspace;
+/* xwaitingforspace — migrated to nle_ctx_t. */
+#define xwaitingforspace (current_nle_ctx->xwaitingforspace_v)
 
-/* some hack.h macros. Can be undefined here. */
+/* Some hack.h macros. Can be undefined here. */
 #undef Invisible
 #undef Warning
 #undef index
@@ -74,7 +75,7 @@ const int nul_glyph = cmap_to_glyph(S_stone);
 
 namespace nethack_rl
 {
-/* Cluster AZ: route per-env STL containers off the shared NLE bump arena
+/* Route per-env STL containers off the shared NLE bump arena
  * and onto libc malloc / free. See libc_allocator.h for the rationale.
  *
  * All STL types that own heap memory and live (transitively) under
@@ -106,14 +107,14 @@ make_libc_string(const char *s)
     return LibcString(s ? s : "", LibcAllocator<char>());
 }
 
-/* Cluster AM: per-env via nle_ctx_t->s_win_proc_calls. The `win_proc_calls`
+/* Per-env via nle_ctx_t->s_win_proc_calls. The `win_proc_calls`
  * symbol is a free function below that returns a reference to the current
  * env's deque, allocated lazily on first use. Previously this was
  * `thread_local std::deque<std::string>`, which crashed when ScopedStack
  * was pushed on the init thread and popped on the OMP step-worker thread
  * after a coroutine resume on the worker.
  *
- * Cluster AZ: deque object and its node storage now come from libc, not
+ * Deque object and its node storage now come from libc, not
  * the arena. We allocate a raw buffer with std::malloc and placement-new
  * the deque into it so the deque control block ALSO lives outside the
  * arena (default `new WinProcDeque()` would route through the arena
@@ -133,8 +134,8 @@ win_proc_calls()
     }
     return *d;
 }
-bool in_yn_function = false;
-bool in_getlin = false;
+#define in_yn_function (current_nle_ctx->s_in_yn_function)
+#define in_getlin      (current_nle_ctx->s_in_getlin)
 
 // Glyphs provide instructions for windows to render the game (see display.h).
 // At the start of the game, descriptions and properties of the object classes
@@ -232,20 +233,20 @@ class NetHackRL
 
   private:
     struct rl_menu_item {
-        int glyph;            /* character glyph */
-        anything identifier;  /* user identifier */
-        long count;           /* user count */
-        LibcString str;       /* description string (Cluster AZ: libc-backed) */
-        int attr;             /* string attribute */
+        int glyph;            /* Character glyph */
+        anything identifier;  /* User identifier */
+        long count;           /* User count */
+        LibcString str;       /* Description string (libc-backed) */
+        int attr;             /* String attribute */
         boolean selected;     /* TRUE if selected by user */
-        char selector;        /* keyboard accelerator */
-        char gselector;       /* group accelerator */
+        char selector;        /* Keyboard accelerator */
+        char gselector;       /* Group accelerator */
     };
 
     struct rl_window {
         int type;
         LibcVector<rl_menu_item> menu_items;
-        /* Cluster AP fix: replaced std::vector<std::string> strings with a
+        /* Replaced std::vector<std::string> strings with a
          * single last_msg string.  The vector's _M_finish pointer lived in
          * the arena (operator new → arena alloc), so nle_fr_restore would
          * overwrite it with stale (pre-snapshot) content including a non-zero
@@ -253,21 +254,21 @@ class NetHackRL
          * glibc to detect a double-free of an already-tcache'd _M_p.
          * A single string is sufficient because fill_obs only reads the LAST
          * pushed message (back()) for the yn_function case.
-         * Cluster AZ: also use a libc-backed string so its heap buffer is
+         * Also use a libc-backed string so its heap buffer is
          * never zeroed by another env's libnethack activity. */
         LibcString last_msg;
     };
 
     struct rl_inventory_item {
         int glyph;
-        /* Cluster AZ: libc-backed strings instead of std::string. */
+        /* Libc-backed strings instead of std::string. */
         LibcString str;
         char letter;
         char object_class;
         LibcString object_class_name;
     };
 
-    /* Cluster AM: per-env (not per-thread). The previous incarnation was
+    /* Per-env (not per-thread). The previous incarnation was
      * `static thread_local std::unique_ptr<NetHackRL> instance`, which
      * meant: every OMP thread had its own NetHackRL initialized only on
      * the thread that called nle_start. PufferLib's cpu_vec_step uses
@@ -287,7 +288,7 @@ class NetHackRL
         if (current_nle_ctx) current_nle_ctx->s_netHackRL_instance = p;
     }
   public:
-    /* Cluster AZ: allocate the NetHackRL instance through libc malloc and
+    /* Allocate the NetHackRL instance through libc malloc and
      * placement-new so the NetHackRL object itself does NOT live in the
      * arena. Without this, `new NetHackRL(...)` routes through the
      * libnethack operator-new override and the instance bytes (including
@@ -325,7 +326,7 @@ class NetHackRL
     }
   private:
 
-    /* Cluster AZ: libc-backed vector of libc-allocated rl_window objects.
+    /* Libc-backed vector of libc-allocated rl_window objects.
      * The custom deleter runs the rl_window dtor (so inner libc strings /
      * vectors free their nodes) then std::free's the buffer, so the
      * rl_window itself never visits the arena either. */
@@ -432,11 +433,11 @@ NetHackRL::fill_obs(nle_obs *obs)
         obs->internal[2] = in_getlin;
         obs->internal[3] = xwaitingforspace;
         obs->internal[4] = stairs_down;
-        obs->internal[5] = 0; /* used to be core seed */
-        obs->internal[6] = 0; /* used to be disp seed */
+        obs->internal[5] = 0; /* Used to be core seed */
+        obs->internal[6] = 0; /* Used to be disp seed */
         obs->internal[7] = u.uhunger;
         obs->internal[8] =
-            u.urexp; /* score (careful! check botl_score() and end.c) */
+            u.urexp; /* Score (careful! check botl_score() and end.c) */
     }
     if (obs->misc) {
         obs->misc[0] = in_yn_function;
@@ -508,7 +509,7 @@ NetHackRL::fill_obs(nle_obs *obs)
         }
     }
     if (obs->blstats) {
-        /* exp_039: refresh ALL blstats fields every step, not just X/Y/TIME.
+        /* Exp_039: refresh ALL blstats fields every step, not just X/Y/TIME.
          * Pre-exp_039, blstats_ was populated lazily by status_update_method
          * via the bot() -> bot_via_windowport -> rl_status_update -> BL_FLUSH
          * path. exp_039 disabled status_updates for ~15-30% SPS, but that
@@ -583,9 +584,9 @@ NetHackRL::getch_method()
     if (WIN_MESSAGE != WIN_ERR && wins[WIN_MESSAGE])
         wins[WIN_MESSAGE]->wflags &= ~WIN_STOP;
     if (!i)
-        i = '\033'; /* map NUL to ESC since nethack doesn't expect NUL */
+        i = '\033'; /* Map NUL to ESC since nethack doesn't expect NUL */
     else if (i == EOF)
-        i = '\033'; /* same for EOF */
+        i = '\033'; /* Same for EOF */
     if (ttyDisplay && ttyDisplay->toplin == 1)
         ttyDisplay->toplin = 2;
     DEBUG_API("getch_method: action=" << i << ", xwaitingforspace="
@@ -684,34 +685,34 @@ NetHackRL::update_blstats()
     max_hitpoints = min(i, 9999);
 
     /* Cf. botl.c. */
-    blstats_[NLE_BL_X] = u.ux - 1;     /* x coordinate, 1 <= ux <= cols */
-    blstats_[NLE_BL_Y] = u.uy;         /* y coordinate, 0 <= uy < rows */
-    blstats_[NLE_BL_STR25] = ACURRSTR; /* strength 3..25 */
-    blstats_[NLE_BL_STR125] = ACURR(A_STR);        /* strength 3..125   */
-    blstats_[NLE_BL_DEX] = ACURR(A_DEX);           /* dexterity         */
-    blstats_[NLE_BL_CON] = ACURR(A_CON);           /* constitution      */
-    blstats_[NLE_BL_INT] = ACURR(A_INT);           /* intelligence      */
-    blstats_[NLE_BL_WIS] = ACURR(A_WIS);           /* wisdom            */
-    blstats_[NLE_BL_CHA] = ACURR(A_CHA);           /* charisma          */
-    blstats_[NLE_BL_SCORE] = botl_score();         /* score             */
-    blstats_[NLE_BL_HP] = hitpoints;               /* hitpoints         */
-    blstats_[NLE_BL_HPMAX] = max_hitpoints;        /* max_hitpoints     */
-    blstats_[NLE_BL_DEPTH] = depth(&u.uz);         /* depth             */
-    blstats_[NLE_BL_GOLD] = money_cnt(invent);     /* gold              */
-    blstats_[NLE_BL_ENE] = min(u.uen, 9999);       /* energy            */
-    blstats_[NLE_BL_ENEMAX] = min(u.uenmax, 9999); /* max_energy        */
-    blstats_[NLE_BL_AC] = u.uac;                   /* armor_class       */
+    blstats_[NLE_BL_X] = u.ux - 1;     /* X coordinate, 1 <= ux <= cols */
+    blstats_[NLE_BL_Y] = u.uy;         /* Y coordinate, 0 <= uy < rows */
+    blstats_[NLE_BL_STR25] = ACURRSTR; /* Strength 3..25 */
+    blstats_[NLE_BL_STR125] = ACURR(A_STR);        /* Strength 3..125   */
+    blstats_[NLE_BL_DEX] = ACURR(A_DEX);           /* Dexterity         */
+    blstats_[NLE_BL_CON] = ACURR(A_CON);           /* Constitution      */
+    blstats_[NLE_BL_INT] = ACURR(A_INT);           /* Intelligence      */
+    blstats_[NLE_BL_WIS] = ACURR(A_WIS);           /* Wisdom            */
+    blstats_[NLE_BL_CHA] = ACURR(A_CHA);           /* Charisma          */
+    blstats_[NLE_BL_SCORE] = botl_score();         /* Score             */
+    blstats_[NLE_BL_HP] = hitpoints;               /* Hitpoints         */
+    blstats_[NLE_BL_HPMAX] = max_hitpoints;        /* Max_hitpoints     */
+    blstats_[NLE_BL_DEPTH] = depth(&u.uz);         /* Depth             */
+    blstats_[NLE_BL_GOLD] = money_cnt(invent);     /* Gold              */
+    blstats_[NLE_BL_ENE] = min(u.uen, 9999);       /* Energy            */
+    blstats_[NLE_BL_ENEMAX] = min(u.uenmax, 9999); /* Max_energy        */
+    blstats_[NLE_BL_AC] = u.uac;                   /* Armor_class       */
     blstats_[NLE_BL_HD] = Upolyd ? (int) mons[u.umonnum].mlevel
-                                 : 0;       /* monster level, hit-dice */
-    blstats_[NLE_BL_XP] = u.ulevel;         /* experience level  */
-    blstats_[NLE_BL_EXP] = u.uexp;          /* experience points */
-    blstats_[NLE_BL_TIME] = moves;          /* time              */
-    blstats_[NLE_BL_HUNGER] = u.uhs;        /* hunger state      */
-    blstats_[NLE_BL_CAP] = near_capacity(); /* carrying capacity */
-    blstats_[NLE_BL_DNUM] = u.uz.dnum;      /* dungeon number */
-    blstats_[NLE_BL_DLEVEL] = u.uz.dlevel;  /* level number */
-    blstats_[NLE_BL_CONDITION] = condition_bits_; /* condition bit mask */
-    blstats_[NLE_BL_ALIGN] = u.ualign.type;       /* character alignment */
+                                 : 0;       /* Monster level, hit-dice */
+    blstats_[NLE_BL_XP] = u.ulevel;         /* Experience level  */
+    blstats_[NLE_BL_EXP] = u.uexp;          /* Experience points */
+    blstats_[NLE_BL_TIME] = moves;          /* Time              */
+    blstats_[NLE_BL_HUNGER] = u.uhs;        /* Hunger state      */
+    blstats_[NLE_BL_CAP] = near_capacity(); /* Carrying capacity */
+    blstats_[NLE_BL_DNUM] = u.uz.dnum;      /* Dungeon number */
+    blstats_[NLE_BL_DLEVEL] = u.uz.dlevel;  /* Level number */
+    blstats_[NLE_BL_CONDITION] = condition_bits_; /* Condition bit mask */
+    blstats_[NLE_BL_ALIGN] = u.ualign.type;       /* Character alignment */
 }
 
 void
@@ -733,7 +734,7 @@ NetHackRL::status_update_method(int fldidx, genericptr_t ptr, int,
         return;
     }
 
-    /* exp_039: status_[] is write-only in this build — no caller reads it.
+    /* Exp_039: status_[] is write-only in this build — no caller reads it.
      * Per perf-record, the make_libc_string allocation + decode_mixed call
      * showed up at ~5-7% combined user CPU (sprintf machinery upstream in
      * bot/eval_notify_windowport_field + the per-field std::basic_string
@@ -782,7 +783,7 @@ NetHackRL::create_nhwindow_method(int type)
     winid wid = tty_create_nhwindow(type);
     DEBUG_API(": wid == " << wid << std::endl);
 
-    /* Cluster AP fix: only GROW the vector, never shrink.
+    /* Only GROW the vector, never shrink.
      * The original `windows_.resize(wid + 1)` would shrink the vector
      * when wid < windows_.size()-1 (e.g., after WIN_INVEN is destroyed and
      * slot 4 is reused while slot 5 is still live).  Shrinking calls the
@@ -805,11 +806,11 @@ NetHackRL::create_nhwindow_method(int type)
 void
 NetHackRL::clear_nhwindow_method(winid wid)
 {
-    /* Cluster AP: bounds-check wid before indexing windows_; a stale
+    /* Bounds-check wid before indexing windows_; a stale
      * process-shared wid from a not-yet-migrated global would otherwise
      * cause OOB vector access or a double-free. */
     if (wid < 0 || (size_t) wid >= windows_.size() || !windows_[wid]) {
-        return; /* silently skip the bad wid */
+        return; /* Silently skip the bad wid */
     }
     auto &rl_win = windows_[wid];
     rl_win->menu_items.clear();
@@ -826,7 +827,7 @@ NetHackRL::clear_nhwindow_method(winid wid)
     }
 
     DEBUG_API("rl_clear_nhwindow(wid=" << wid << ")" << std::endl);
-    /* exp_039: tty_clear_nhwindow emits home()/cl_end()/clear_screen() etc.
+    /* Exp_039: tty_clear_nhwindow emits home()/cl_end()/clear_screen() etc.
      * which all go to nle_putchar -> outbuf. The agent reads the in-memory
      * window state (windows_[wid]->menu_items, last_msg, glyphs_/chars_/
      * colors_) which is already cleared above. The TTY-side rendering
@@ -864,14 +865,14 @@ NetHackRL::start_menu_method(winid wid)
 
 void
 NetHackRL::add_menu_method(
-    winid wid,                  /* window to use, must be of type NHW_MENU */
-    int glyph,                  /* glyph to display with item (not used) */
-    const anything *identifier, /* what to return if selected */
-    char ch,                    /* keyboard accelerator (0 = pick our own) */
-    char gch,                   /* group accelerator (0 = no group) */
-    int attr,                   /* attribute for string (like putstr()) */
-    const char *str,            /* menu string */
-    bool preselected            /* item is marked as selected */
+    winid wid,                  /* Window to use, must be of type NHW_MENU */
+    int glyph,                  /* Glyph to display with item (not used) */
+    const anything *identifier, /* What to return if selected */
+    char ch,                    /* Keyboard accelerator (0 = pick our own) */
+    char gch,                   /* Group accelerator (0 = no group) */
+    int attr,                   /* Attribute for string (like putstr()) */
+    const char *str,            /* Menu string */
+    bool preselected            /* Item is marked as selected */
 )
 {
     DEBUG_API("rl_add_menu" << std::endl);
@@ -892,7 +893,7 @@ NetHackRL::rl_init_nhwindows(int *argc, char **argv)
     DEBUG_API("rl_init_nhwindows" << std::endl);
     ScopedStack s(win_proc_calls(), "init_nhwindows");
     tty_init_nhwindows(argc, argv);
-    /* Cluster AZ: allocate via libc, not the arena. */
+    /* Allocate via libc, not the arena. */
     instance_set(create_libc(*argc, argv));
 }
 
@@ -963,7 +964,7 @@ NetHackRL::rl_clear_nhwindow(winid wid)
     instance_get()->clear_nhwindow_method(wid);
 }
 
-/* display_nhwindow(window, boolean blocking)
+/* Display_nhwindow(window, boolean blocking)
                 -- Display the window on the screen.  If there is data
                    pending for output in that window, it should be sent.
                    If blocking is TRUE, display_nhwindow() will not
@@ -1081,7 +1082,7 @@ NetHackRL::rl_cliparound(int x, int y)
 #endif
 }
 
-/* print_glyph(window, x, y, glyph, bkglyph)
+/* Print_glyph(window, x, y, glyph, bkglyph)
                 -- Print the glyph at (x,y) on the given window.  Glyphs are
                    integers at the interface, mapped to whatever the window-
                    port wants (symbol, font, color, attributes, ...there's
@@ -1305,7 +1306,7 @@ NetHackRL::rl_status_update(int fldidx, genericptr_t ptr, int chg,
     ScopedStack s(win_proc_calls(), "status_update");
     instance_get()->status_update_method(fldidx, ptr, chg, percent, color,
                                    colormasks);
-    /* exp_039: tty_status_update() formats the status bar (sprintf-heavy)
+    /* Exp_039: tty_status_update() formats the status bar (sprintf-heavy)
      * into a TTY buffer that the RL agent never reads — the agent gets
      * its stats via update_blstats / fill_obs straight from u/youmonst.
      * Per perf-record: this path was ~15% of user CPU under N=128 puffer
@@ -1344,7 +1345,7 @@ extern const struct window_procs rl_procs = {
 #endif
      | WC2_DARKGRAY | WC2_SUPPRESS_HIST | WC2_STATUSLINES),
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1 }, /* color availability */
+      1 }, /* Color availability */
     nethack_rl::NetHackRL::rl_init_nhwindows,
     nethack_rl::NetHackRL::rl_player_selection,
     nethack_rl::NetHackRL::rl_askname,
@@ -1364,7 +1365,7 @@ extern const struct window_procs rl_procs = {
     nethack_rl::NetHackRL::rl_add_menu,
     nethack_rl::NetHackRL::rl_end_menu,
     nethack_rl::NetHackRL::rl_select_menu,
-    genl_message_menu, /* no need for X-specific handling */
+    genl_message_menu, /* No need for X-specific handling */
     nethack_rl::NetHackRL::rl_update_inventory,
     nethack_rl::NetHackRL::rl_mark_synch,
     nethack_rl::NetHackRL::rl_wait_synch,
@@ -1387,13 +1388,13 @@ extern const struct window_procs rl_procs = {
     nethack_rl::NetHackRL::rl_get_ext_cmd,
     nethack_rl::NetHackRL::rl_number_pad,
     nethack_rl::NetHackRL::rl_delay_output,
-#ifdef CHANGE_COLOR /* only a Mac option currently */
+#ifdef CHANGE_COLOR /* Only a Mac option currently */
     donull,
     donull,
     donull,
     donull,
 #endif
-    /* other defs that really should go away (they're tty specific) */
+    /* Other defs that really should go away (they're tty specific) */
     nethack_rl::NetHackRL::rl_start_screen,
     nethack_rl::NetHackRL::rl_end_screen,
 #ifdef GRAPHIC_TOMBSTONE

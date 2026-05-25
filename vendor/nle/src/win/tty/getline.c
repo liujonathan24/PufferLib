@@ -5,7 +5,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
-#include "nle.h" /* current_nle_ctx */
+#include "nle.h" /* Current_nle_ctx */
 
 #ifdef TTY_GRAPHICS
 
@@ -16,8 +16,8 @@
 #include "wintty.h"
 #include "func_tab.h"
 
-/* morc migrated to nle_ctx_t (stage 10'). Macro in wintty.h. */
-/* Cluster AP: suppress_history was a plain STATIC_VAR (process-global).
+/* Morc migrated to nle_ctx_t (stage 10'). Macro in wintty.h. */
+/* Suppress_history was a plain STATIC_VAR (process-global).
  * Concurrent OMP envs at different stages of tty_getlin/ext_cmd_getlin_hook
  * could race: env A sets FALSE, env B sees FALSE and reads the wrong history
  * suppress state. Now per-env via nle_ctx_t. */
@@ -28,9 +28,9 @@ typedef boolean FDECL((*getlin_hook_proc), (char *));
 
 STATIC_DCL void FDECL(hooked_tty_getlin,
                       (const char *, char *, getlin_hook_proc));
-extern int NDECL(extcmd_via_menu); /* cmd.c */
+extern int NDECL(extcmd_via_menu); /* Cmd.c */
 
-extern char erase_char, kill_char; /* from appropriate tty.c file */
+extern char erase_char, kill_char; /* From appropriate tty.c file */
 
 /*
  * Read a line closed with '\n' into the array char bufp[BUFSZ].
@@ -61,13 +61,13 @@ getlin_hook_proc hook;
     if (ttyDisplay->toplin == 1 && !(cw->wflags & WIN_STOP))
         more();
     cw->wflags &= ~WIN_STOP;
-    ttyDisplay->toplin = 3; /* special prompt state */
+    ttyDisplay->toplin = 3; /* Special prompt state */
     ttyDisplay->inread++;
 
-    /* issue the prompt */
+    /* Issue the prompt */
     custompline(OVERRIDE_MSGTYPE | SUPPRESS_HISTORY, "%s ", query);
 #ifdef EDIT_GETLIN
-    /* bufp is input/output; treat current contents (presumed to be from
+    /* Bufp is input/output; treat current contents (presumed to be from
        previous getlin()) as default input */
     addtopl(obufp);
     bufp = eos(obufp);
@@ -99,7 +99,7 @@ getlin_hook_proc hook;
             ttyDisplay->intr--;
             *bufp = 0;
         }
-        if (c == '\020') { /* ctrl-P */
+        if (c == '\020') { /* Ctrl-P */
             if (iflags.prevmsg_window != 's') {
                 int sav = ttyDisplay->inread;
 
@@ -114,7 +114,7 @@ getlin_hook_proc hook;
                 addtopl(obufp);
             } else {
                 if (!doprev)
-                    (void) tty_doprev_message(); /* need two initially */
+                    (void) tty_doprev_message(); /* Need two initially */
                 (void) tty_doprev_message();
                 doprev = 1;
                 continue;
@@ -136,7 +136,7 @@ getlin_hook_proc hook;
 #endif /* NEWAUTOCOMP */
                 bufp--;
 #ifndef NEWAUTOCOMP
-                putsyms("\b \b"); /* putsym converts \b */
+                putsyms("\b \b"); /* Putsym converts \b */
 #else                             /* NEWAUTOCOMP */
                 putsyms("\b");
                 for (i = bufp; *i; ++i)
@@ -150,10 +150,10 @@ getlin_hook_proc hook;
         } else if (c == '\n' || c == '\r') {
 #ifndef NEWAUTOCOMP
             *bufp = 0;
-#endif /* not NEWAUTOCOMP */
+#endif /* Not NEWAUTOCOMP */
             break;
         } else if (' ' <= (unsigned char) c && c != '\177'
-                   /* avoid isprint() - some people don't have it
+                   /* Avoid isprint() - some people don't have it
                       ' ' is not always a printing char */
                    && (bufp - obufp < BUFSZ - 1 && bufp - obufp < COLNO)) {
 #ifdef NEWAUTOCOMP
@@ -169,13 +169,13 @@ getlin_hook_proc hook;
 #ifndef NEWAUTOCOMP
                 bufp = eos(bufp);
 #else  /* NEWAUTOCOMP */
-                /* pointer and cursor left where they were */
+                /* Pointer and cursor left where they were */
                 for (i = bufp; *i; ++i)
                     putsyms("\b");
             } else if (i > bufp) {
                 char *s = i;
 
-                /* erase rest of prior guess */
+                /* Erase rest of prior guess */
                 for (; i > bufp; --i)
                     putsyms(" ");
                 for (; s > bufp; --s)
@@ -183,7 +183,7 @@ getlin_hook_proc hook;
 #endif /* NEWAUTOCOMP */
             }
         } else if (c == kill_char || c == '\177') { /* Robert Viduya */
-            /* this test last - @ might be the kill_char */
+            /* This test last - @ might be the kill_char */
 #ifndef NEWAUTOCOMP
             while (bufp != obufp) {
                 bufp--;
@@ -199,17 +199,17 @@ getlin_hook_proc hook;
         } else
             tty_nhbell();
     }
-    ttyDisplay->toplin = 2; /* nonempty, no --More-- required */
+    ttyDisplay->toplin = 2; /* Nonempty, no --More-- required */
     ttyDisplay->inread--;
-    clear_nhwindow(WIN_MESSAGE); /* clean up after ourselves */
+    clear_nhwindow(WIN_MESSAGE); /* Clean up after ourselves */
 
     if (suppress_history) {
-        /* prevent next message from pushing current query+answer into
+        /* Prevent next message from pushing current query+answer into
            tty message history */
         *toplines = '\0';
 #ifdef DUMPLOG
     } else {
-        /* needed because we've bypassed pline() */
+        /* Needed because we've bypassed pline() */
         dumplogmsg(toplines);
 #endif
     }
@@ -218,11 +218,12 @@ getlin_hook_proc hook;
 /*
  * Hack for RL window proc: register if we are in xwaitforspace context.
  */
-boolean xwaitingforspace;
+/* xwaitingforspace — migrated to nle_ctx_t. */
+#define xwaitingforspace (current_nle_ctx->xwaitingforspace_v)
 
 void
 xwaitforspace(s)
-register const char *s; /* chars allowed besides return */
+register const char *s; /* Chars allowed besides return */
 {
     register int c, x = ttyDisplay ? (int) ttyDisplay->dismiss_more : '\n';
 
@@ -278,9 +279,9 @@ char *base;
         if ((extcmdlist[oindex].cmd_flags & AUTOCOMPLETE)
             && !(!wizard && (extcmdlist[oindex].cmd_flags & WIZMODECMD))
             && !strncmpi(base, extcmdlist[oindex].ef_txt, strlen(base))) {
-            if (com_index == -1) /* no matches yet */
+            if (com_index == -1) /* No matches yet */
                 com_index = oindex;
-            else /* more than 1 match */
+            else /* More than 1 match */
                 return FALSE;
         }
     }
@@ -289,7 +290,7 @@ char *base;
         return TRUE;
     }
 
-    return FALSE; /* didn't match anything */
+    return FALSE; /* Didn't match anything */
 }
 
 /*
@@ -306,7 +307,7 @@ tty_get_ext_cmd()
         return extcmd_via_menu();
 
     suppress_history = TRUE;
-    /* maybe a runtime option?
+    /* Maybe a runtime option?
      * hooked_tty_getlin("#", buf,
      *                   (flags.cmd_comp && !in_doagain)
      *                      ? ext_cmd_getlin_hook

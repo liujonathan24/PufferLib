@@ -7,7 +7,7 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 
-/* Cluster AU group 7 — per-env replacements for two topten.c file-statics.
+/* Per-env replacements for two topten.c file-statics.
  * `toptenwin` collides with `iflags.toptenwin` (flag.h boolean field), so
  * the macro is named `nle_toptenwin` and the call sites in this TU were
  * rewritten manually. `final_fpos` is under #ifdef UPDATE_RECORD_IN_PLACE
@@ -15,7 +15,7 @@
 #define nle_toptenwin   (current_nle_ctx->s_toptenwin)
 #define final_fpos      (current_nle_ctx->s_final_fpos)
 
-/* Cluster AV-b3 — function-local static tt_buf in get_rnd_toptenentry()
+/* Function-local static tt_buf in get_rnd_toptenentry()
  * promoted to a per-env lazily-alloc'd struct (struct toptenentry is
  * ~hundreds of bytes; embedding inline would bloat nle_ctx_t). The macro
  * expands to the dereferenced lvalue so existing `tt = &tt_buf;` works.
@@ -39,7 +39,7 @@
  * way to truncate it).  The trailing junk is harmless and the code
  * which reads the scores will ignore it.
  */
-/* final_fpos moved into nle_ctx_t (Cluster AU group 7) — macro above.
+/* final_fpos moved into nle_ctx_t — macro above.
  * Storage is unconditional on nle_ctx_t but only referenced under
  * #ifdef UPDATE_RECORD_IN_PLACE (not defined on UNIX builds). */
 
@@ -74,7 +74,8 @@ struct toptenentry {
     char plalign[ROLESZ + 1];
     char name[NAMSZ + 1];
     char death[DTHSZ + 1];
-} * tt_head;
+};
+#define tt_head (*(struct toptenentry **)&current_nle_ctx->s_tt_head)
 /* size big enough to read in all the string fields at once; includes
    room for separating space or trailing newline plus string terminator */
 #define SCANBUFSZ (4 * (ROLESZ + 1) + (NAMSZ + 1) + (DTHSZ + 1) + 1)
@@ -101,7 +102,7 @@ STATIC_DCL void FDECL(nsb_mung_line, (char *));
 STATIC_DCL void FDECL(nsb_unmung_line, (char *));
 #endif
 
-/* toptenwin moved into nle_ctx_t.s_toptenwin (Cluster AU group 7).
+/* toptenwin moved into nle_ctx_t.s_toptenwin.
  * Cannot use a `toptenwin` macro here because `iflags.toptenwin` is a
  * separate boolean field in struct instance_flags and would be clobbered
  * by token replacement. All `toptenwin` references in this TU rewritten
@@ -544,7 +545,7 @@ time_t when;
     if (current_nle_ctx->program_state.panicking)
         return;
 
-    /* Cluster AU group 7 — first-use idempotent init. Original was
+    /* First-use idempotent init. Original was
      * `static winid toptenwin = WIN_ERR;`. calloc gives 0 (== BASE_WINDOW)
      * which would mis-route topten_print() output through putstr() instead
      * of raw_print(). Set WIN_ERR at entry; the iflags.toptenwin branch
@@ -1220,7 +1221,7 @@ get_rnd_toptenentry()
     FILE *rfile;
     register struct toptenentry *tt;
 
-    /* Cluster AV-b3: lazy-alloc per-env tt_buf storage (replaces file-local
+    /* Lazy-alloc per-env tt_buf storage (replaces file-local
      * static). Once allocated, the buffer persists for the env's lifetime;
      * cleared each call via readentry(). */
     if (!current_nle_ctx->s_get_rnd_toptenentry_tt_buf)

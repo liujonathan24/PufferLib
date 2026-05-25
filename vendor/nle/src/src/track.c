@@ -9,12 +9,12 @@
 
 #define UTSZ 50
 
-/* Cluster AU group 6 — utrack[] migrated to nle_ctx_t (per-env ring of
+/* Utrack[] migrated to nle_ctx_t (per-env ring of
  * the player's last UTSZ steps). Heap-allocated as a coord* in init_nle;
  * the macro restores the array-like syntax of all existing call-sites. */
 #define utrack (current_nle_ctx->s_utrack)
 
-/* Cluster BK — utcnt/utpnt migrated to nle_ctx_t. The utrack[] array is
+/* Utcnt/utpnt migrated to nle_ctx_t. The utrack[] array is
  * already per-env, but the index counter and count were left as STATIC_VAR
  * NEARDATA (__thread). On an OMP coroutine-resume to a different worker
  * thread, env A's TLS values vanish; env A then writes past slot UTSZ-1

@@ -8,7 +8,7 @@
 #include "lev.h"
 #include "dlb.h"
 
-/* Cluster AU group 8 — misc-2 per-env redirect (rumors.c) */
+/* Misc-2 per-env redirect (rumors.c) */
 #define true_rumor_size (current_nle_ctx->s_true_rumor_size)
 
 /*      [note: this comment is fairly old, but still accurate for 3.1]
@@ -49,16 +49,35 @@ STATIC_DCL void FDECL(init_rumors, (dlb *));
 STATIC_DCL void FDECL(init_oracles, (dlb *));
 STATIC_DCL void FDECL(couldnt_open_file, (const char *));
 
-/* rumor size variables are signed so that value -1 can be used as a flag.
- * true_rumor_size migrated to nle_ctx_t.s_true_rumor_size (Cluster AU group 8);
- * false_rumor_size remains a process-static for now (not in group 8 scope). */
-static long false_rumor_size;
-/* rumor start offsets are unsigned because they're handled via %lx format */
-static unsigned long true_rumor_start, false_rumor_start;
-/* rumor end offsets are signed because they're compared with [dlb_]ftell() */
-static long true_rumor_end, false_rumor_end;
+/* Per-env rumors.c state. false_rumor_size / true_rumor_start /
+ * false_rumor_start / true_rumor_end / false_rumor_end bundled into
+ * one struct, lazily allocated via nle_rumors(). true_rumor_size was
+ * already migrated to nle_ctx_t.s_true_rumor_size. */
+struct nle_rumors_state {
+    long          _false_rumor_size;
+    unsigned long _true_rumor_start;
+    unsigned long _false_rumor_start;
+    long          _true_rumor_end;
+    long          _false_rumor_end;
+};
+static struct nle_rumors_state *
+nle_rumors(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_rumors_state *s = (struct nle_rumors_state *) current_nle_ctx->s_rumors_state;
+    if (!s) {
+        s = (struct nle_rumors_state *) calloc(1, sizeof(struct nle_rumors_state));
+        current_nle_ctx->s_rumors_state = s;
+    }
+    return s;
+}
+#define false_rumor_size   (nle_rumors()->_false_rumor_size)
+#define true_rumor_start   (nle_rumors()->_true_rumor_start)
+#define false_rumor_start  (nle_rumors()->_false_rumor_start)
+#define true_rumor_end     (nle_rumors()->_true_rumor_end)
+#define false_rumor_end    (nle_rumors()->_false_rumor_end)
 /* oracles are handled differently from rumors... */
-/* Cluster AP Part 2: oracle state per-env. oracle_flg/oracle_loc were __thread;
+/* Oracle state per-env. oracle_flg/oracle_loc were __thread;
  * oracle_cnt was a plain static (process-global) but is decremented as oracles
  * are used — so it must be per-env too. */
 #define oracle_flg (current_nle_ctx->s_oracle_flg)

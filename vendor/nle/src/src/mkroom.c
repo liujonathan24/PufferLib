@@ -18,7 +18,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-/* Cluster BA: shrine_pos()'s `static coord buf;` migrated to two xchar
+/* Shrine_pos()'s `static coord buf;` migrated to two xchar
  * fields in nle_ctx_t (coord.h can't be included by nle.h). The function
  * reconstitutes a coord in a thread-local return slot for caller use. */
 
@@ -558,11 +558,11 @@ STATIC_OVL coord *
 shrine_pos(roomno)
 int roomno;
 {
-    /* Cluster BA: the original `static coord buf;` is now two xchar fields
+    /* The original `static coord buf;` is now two xchar fields
      * in nle_ctx_t (coord.h can't be pulled into nle.h, hence the split).
      * We expose them via a per-thread return slot — short-lived; the caller
      * consumes the pointer in-place, never across a step boundary. */
-    static __thread coord shrine_buf_ret;
+    static coord shrine_buf_ret;
     int delta;
     struct mkroom *troom = &rooms[roomno - ROOMOFFSET];
 

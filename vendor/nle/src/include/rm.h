@@ -306,7 +306,11 @@ struct symsetentry {
 
 extern const struct symdef defsyms[MAXPCHARS]; /* defaults */
 extern const struct symdef def_warnsyms[WARNCOUNT];
-extern int currentgraphics; /* from drawing.c */
+#ifndef NLE_OBJECTS_GLOBAL
+#define currentgraphics (current_nle_ctx->s_currentgraphics)
+#else
+extern int currentgraphics;
+#endif
 extern nhsym showsyms[];
 extern nhsym primary_syms[];
 extern nhsym rogue_syms[];

@@ -3,7 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
-#include "nle.h" /* Cluster AV-b1: current_nle_ctx access for both RNG paths. */
+#include "nle.h" /* current_nle_ctx access for both RNG paths. */
 
 #ifdef USE_ISAAC64
 #include "isaac64.h"
@@ -85,7 +85,7 @@ int
 rn2_on_display_rng(x)
 register int x;
 {
-    /* Cluster AV-b1: function-local `static unsigned seed = 1;` migrated
+    /* Function-local `static unsigned seed = 1;` migrated
      * to current_nle_ctx->s_rn2disprng_seed (initialized to 1 in init_nle).
      * Direct access here rather than a #define seed macro because `seed`
      * collides with init_isaac64's parameter name above. */

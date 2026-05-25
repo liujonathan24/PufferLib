@@ -1111,7 +1111,7 @@ typedef struct audio_mapping_rec {
     struct audio_mapping_rec *next;
 } audio_mapping;
 
-/* Cluster AO: per-env. Was static __thread. */
+/* Per-env. Was static __thread. */
 struct nle_sounds_state { audio_mapping *_soundmap; };
 static struct nle_sounds_state *nle_sounds(void) {
     if (!current_nle_ctx) return NULL;

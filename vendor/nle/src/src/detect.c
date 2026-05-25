@@ -12,7 +12,7 @@
 #include "nle.h" /* current_nle_ctx for migrated flags */
 #include "artifact.h"
 
-/* Cluster BF: scr_known per-env (was `extern boolean known; from read.c`). */
+/* Scr_known per-env (was `extern boolean known; from read.c`). */
 #define scr_known (current_nle_ctx->s_read_known)
 
 STATIC_DCL boolean NDECL(unconstrain_map);

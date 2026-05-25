@@ -7,13 +7,15 @@
 #include "nle.h" /* current_nle_ctx, refactor */
 
 /* at most one of `door' and `box' should be non-null at any given time */
-STATIC_VAR NEARDATA struct xlock_s {
+/* xlock — per-env via struct overlay on nle_ctx_t.
+ * Layout must match xlock_door_v..xlock_magic_key_v in nle.h exactly. */
+struct xlock_s {
     struct rm *door;
     struct obj *box;
-    int picktyp, /* key|pick|card for unlock, sharp vs blunt for #force */
-        chance, usedtime;
+    int picktyp, chance, usedtime;
     boolean magic_key;
-} xlock;
+};
+#define xlock (*(struct xlock_s *)&current_nle_ctx->xlock_door_v)
 
 /* occupation callbacks */
 STATIC_PTR int NDECL(picklock);

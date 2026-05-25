@@ -6,8 +6,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
 
+#ifdef NLE_OBJECTS_GLOBAL
 int NDECL((*afternmv));
 int NDECL((*occupation));
+#endif
 
 /* from xxxmain.c */
 const char *hname = 0; /* name of the game (argv[0] of main) */
@@ -21,7 +23,7 @@ char chosen_windowtype[WINTYPELEN];
 
 #ifdef NLE_OBJECTS_GLOBAL
 int bases[MAXOCLASSES];
-/* cluster V/W build-tool stubs — only used by makedefs/lev_comp linking. */
+/* Build-tool stubs — only used by makedefs/lev_comp linking. */
 NEARDATA int doorindex = 0;
 NEARDATA int in_doagain = 0;
 NEARDATA boolean in_mklev = FALSE;
@@ -31,7 +33,7 @@ NEARDATA char pl_character[PL_CSIZ] = DUMMY;
 NEARDATA char pl_race = '\0';
 NEARDATA char pl_fruit[PL_FSIZ] = DUMMY;
 NEARDATA char tune[6] = DUMMY;
-/* cluster X build-tool stubs. */
+/* Build-tool stubs. */
 NEARDATA char dogname[PL_PSIZ] = DUMMY;
 NEARDATA char catname[PL_PSIZ] = DUMMY;
 NEARDATA char horsename[PL_PSIZ] = DUMMY;
@@ -41,24 +43,26 @@ NEARDATA struct fruit *ffruit = (struct fruit *) 0;
 #endif
 /* For libnethack, bases is a macro to nle_ctx_t. See decl.h. */
 
-/* Cluster BK — nroom/nsubroom were NEARDATA __thread globals that the
+/* Nroom/nsubroom were NEARDATA __thread globals that the
  * per-step swap in nle.c copied in and out of the env's nle_ctx_t slot.
  * The struct field has existed since stage 3f (nle.h:136-137); this
  * migration drops the storage from decl.c and rewires decl.h (which is
  * the canonical extern point) to a per-env macro. The corresponding
  * swap in nle_swap_in/out (nle.c:825/845) is removed. Build-tool
  * binaries (makedefs, lev_comp) need the storage; they are now declared
- * under #ifdef NLE_OBJECTS_GLOBAL alongside other cluster V/W stubs. */
+ * under #ifdef NLE_OBJECTS_GLOBAL alongside other build-tool stubs. */
 #ifdef NLE_OBJECTS_GLOBAL
 NEARDATA int nroom = 0;
 NEARDATA int nsubroom = 0;
 #endif
 
 /* maze limits must be even; masking off lowest bit guarantees that */
+#ifdef NLE_OBJECTS_GLOBAL
 int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;
+#endif
 
 
-/* in_doagain — migrated to nle_ctx_t (cluster V). */
+/* in_doagain — migrated to nle_ctx_t. */
 
 /*
  *      The following structure will be initialized at startup time with
@@ -69,15 +73,19 @@ int x_maze_max = (COLNO - 1) & ~1, y_maze_max = (ROWNO - 1) & ~1;
 /* quest_status — stage 9' batch C migrated to nle_ctx_t. */
 
 /* smeq — per-env room-equivalence work array, migrated to nle_ctx_t. */
-/* doorindex — migrated to nle_ctx_t (cluster V). */
-/* save_cm — migrated to nle_ctx_t (cluster X). */
+/* doorindex — migrated to nle_ctx_t. */
+/* save_cm — migrated to nle_ctx_t. */
 
 /* killer — stage 9' batch C migrated to nle_ctx_t. */
+#ifdef NLE_OBJECTS_GLOBAL
 const char *nomovemsg = 0;
-/* plname/pl_character/pl_race/pl_fruit/tune — migrated to nle_ctx_t (cluster W). */
-/* ffruit — migrated to nle_ctx_t (cluster X). */
+#endif
+/* plname/pl_character/pl_race/pl_fruit/tune — migrated to nle_ctx_t. */
+/* ffruit — migrated to nle_ctx_t. */
 
+#ifdef NLE_OBJECTS_GLOBAL
 const char *occtxt = DUMMY;
+#endif
 const char quitchars[] = " \r\n\033";
 const char vowels[] = "aeiouAEIOU";
 const char ynchars[] = "yn";
@@ -122,12 +130,12 @@ const schar zdir[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, -1 };
  * All heap-allocated zero-init in init_nle; equivalent to the previous
  * { 0, 0, { 0, 0 }, 0 } / { 0, ... } / {0,0} static initializers. */
 
-/* in_mklev — migrated to nle_ctx_t (cluster V). */
+/* in_mklev — migrated to nle_ctx_t. */
 /* weapon picked is merged with wielded one */
 
 /* has_strong_rngseed migrated to nle_ctx_t (refactor stage 3a). */
 
-/* bhitpos — migrated to nle_ctx_t (cluster V). Allocated in init_nle. */
+/* bhitpos — migrated to nle_ctx_t. Allocated in init_nle. */
 /* doors / rooms / subrooms / upstairs_room / dnstairs_room / sstairs_room
  * / ftrap — stage 7' partial migrated to nle_ctx_t (heap, see init_nle).
  * subrooms is initialized to point at rooms[MAXNROFROOMS+1] in init_nle
@@ -144,7 +152,7 @@ subrooms_init(void)
 }
 /* youmonst — stage 9' batch C migrated to nle_ctx_t. */
 /* context — migrated to nle_ctx_t (per-game state). */
-/* flags — Cluster AW-full: migrated to nle_ctx_t.flags_ptr (per-env, heap).
+/* flags — migrated to nle_ctx_t.flags_ptr (per-env, heap).
  * The 12 struct-field `flags` collisions were renamed first so the
  * `#define flags (*current_nle_ctx->flags_ptr)` macro in flag.h is now
  * unambiguous. The storage formerly here was a process-global swapped on
@@ -220,8 +228,10 @@ const struct monst zeromonst = DUMMY;
 const anything zeroany;
 
 /* originally from dog.c */
-/* dogname/catname/horsename — migrated to nle_ctx_t (cluster X). */
+/* dogname/catname/horsename — migrated to nle_ctx_t. */
+#ifdef NLE_OBJECTS_GLOBAL
 char preferred_pet; /* '\0', 'c', 'd', 'n' (none) */
+#endif
 /* mydogs, migrating_mons, apelist migrated direct (stage 9' batch B). */
 /* mvitals — stage 9' batch C migrated to nle_ctx_t (heap, NUMMONS entries). */
 /* domove_attempting, domove_succeeded migrated direct (stage 9' batch A). */
@@ -281,7 +291,7 @@ const char *materialnm[] = { "mysterious", "liquid",  "wax",        "organic",
  * tc_gbl_data deferred (struct-tag self-reference). */
 /* tc_gbl_data — stage 8' migrated to nle_ctx_t. Heap-alloc'd in init_nle. */
 
-/* Cluster AO — `fqn_prefix[]` migrated to current_nle_ctx->s_fqn_prefix.
+/* `fqn_prefix[]` migrated to current_nle_ctx->s_fqn_prefix.
  * Each env's table is zero-initialized when nle_ctx_t is calloc'd in
  * nle_start(); nle.c's main_loop_real() then populates each slot from
  * settings->hackdir (per-env) on the first step. */
@@ -322,7 +332,7 @@ NEARDATA struct savefile_info sfcap = {
 #endif
 };
 
-/* Cluster BC: sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
+/* Sfrestinfo and sfsaveinfo migrated to nle_ctx_t (per-env).
  * Per-env init mirroring the original sfsaveinfo initializer happens in
  * init_nle (nle.c). sfrestinfo is calloc-zero-initialized like before. */
 

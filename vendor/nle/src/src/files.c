@@ -9,7 +9,7 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "dlb.h"
 
-/* Cluster AU group 8 — misc-2 per-env redirects (files.c) */
+/* Misc-2 per-env redirects (files.c) */
 #define wizkit                 (current_nle_ctx->s_wizkit)
 #define lockptr                (current_nle_ctx->s_lockptr)
 #define config_section_chosen  (current_nle_ctx->s_config_section_chosen)
@@ -78,7 +78,7 @@ const
 #define fqn_filename_buffer ((char (*)[FQN_MAX_FILENAME]) current_nle_ctx->s_fqn_fname_p)
 #endif
 
-/* Cluster AO — `bones` and `lock` migrated to nle_ctx_t (s_bones,
+/* `bones` and `lock` migrated to nle_ctx_t (s_bones,
  * s_lock). `lock` is exposed via decl.h's NLE_PER_ENV_FILES macro;
  * `bones` is not in decl.h so a local file-level macro is used here
  * (and a matching one in bones.c). nle.c initializes both fields on
@@ -116,7 +116,7 @@ const
 #endif
 #endif
 
-/* Cluster AO — SAVEF migrated to current_nle_ctx->s_SAVEF. Sized
+/* SAVEF migrated to current_nle_ctx->s_SAVEF. Sized
  * 45 bytes there (matches SAVESIZE = PL_NSIZ + 13 on UNIX/__BEOS__).
  * Verified at compile time below. */
 #if SAVESIZE > 45
@@ -139,14 +139,14 @@ struct level_ftrack {
 #endif /*HOLD_LOCKFILE_OPEN*/
 
 #define WIZKIT_MAX 128
-/* wizkit[WIZKIT_MAX] migrated to nle_ctx_t.s_wizkit (Cluster AU group 8) */
+/* wizkit[WIZKIT_MAX] migrated to nle_ctx_t.s_wizkit */
 STATIC_DCL FILE *NDECL(fopen_wizkit_file);
 STATIC_DCL void FDECL(wizkit_addinv, (struct obj *));
 
 #ifdef AMIGA
 extern char PATH[]; /* see sys/amiga/amidos.c */
 extern char bbs_id[];
-/* lockptr migrated to nle_ctx_t.s_lockptr (Cluster AU group 8) */
+/* lockptr migrated to nle_ctx_t.s_lockptr */
 #ifdef __SASC_60
 #include <proto/dos.h>
 #endif
@@ -156,7 +156,7 @@ extern void FDECL(amii_set_text_font, (char *, int));
 #endif
 
 #if defined(WIN32) || defined(MSDOS)
-/* lockptr migrated to nle_ctx_t.s_lockptr (Cluster AU group 8) */
+/* lockptr migrated to nle_ctx_t.s_lockptr */
 #ifdef MSDOS
 #define Delay(a) msleep(a)
 #endif
@@ -234,8 +234,8 @@ STATIC_DCL int FDECL(open_levelfile_exclusively, (const char *, int, int));
 #endif
 
 
-/* config_section_chosen / config_section_current migrated to nle_ctx_t
- * (Cluster AU group 8). calloc zero-init handles the (char *) 0 default. */
+/* config_section_chosen / config_section_current migrated to nle_ctx_t.
+ * calloc zero-init handles the (char *) 0 default. */
 
 /*
  * fname_encode()
@@ -550,18 +550,6 @@ char errbuf[];
         Sprintf(errbuf, "Cannot create file \"%s\" for level %d (errno %d).",
                 lock, lev, errno);
 
-    /* exp_039 agent_d: Hypothesis 3 instrumentation — log every
-     * create_levelfile call. Writer reopens with O_TRUNC; if the same path
-     * is created twice between save-close and reload-open, the file gets
-     * truncated and reader sees short. */
-    fprintf(stderr,
-            "CREATE_LEVELFILE pid=%d hackdir=%s ledger=%d path=%s fd=%d\n",
-            current_nle_ctx ? current_nle_ctx->hackpid : -1,
-            (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
-                ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
-            lev, fq_lock ? fq_lock : "(null)", fd);
-    fflush(stderr);
-
     return fd;
 }
 
@@ -599,24 +587,6 @@ char errbuf[];
     if (fd < 0 && errbuf)
         Sprintf(errbuf, "Cannot open file \"%s\" for level %d (errno %d).",
                 lock, lev, errno);
-
-    /* exp_039 agent_d: log every open_levelfile with the on-disk size we
-     * are about to read. If size < what writer flushed (per DEF_BCLOSE_SIZE),
-     * the file was truncated post-write. */
-    {
-        long long open_size = -1;
-        if (fd >= 0) {
-            struct stat _ost;
-            if (fstat(fd, &_ost) == 0) open_size = (long long) _ost.st_size;
-        }
-        fprintf(stderr,
-                "OPEN_LEVELFILE pid=%d hackdir=%s ledger=%d path=%s fd=%d size=%lld\n",
-                current_nle_ctx ? current_nle_ctx->hackpid : -1,
-                (current_nle_ctx && current_nle_ctx->s_fqn_prefix[HACKPREFIX])
-                    ? current_nle_ctx->s_fqn_prefix[HACKPREFIX] : "(null)",
-                lev, fq_lock ? fq_lock : "(null)", fd, open_size);
-        fflush(stderr);
-    }
 
     return fd;
 }
@@ -1699,7 +1669,7 @@ boolean uncomp;
 
 /* ----------  BEGIN FILE LOCKING HANDLING ----------- */
 
-/* Cluster AO: per-env files.c state. nesting / lockfd / config_error_data /
+/* Per-env files.c state. nesting / lockfd / config_error_data /
  * symset_count / symset_which_set bundled into one struct. */
 struct _config_error_frame; /* forward */
 struct nle_files_state {
@@ -2877,7 +2847,7 @@ struct _config_error_frame {
     struct _config_error_frame *next;
 };
 
-/* Cluster AO: per-env (struct definition is just above; macro forwards
+/* Per-env (struct definition is just above; macro forwards
  * into nle_files_state which holds the pointer as a generic forward). */
 #define config_error_data (nle_files()->_config_error_data)
 
@@ -3295,7 +3265,7 @@ boolean FDECL((*proc), (char *));
 extern struct symsetentry *symset_list;  /* options.c */
 extern const char *known_handling[];     /* drawing.c */
 extern const char *known_restrictions[]; /* drawing.c */
-/* Cluster AO: per-env via nle_files_state (above). */
+/* Per-env via nle_files_state (above). */
 #define symset_count      (nle_files()->_symset_count)
 #define symset_which_set  (nle_files()->_symset_which_set)
 static boolean chosen_symset_start = FALSE, chosen_symset_end = FALSE;

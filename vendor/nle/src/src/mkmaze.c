@@ -8,7 +8,7 @@
 #include "sp_lev.h"
 #include "lev.h" /* save & restore info */
 
-/* Cluster AU group 3 — file-statics migrated to nle_ctx_t for per-env
+/* File-statics migrated to nle_ctx_t for per-env
  * isolation. `bughack` is a lev_region value at the source level; the ctx
  * field is a pointer to that struct (forward-declared in nle.h as
  * `struct nle_lev_region_s`). Lazy-allocated via nle_get_bughack() the
@@ -38,7 +38,7 @@ nle_get_bughack(void)
 #define bughack   (*nle_get_bughack())
 #define wportal   (current_nle_ctx->s_wportal)
 
-/* Cluster BK — lregions/num_lregions are NON-static cross-TU globals that
+/* Lregions/num_lregions are NON-static cross-TU globals that
  * were freed in mkmaze.c:649 against the heap pointer set in sp_lev.c.
  * Migrated to per-env nle_ctx_t fields; the extern decls are replaced
  * with macros routing to current_nle_ctx (same per-env slot as sp_lev.c). */
@@ -47,7 +47,7 @@ nle_get_bughack(void)
 #define set_lregions(p) \
     (current_nle_ctx->s_sp_lregions_p = (struct nle_lev_region_s *) (p))
 /* for preserving the insect legs when wallifying baalz level */
-/* bughack moved to nle_ctx_t (Cluster AU group 3) — see macro above. */
+/* bughack moved to nle_ctx_t — see macro above. */
 
 STATIC_DCL int FDECL(iswall, (int, int));
 STATIC_DCL int FDECL(iswall_or_stone, (int, int));
@@ -1414,7 +1414,7 @@ fumaroles()
  * other source files, but they are all so nicely encapsulated here.
  */
 
-/* Cluster BK — water-level bubble linked-list head/tail + bounds were
+/* Water-level bubble linked-list head/tail + bounds were
  * file-scope statics. Two envs concurrently entering the water level
  * (Plane of Water) would clobber each other's lists. Migrated to per-env.
  * NB: this block is below bound_digging() (which has its own locals named
@@ -1422,7 +1422,7 @@ fumaroles()
 #define bbubbles (*(struct bubble **) &current_nle_ctx->s_bbubbles)
 #define ebubbles (*(struct bubble **) &current_nle_ctx->s_ebubbles)
 
-/* wportal moved to nle_ctx_t (Cluster AU group 3) */
+/* wportal moved to nle_ctx_t */
 #define xmin (current_nle_ctx->s_water_xmin)
 #define ymin (current_nle_ctx->s_water_ymin)
 #define xmax (current_nle_ctx->s_water_xmax)
@@ -1444,7 +1444,7 @@ movebubbles()
                                          0, 0, 0, 0, 0, 0 };
     static const struct rm air_pos = { cmap_to_glyph(S_cloud), AIR, 0, 0, 0,
                                        1, 0, 0, 0, 0 };
-    /* Cluster AV-b1: `static boolean up = FALSE;` migrated to per-env
+    /* `static boolean up = FALSE;` migrated to per-env
      * current_nle_ctx->s_movebubbles_up (calloc zero = FALSE). Renamed
      * to nle_mb_up to avoid shadowing/colliding with generic `up`
      * identifiers in headers. */
@@ -1583,7 +1583,7 @@ movebubbles()
         lift_covet_and_placebc(bcpin);
     vision_full_recalc = 1;
 }
-#undef up /* Cluster AV-b1: scope of macro limited to movebubbles. */
+#undef up /* Scope of macro limited to movebubbles. */
 
 /* when moving in water, possibly (1 in 3) alter the intended destination */
 void

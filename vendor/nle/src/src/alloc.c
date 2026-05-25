@@ -36,7 +36,7 @@ extern void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2);
 #include <sys/mman.h>
 #include "nle.h"
 
-/* Cluster BE: per-env bump arena. Each env owns its own mmap'd arena on
+/* Per-env bump arena. Each env owns its own mmap'd arena on
  * nle_ctx_t (s_arena_base / s_arena_used / s_arena_cap), lazily allocated
  * on first alloc() call where current_nle_ctx is non-NULL. The previous
  * design used a single 16 GB process-wide arena guarded by

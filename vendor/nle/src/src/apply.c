@@ -6,10 +6,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
-/* Cluster BB: jumping_is_magic was a file-scope static set in jump() before
+/* Jumping_is_magic was a file-scope static set in jump() before
  * walk_path() invokes the get_valid_jump_position callback; under N envs in
  * one process this raced. Migrate to per-env. */
 #define jumping_is_magic  (current_nle_ctx->s_jumping_is_magic)
@@ -1631,7 +1631,7 @@ boolean showmsg;
     return TRUE;
 }
 
-/* Cluster BB: jumping_is_magic migrated to nle_ctx_t (macro above). */
+/* Jumping_is_magic migrated to nle_ctx_t (macro above). */
 
 STATIC_OVL boolean
 get_valid_jump_position(x,y)
@@ -2483,12 +2483,27 @@ struct obj *tstone;
     return;
 }
 
-static struct trapinfo {
+/* Per-env apply.c state. trapinfo fields bundled into one struct.
+ * The struct layout matches the original `struct trapinfo` exactly so that
+ * `trapinfo.tobj` etc. continue to work via the macro below. */
+struct nle_apply_state {
     struct obj *tobj;
     xchar tx, ty;
     int time_needed;
     boolean force_bungle;
-} trapinfo;
+};
+static struct nle_apply_state *
+nle_apply(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_apply_state *s = (struct nle_apply_state *) current_nle_ctx->s_apply_state;
+    if (!s) {
+        s = (struct nle_apply_state *) calloc(1, sizeof(struct nle_apply_state));
+        current_nle_ctx->s_apply_state = s;
+    }
+    return s;
+}
+#define trapinfo (*nle_apply())
 
 void
 reset_trapset()
@@ -2956,7 +2971,7 @@ int min_range, max_range;
     return TRUE;
 }
 
-/* Cluster AJ: per-env (was __thread). Polearm targeting bounds. */
+/* Per-env (was __thread). Polearm targeting bounds. */
 #define polearm_range_min (current_nle_ctx->s_polearm_range_min)
 #define polearm_range_max (current_nle_ctx->s_polearm_range_max)
 

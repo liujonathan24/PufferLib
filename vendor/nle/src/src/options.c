@@ -43,7 +43,32 @@ enum window_option_types {
 
 #define PILE_LIMIT_DFLT 5
 
-static char empty_optstr[] = { '\0' };
+/* Per-env options.c state. empty_optstr / need_redraw / mapped_menu_op /
+ * initial / from_file bundled into one struct, lazily allocated via
+ * nle_options(). */
+struct nle_options_state {
+    char    _empty_optstr[1];
+    boolean _need_redraw;
+    char    _mapped_menu_op[32 + 1]; /* MAX_MENU_MAPPED_CMDS + 1 */
+    boolean _initial;
+    boolean _from_file;
+};
+static struct nle_options_state *
+nle_options(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_options_state *s = (struct nle_options_state *) current_nle_ctx->s_options_state;
+    if (!s) {
+        s = (struct nle_options_state *) calloc(1, sizeof(struct nle_options_state));
+        current_nle_ctx->s_options_state = s;
+    }
+    return s;
+}
+#define empty_optstr    (nle_options()->_empty_optstr)
+#define need_redraw     (nle_options()->_need_redraw)
+#define mapped_menu_op  (nle_options()->_mapped_menu_op)
+#define initial         (nle_options()->_initial)
+#define from_file       (nle_options()->_from_file)
 
 /*
  *  NOTE:  If you add (or delete) an option, please update the short
@@ -492,7 +517,7 @@ static const struct Comp_Opt compopt_baseline[] = {
 extern char configfile[]; /* for messages */
 
 extern const struct symparse loadsyms[];
-static boolean need_redraw; /* for doset() */
+/* need_redraw migrated to nle_options() */
 
 #if defined(TOS) && defined(TEXTCOLOR)
 extern boolean colors_changed;  /* in tos.c */
@@ -562,11 +587,11 @@ static const menu_cmd_t default_menu_cmd_info[] = {
  */
 #define MAX_MENU_MAPPED_CMDS 32 /* some number */
 char mapped_menu_cmds[MAX_MENU_MAPPED_CMDS + 1]; /* exported */
-static char mapped_menu_op[MAX_MENU_MAPPED_CMDS + 1];
-/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard. */
+/* mapped_menu_op migrated to nle_options() */
+/* Per-env. Was __thread; OMP coroutine-resume hazard. */
 #define n_menu_mapped (current_nle_ctx->s_n_menu_mapped)
 
-static boolean initial, from_file;
+/* initial / from_file migrated to nle_options() */
 
 STATIC_DCL void FDECL(nmcpy, (char *, const char *, int));
 STATIC_DCL void FDECL(escapes, (const char *, char *));

@@ -5,7 +5,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env return buffer for piousness() (renamed from `buf`
+/* Per-env return buffer for piousness() (renamed from `buf`
  * to avoid collision with the `char buf[BUFSZ]` local elsewhere in this TU). */
 #define piousness_buf (current_nle_ctx->s_priest_piousness_buf)
 #include "mfndpos.h"
@@ -899,7 +899,7 @@ piousness(showneg, suffix)
 boolean showneg;
 const char *suffix;
 {
-    /* Cluster BA: piousness_buf (was `buf[32]`) migrated to nle_ctx_t */
+    /* Piousness_buf (was `buf[32]`) migrated to nle_ctx_t */
     const char *pio;
 
     /* note: piousness 20 matches MIN_QUEST_ALIGN (quest.h) */

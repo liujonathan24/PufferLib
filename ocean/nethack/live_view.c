@@ -124,6 +124,17 @@ static void bind_obs(Env *e)
     e->obs.inv_oclasses = e->inv_oclasses;
 }
 
+static long prev_score = 0;
+static int  prev_depth = 1;
+static int  visited_level = 0;
+static unsigned char visited[21 * 80 / 8 + 1];
+static float ep_return = 0.0f;
+static long ep_length  = 0;
+static long ep_valid   = 0;
+static long ep_illegal = 0;
+static long ep_tiles   = 0;
+static int  last_misc[3] = {0};
+
 static void render(Env *e, long step, int action, float reward)
 {
     fputs(ANSI_CLEAR, stdout);
@@ -133,6 +144,14 @@ static void render(Env *e, long step, int action, float reward)
            e->blstats[NLE_BL_HP], e->blstats[NLE_BL_HPMAX],
            e->blstats[NLE_BL_TIME], e->blstats[NLE_BL_DEPTH],
            e->blstats[NLE_BL_SCORE]);
+    /* User stats (matches training Log struct) */
+    printf("ep_return=%.2f  ep_len=%ld  depth=%ld  score=%ld  "
+           "valid=%ld  illegal=%ld  tiles=%ld  "
+           "misc=[%d,%d,%d]\n",
+           ep_return, ep_length, e->blstats[NLE_BL_DEPTH],
+           e->blstats[NLE_BL_SCORE],
+           ep_valid, ep_illegal, ep_tiles,
+           last_misc[0], last_misc[1], last_misc[2]);
     /* Message line */
     printf("msg: \"%.*s\"\n", 79, (char *) e->message);
     /* Chars grid w/ ANSI colors */
@@ -307,6 +326,11 @@ int main(int argc, char **argv)
         frame.tv_nsec = ns % 1000000000L;
     }
 
+    /* Render initial state before first input */
+    if (!no_render) {
+        render(&e, 0, 0, 0.0f);
+    }
+
     for (long t = 0; t < steps; t++) {
         int action;
         if (mode_interactive) {
@@ -323,9 +347,59 @@ int main(int argc, char **argv)
         }
         e.obs.action = action;
         e.ctx = fn_step(e.ctx, &e.obs);
+        /* Auto-drain --More-- / xwaitforspace so level transitions
+         * and multi-line messages don't leave the display stale. */
+        /* Capture misc flags before drain clears them */
+        if (e.obs.misc) {
+            last_misc[0] = e.obs.misc[0];
+            last_misc[1] = e.obs.misc[1];
+            last_misc[2] = e.obs.misc[2];
+        }
+        /* Auto-drain yn prompts (answer 'y') and --More-- (send space) */
+        for (int drain = 0; drain < 16; drain++) {
+            int is_yn = e.obs.misc && e.obs.misc[0];
+            int is_xwait = e.obs.misc && e.obs.misc[2];
+            if (!is_yn && !is_xwait) break;
+            e.obs.action = is_yn ? 'y' : ' ';
+            e.ctx = fn_step(e.ctx, &e.obs);
+            if (e.obs.done) break;
+        }
+        /* Track user stats (mirrors c_step reward shaping) */
+        long score = e.blstats[NLE_BL_SCORE];
+        float reward = 0.01f * (float)(score - prev_score);
+        int depth = (int)e.blstats[NLE_BL_DEPTH];
+        if (depth > prev_depth) reward += 10.0f * (float)(depth - prev_depth);
+        if (depth != visited_level) {
+            memset(visited, 0, sizeof(visited));
+            visited_level = depth;
+        }
+        int px = (int)e.blstats[NLE_BL_X];
+        int py = (int)e.blstats[NLE_BL_Y];
+        if (px >= 0 && px < 80 && py >= 0 && py < 21) {
+            int bit = py * 80 + px;
+            if (!(visited[bit >> 3] & (1 << (bit & 7)))) {
+                visited[bit >> 3] |= (1 << (bit & 7));
+                ep_tiles++;
+                reward += 0.1f;
+            }
+        }
+        int was_illegal = last_misc[0] || last_misc[1];
+        if (was_illegal) { ep_illegal++; reward += -0.1f; }
+        else ep_valid++;
+        ep_return += reward;
+        ep_length++;
+        if (!e.obs.done) {
+            prev_score = score;
+            prev_depth = depth;
+        }
+        if (e.obs.done) {
+            prev_score = 0; prev_depth = 1; visited_level = 0;
+            memset(visited, 0, sizeof(visited));
+            ep_return = 0; ep_length = 0;
+            ep_valid = 0; ep_illegal = 0; ep_tiles = 0;
+        }
         if (!no_render) {
-            float reward = 0; /* live_view doesn't compute shaped reward */
-            render(&e, t, action, reward);
+            render(&e, t + 1, action, reward);
         }
         if (e.obs.done) {
             printf("\n*** Env done at step %ld (how_done=%d) ***\n", t,

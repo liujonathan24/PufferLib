@@ -6,9 +6,9 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 4 — combat tick per-env (mthrowu.c statics). */
+/* Combat tick per-env (mthrowu.c statics). */
 #define mesg_given (current_nle_ctx->s_mesg_given)
-/* Cluster AX-fix-2: notonhead/target/archer per-env via nle_ctx_t.
+/* Notonhead/target/archer per-env via nle_ctx_t.
  * `target` and `archer` were file-local STATIC_OVL; original definitions
  * removed below. `notonhead` was an extern boolean (cross-file). */
 #define notonhead         (current_nle_ctx->s_notonhead)
@@ -36,9 +36,9 @@ STATIC_OVL NEARDATA const char *breathwep[] = {
     "strange breath #9"
 };
 
-/* (Cluster AU group 4: mesg_given migrated to current_nle_ctx->s_mesg_given
+/* (mesg_given migrated to current_nle_ctx->s_mesg_given
  * via macro at top of file; original `STATIC_VAR int mesg_given;` removed.)
- * (Cluster AX-fix-2: notonhead migrated; extern declaration removed.) */
+ * (notonhead migrated; extern declaration removed.) */
 
 /* hero is hit by something other than a monster */
 int
@@ -158,7 +158,7 @@ int x, y;
     return retvalu;
 }
 
-/* Cluster AX-fix-2: target/archer migrated to current_nle_ctx->s_mthrowu_*;
+/* Target/archer migrated to current_nle_ctx->s_mthrowu_*;
  * macros at top of file. Originals (STATIC_OVL struct monst *target/archer)
  * removed. The monster being shot at / the shooter. */
 

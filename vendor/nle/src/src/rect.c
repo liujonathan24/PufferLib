@@ -18,7 +18,7 @@ STATIC_DCL boolean FDECL(intersect, (NhRect *, NhRect *, NhRect *));
 #define XLIM 4
 #define YLIM 3
 
-/* Cluster AU group 8 — misc-2: rect[MAXRECT+1] / rect_cnt migrated to
+/* Misc-2: rect[MAXRECT+1] / rect_cnt migrated to
  * nle_ctx_t.s_rect / s_rect_cnt. s_rect is void* in nle.h (avoids dragging
  * rect.h into nle.h); we lazy-alloc here and cast. */
 static NhRect *_au8_get_rect(void)

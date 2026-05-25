@@ -11,7 +11,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 6 — file-static migrated to nle_ctx_t (note British
+/* File-static migrated to nle_ctx_t (note British
  * spelling 'propellor'). Defined mid-file in vanilla; macro is hoisted
  * to TU scope per the migration pattern. */
 #define propellor (current_nle_ctx->s_propellor)
@@ -505,7 +505,7 @@ static const int pwep[] = { HALBERD,       BARDICHE, SPETUM,
                                      BEC_DE_CORBIN, FAUCHARD, PARTISAN,
                                      LANCE };
 
-/* propellor migrated to current_nle_ctx->s_propellor (Cluster AU group 6). */
+/* propellor migrated to current_nle_ctx->s_propellor. */
 
 /* select a ranged weapon for the monster */
 struct obj *

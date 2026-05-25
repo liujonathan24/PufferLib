@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define resbuf (current_nle_ctx->s_artifact_resbuf)
 #include "artifact.h"
 #include "artilist.h"
@@ -15,14 +15,14 @@
  * nle_artilist_init() to allocate + seed it from artilist_baseline. */
 #define artilist (current_nle_ctx->s_artilist_p)
 
-/* Cluster AU group 5 — per-env artifact-existence + touch-blast flag.
+/* Per-env artifact-existence + touch-blast flag.
  * artiexist[] was the biggest cross-env leak source: env A creating
  * Excalibur set artiexist[ART_EXCALIBUR] for every env in the process,
  * so env B's universe could never generate Excalibur (or could re-
  * generate it after env A's slot was reused). Now per-env. */
 #define artiexist     (current_nle_ctx->s_artiexist)
 #define touch_blasted (current_nle_ctx->s_touch_blasted)
-/* Cluster BD-1: artidisco[] per-env via nle_ctx_t — was STATIC_OVL xchar
+/* Artidisco[] per-env via nle_ctx_t — was STATIC_OVL xchar
  * artidisco[NROFARTIFACTS] in this file; init_artifacts() memset()s on
  * every reset (racing with discover_artifact() on concurrent envs). */
 #define artidisco     (current_nle_ctx->s_artidisco)
@@ -30,7 +30,7 @@
 /* Catch drift in the generated NROFARTIFACTS — nle.h sizes
  * s_artiexist[35] as 1 + NROFARTIFACTS + 1 with NROFARTIFACTS == 33. */
 _Static_assert(NROFARTIFACTS == 33,
-               "Cluster AU group 5: s_artiexist[35] assumes NROFARTIFACTS == 33; "
+               "s_artiexist[35] assumes NROFARTIFACTS == 33; "
                "update vendor/nle/src/include/nle.h if onames.h changed.");
 
 /* Called once per env, from init_nle. */
@@ -52,7 +52,7 @@ nle_artilist_init(struct artifact **target)
  *        the contents, just the total size.
  */
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
 #define get_artifact(o) \
@@ -81,10 +81,10 @@ STATIC_DCL int FDECL(count_surround_traps, (int, int));
 #define FATAL_DAMAGE_MODIFIER 200
 
 /* coordinate effects from spec_dbon() with messages in artifact_hit() */
-STATIC_OVL int spec_dbon_applies = 0;
+#define spec_dbon_applies (current_nle_ctx->s_spec_dbon_applies)
 
-/* artiexist[] migrated to nle_ctx_t (Cluster AU group 5) — see macros above. */
-/* artidisco[] migrated to nle_ctx_t (Cluster BD-1) — see macros above. */
+/* artiexist[] migrated to nle_ctx_t — see macros above. */
+/* artidisco[] migrated to nle_ctx_t — see macros above. */
 
 STATIC_DCL void NDECL(hack_artifacts);
 STATIC_DCL boolean FDECL(attacks, (int, struct obj *));
@@ -672,7 +672,7 @@ long wp_mask;
 /* touch_artifact()'s return value isn't sufficient to tell whether it
    dished out damage, and tracking changes to u.uhp, u.mh, Lifesaved
    when trying to avoid second wounding is too cumbersome */
-/* touch_blasted migrated to nle_ctx_t (Cluster AU group 5) — macro above. */
+/* touch_blasted migrated to nle_ctx_t — macro above. */
 
 /*
  * creature (usually hero) tries to touch (pick up or wield) an artifact obj.
@@ -1917,7 +1917,7 @@ glow_verb(count, ingsfx)
 int count; /* 0 means blind rather than no applicable creatures */
 boolean ingsfx;
 {
-    /* Cluster BA: resbuf migrated to nle_ctx_t */
+    /* Resbuf migrated to nle_ctx_t */
 
     Strcpy(resbuf, glow_verbs[glow_strength(count)]);
     /* ing_suffix() will double the last consonant for all the words
@@ -2078,7 +2078,7 @@ void
 retouch_equipment(dropflag)
 int dropflag; /* 0==don't drop, 1==drop all, 2==drop weapon */
 {
-    /* Cluster AK: per-env recursion guard. */
+    /* Per-env recursion guard. */
     #define nesting (current_nle_ctx->s_artifact_nesting)
     struct obj *obj;
     boolean dropit, had_gloves = (uarmg != 0);
@@ -2143,7 +2143,7 @@ int dropflag; /* 0==don't drop, 1==drop all, 2==drop weapon */
         clear_bypasses(); /* reset upon final exit */
 }
 
-/* Cluster AJ: per-env (was __thread). Trap warning counter. */
+/* Per-env (was __thread). Trap warning counter. */
 #define mkot_trap_warn_count (current_nle_ctx->s_mkot_trap_warn_count)
 
 STATIC_OVL int

@@ -6,12 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define tnbuf (current_nle_ctx->s_trap_tnbuf)
 
-/* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
+/* File-static migrated to nle_ctx_t. */
 #define force_mintrap (current_nle_ctx->s_force_mintrap)
-/* Cluster AV-b1 — function-local static `recursive_mine` in dotrap()
+/* Function-local static `recursive_mine` in dotrap()
  * migrated to per-env nle_ctx_t field. */
 #define recursive_mine  (current_nle_ctx->s_dotrap_recursive_mine)
 
@@ -50,7 +50,7 @@ STATIC_DCL boolean FDECL(thitm, (int, struct monst *, struct obj *, int,
 STATIC_DCL void NDECL(maybe_finish_sokoban);
 
 /* mintrap() should take a flags argument, but for time being we use this */
-/* force_mintrap migrated to current_nle_ctx->s_force_mintrap (Cluster AU group 6). */
+/* force_mintrap migrated to current_nle_ctx->s_force_mintrap. */
 
 STATIC_VAR const char *const a_your[2] = { "a", "your" };
 STATIC_VAR const char *const A_Your[2] = { "A", "Your" };
@@ -1512,7 +1512,7 @@ unsigned trflags;
              * the ground, and you being affected again by the same
              * mine because it hasn't been deleted yet
              */
-            /* Cluster AV-b1: `static boolean recursive_mine = FALSE;`
+            /* `static boolean recursive_mine = FALSE;`
              * migrated to current_nle_ctx->s_dotrap_recursive_mine (calloc
              * zeroes the field = FALSE). See top-of-file #define. */
 
@@ -1579,7 +1579,7 @@ trapnote(trap, noprefix)
 struct trap *trap;
 boolean noprefix;
 {
-    /* Cluster BA: tnbuf migrated to nle_ctx_t */
+    /* Tnbuf migrated to nle_ctx_t */
     const char *tn,
         *tnnames[12] = { "C note",  "D flat", "D note",  "E flat",
                          "E note",  "F note", "F sharp", "G note",
@@ -1718,10 +1718,9 @@ struct trap *trap;
  * prevent them from vanishing if you are killed. They
  * will reappear at the launchplace in bones files.
  */
-static struct {
-    struct obj *obj;
-    xchar x, y;
-} launchplace;
+/* launchplace — per-env via nle_ctx_t fields. */
+struct launchplace_s { struct obj *obj; xchar x, y; };
+#define launchplace (*(struct launchplace_s *)&current_nle_ctx->s_launchplace_obj)
 
 STATIC_OVL void
 launch_drop_spot(obj, x, y)
@@ -3519,7 +3518,7 @@ struct obj *obj;
 /* context for water_damage(), managed by water_damage_chain();
    when more than one stack of potions of acid explode while processing
    a chain of objects, use alternate phrasing after the first message.
-   Cluster AX-fix-1+: migrated to per-env to stop multi-buffer race in
+   Migrated to per-env to stop multi-buffer race in
    water_damage_chain at trap.c:3695 (segfault at offset 0x34 was
    reading torn ctx_valid across pthreads). Struct defined here, storage
    in nle_ctx_t->s_acid_ctx (declared as opaque void* in nle.h to keep

@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/time.h>
-#include <sys/mman.h>  /* Cluster BE: munmap per-env arena in nle_end */
+#include <sys/mman.h>  /* munmap per-env arena in nle_end */
 
 #include <tmt.h>
 
@@ -190,7 +190,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* RNG state cleared by calloc; init_isaac64 will populate it via the
      * set_random() / init_random() chain during NetHack's early setup. */
 
-    /* Cluster AV-b1: function-local statics migrated to nle_ctx_t.
+    /* Function-local statics migrated to nle_ctx_t.
      * rn2_on_display_rng (non-ISAAC64 path) seeded its `static unsigned
      * seed = 1` at file scope; calloc gives 0 which would freeze the LCG,
      * so restore the original init here. recursive_mine/up start FALSE,
@@ -220,6 +220,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * initializers (decl.c). With calloc-zero'd nle_ctx_t, restore them. */
     nle->nle_moves = 1L;
     nle->nle_monstermoves = 1L;
+    /* Maze limits must be even (decl.c original: (COLNO-1)&~1, (ROWNO-1)&~1). */
+    nle->x_maze_max_v = (COLNO - 1) & ~1;
+    nle->y_maze_max_v = (ROWNO - 1) & ~1;
 
     /* Stage 5 Option-A: worn[] in worn.c can no longer have
      * `&uarm` etc. as compile-time initializers under __thread. Patch the
@@ -278,7 +281,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         nle->s_rndmonst_state_p = rndmonst_state_alloc();
         extern void nle_artilist_init(struct artifact **);
         nle_artilist_init(&nle->s_artilist_p);
-        /* Cluster AU group 5 — per-env quest msg index. */
+        /* Per-env quest msg index. */
         extern void nle_qtlist_alloc(struct qtlists **);
         nle_qtlist_alloc(&nle->s_qt_list_p);
     }
@@ -327,9 +330,9 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     nle->s7_doors_p         = calloc(DOORMAX, sizeof(coord));
     nle->s7_level_info_p    = calloc(MAXLINFO, sizeof(struct linfo));
     nle->s7_lastseentyp_p   = calloc(COLNO * ROWNO, sizeof(schar));
-    /* cluster V — bhitpos per-env. */
+    /* bhitpos per-env. */
     nle->bhitpos_p          = calloc(1, sizeof(coord));
-    /* Cluster AU group 6 — utrack[UTSZ=50] per-env (track.c). */
+    /* Utrack[UTSZ=50] per-env (track.c). */
     nle->s_utrack           = calloc(50, sizeof(coord));
     /* subrooms points into the rooms array (slot MAXNROFROOMS+1). */
     nle->s7_subrooms        = nle->s7_rooms_p + (MAXNROFROOMS + 1);
@@ -355,7 +358,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
     /* body-slot pointers (s9_uwep, s9_uarm, etc.) zero-init'd by calloc;
      * that matches the original decl.c NULL initializer. */
 
-    /* Cluster BJ: per-env `struct musable` (muse.c). Allocate via a small
+    /* Per-env `struct musable` (muse.c). Allocate via a small
      * helper so the struct definition stays local to muse.c — nle.c
      * doesn't need to see it. Bytes are zeroed (matches original
      * file-scope `static struct musable m;` zero-init). trapx/trapy live
@@ -369,7 +372,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
         }
     }
 
-    /* Cluster AU group 2 — non-zero initializers for migrated invent/
+    /* Non-zero initializers for migrated invent/
      * pickup file-statics. Only cached_pickinv_win needs init (was
      * `static winid cached_pickinv_win = WIN_ERR;` and WIN_ERR == -1,
      * not 0). The others (sortlootmode=0, this_type=0, invbuf=NULL,
@@ -378,7 +381,7 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * all match calloc-zero. */
     nle->s_cached_pickinv_win = WIN_ERR;
 
-    /* Cluster BC: per-env init of save/restore dispatch tables (saveprocs,
+    /* Per-env init of save/restore dispatch tables (saveprocs,
      * restoreprocs) and sfsaveinfo/sfrestinfo flag words. These were
      * process-global file-scope statics in save.c / restore.c / decl.c and
      * raced under N>=1024 OMP vecenv stepping, where one env's set_*_pref
@@ -783,7 +786,7 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
     /* stage 10' — tty window state migrated direct to nle_ctx_t. */
 }
 
-/* Cluster AW-full: the `flags` swap is retired.
+/* The `flags` swap is retired.
  *
  * flags / iflags / sysflags: all three now macro-redirect to
  * (*current_nle_ctx->X_ptr) in include/flag.h. Per-env storage is in
@@ -794,7 +797,7 @@ nle_dungeon_load_from(const struct nle_dungeon_save *s)
  * `&flags` would be `current_nle_ctx->flags_ptr` itself, so the memcpy
  * would corrupt rather than help. Removing is mandatory, not optional.)
  *
- * Cluster BK: nroom / nsubroom were the last NEARDATA __thread globals
+ * nroom / nsubroom were the last NEARDATA __thread globals
  * still being swap-copied per step. With the BK migration to per-env
  * macros over current_nle_ctx->s_nroom/s_nsubroom (renamed for macro
  * safety), the swap is now empty modulo dungeon_save baseline capture
@@ -821,7 +824,7 @@ nle_swap_in(nle_ctx_t *nle)
         if (nle_baseline && nle->dungeon_save)
             *(struct nle_dungeon_save *) nle->dungeon_save = *nle_baseline;
     }
-    /* Cluster BK — nroom/nsubroom no longer require a per-step swap;
+    /* Nroom/nsubroom no longer require a per-step swap;
      * they're now per-env macros over the same ctx field that this swap
      * used to copy in/out of. Drops two cache-line bounces per step. */
     if (nle->dungeon_save)
@@ -833,8 +836,8 @@ struct nle_dungeon_save *nle_baseline = NULL;
 static void
 nle_swap_out(nle_ctx_t *nle)
 {
-    /* Cluster BK — nroom/nsubroom writeback removed; both are now per-env
-     * macros (Cluster BK migration). The flags-memcpy that lived here is
+    /* Nroom/nsubroom writeback removed; both are now per-env
+     * macros (per-env migration). The flags-memcpy that lived here is
      * also long gone — flags is per-env via macro.
      *
      * dungeon_save is captured here on first call (nle_start path) so
@@ -938,8 +941,8 @@ nle_end(nle_ctx_t *nle)
     tmt_close(nle->vterminal);
 
     destroy_fcontext_stack(&nle->stack);
-    /* Cluster AW-full: nle_tls_loaded TLS cache retired; no clear needed. */
-    /* Cluster BE: release per-env bump arena mmap. The 64 MB virtual range
+    /* Nle_tls_loaded TLS cache retired; no clear needed. */
+    /* Release per-env bump arena mmap. The 64 MB virtual range
      * (mostly MAP_NORESERVE, only touched pages are resident) is freed
      * back to the kernel so long training runs that recycle envs don't
      * accumulate virtual address space. Unregister from the global arena

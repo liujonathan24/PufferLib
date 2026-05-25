@@ -6,9 +6,9 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h" /* for config.h+extern.h */
-#include "nle.h" /* current_nle_ctx — Cluster BA per-env return buffers */
+#include "nle.h" /* current_nle_ctx — per-env return buffers */
 
-/* Cluster BA: per-env return buffers. ing_suffix_buf was named `buf` in
+/* Per-env return buffers. ing_suffix_buf was named `buf` in
  * ing_suffix(); yyyymmddhhmmss_datestr was named `datestr` in
  * yyyymmddhhmmss(). Renamed to unique tags so the file-level macros don't
  * collide with the other locals/statics in this TU (esp. `buf` is used in
@@ -337,7 +337,7 @@ ing_suffix(s)
 const char *s;
 {
     static const char vowel[] = "aeiouwy";
-    /* Cluster BA: ing_suffix_buf (was `buf`) migrated to nle_ctx_t */
+    /* Ing_suffix_buf (was `buf`) migrated to nle_ctx_t */
     char onoff[10];
     char *p;
 
@@ -430,7 +430,7 @@ char *
 visctrl(c)
 char c;
 {
-    /* Cluster BA: visctrl_bufs (pool) + visctrl_nbuf (rotating idx, was
+    /* Visctrl_bufs (pool) + visctrl_nbuf (rotating idx, was
      * `nbuf`) migrated to nle_ctx_t. Both fields are zero-initialized in
      * fresh ctxs, matching the original `static int nbuf = 0;` semantics. */
     register int i = 0;
@@ -1016,7 +1016,7 @@ yyyymmddhhmmss(date)
 time_t date;
 {
     long datenum;
-    /* Cluster BA: yyyymmddhhmmss_datestr (was `datestr`) migrated to nle_ctx_t */
+    /* Yyyymmddhhmmss_datestr (was `datestr`) migrated to nle_ctx_t */
     struct tm *lt;
 
     if (date == 0)

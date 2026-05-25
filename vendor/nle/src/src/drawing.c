@@ -20,7 +20,9 @@
 
 struct symsetentry symset[NUM_GRAPHICS];
 
+#ifdef NLE_OBJECTS_GLOBAL
 int currentgraphics = 0;
+#endif
 
 nhsym showsyms[SYM_MAX] = DUMMY; /* symbols to be displayed */
 nhsym primary_syms[SYM_MAX] = DUMMY;   /* primary symbols          */

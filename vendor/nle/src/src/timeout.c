@@ -1693,7 +1693,7 @@ STATIC_DCL boolean FDECL(mon_is_local, (struct monst *));
 STATIC_DCL boolean FDECL(timer_is_local, (timer_element *));
 STATIC_DCL int FDECL(maybe_write_timer, (int, int, BOOLEAN_P));
 
-/* cluster AB: timer_base + timer_id moved to nle_ctx_t (per-env, not
+/* timer_base + timer_id moved to nle_ctx_t (per-env, not
  * per-thread). __thread was wrong for vecenv: env A's pending timers
  * leak into env B's run_timers and panic on "object lost" because the
  * object belongs to env A's level which is currently swapped out. */

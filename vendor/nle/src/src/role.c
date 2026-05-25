@@ -1424,7 +1424,9 @@ clearrolefilter()
 #define BP_ROLE 3
 #define NUM_BP 4
 
-STATIC_VAR char pa[NUM_BP], post_attribs;
+/* pa, post_attribs — migrated to nle_ctx_t */
+#define pa             (current_nle_ctx->s_role_pa)
+#define post_attribs   (current_nle_ctx->s_role_post_attribs)
 
 STATIC_OVL char *
 promptsep(buf, num_post_attribs)

@@ -6,13 +6,13 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env return buffers for two functions that previously held
+/* Per-env return buffers for two functions that previously held
  * function-local `static char buf[…]`. Renamed to unique tags so the
  * file-level macros don't collide with the many other `buf` locals here. */
 #define dxdy_buf      (current_nle_ctx->s_do_name_dxdy_buf)
 #define rndmonnam_buf (current_nle_ctx->s_do_name_rndmonnam_buf)
 
-/* Cluster AU group 7 — per-env replacements for three do_name.c file-statics. */
+/* Per-env replacements for three do_name.c file-statics. */
 #define gloc_filter_map                      (current_nle_ctx->s_gloc_filter_map)
 #define gloc_filter_floodfill_match_glyph    (current_nle_ctx->s_gloc_filter_floodfill_match_glyph)
 #define via_naming                           (current_nle_ctx->s_via_naming)
@@ -49,9 +49,25 @@ nextmbuf()
 /* function for getpos() to highlight desired map locations.
  * parameter value 0 = initialize, 1 = highlight, 2 = done
  */
-static void FDECL((*getpos_hilitefunc), (int)) = (void FDECL((*), (int))) 0;
-static boolean FDECL((*getpos_getvalid), (int, int)) =
-                                           (boolean FDECL((*), (int, int))) 0;
+/* Per-env do_name.c state. getpos_hilitefunc / getpos_getvalid / screen_fmt. */
+struct nle_do_name_state {
+    void (*_getpos_hilitefunc)(int);
+    boolean (*_getpos_getvalid)(int, int);
+    char _screen_fmt[16];
+};
+static struct nle_do_name_state *
+nle_do_name(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_do_name_state *s = (struct nle_do_name_state *) current_nle_ctx->s_do_name_state;
+    if (!s) {
+        s = (struct nle_do_name_state *) calloc(1, sizeof(struct nle_do_name_state));
+        current_nle_ctx->s_do_name_state = s;
+    }
+    return s;
+}
+#define getpos_hilitefunc  (nle_do_name()->_getpos_hilitefunc)
+#define getpos_getvalid    (nle_do_name()->_getpos_getvalid)
 
 void
 getpos_sethilite(gp_hilitef, gp_getvalidf)
@@ -256,14 +272,14 @@ const void *b;
      && glyph_to_cmap(levl[(x)][(y)].glyph) == S_stone  \
      && !levl[(x)][(y)].seenv)
 
-/* gloc_filter_map moved into nle_ctx_t (Cluster AU group 7) — macro above.
+/* gloc_filter_map moved into nle_ctx_t — macro above.
  * Default is NULL via calloc; matches original (struct opvar *) 0. */
 
 #define GLOC_SAME_AREA(x,y)                                     \
     (isok((x), (y))                                             \
      && (selection_getpoint((x),(y), gloc_filter_map)))
 
-/* gloc_filter_floodfill_match_glyph moved into nle_ctx_t (Cluster AU group 7). */
+/* gloc_filter_floodfill_match_glyph moved into nle_ctx_t. */
 
 int
 gloc_filter_classify_glyph(glyph)
@@ -472,7 +488,7 @@ dxdy_to_dist_descr(dx, dy, fulldir)
 int dx, dy;
 boolean fulldir;
 {
-    /* Cluster BA: dxdy_buf (was `buf`) migrated to nle_ctx_t */
+    /* Dxdy_buf (was `buf`) migrated to nle_ctx_t */
     int dst;
 
     if (!dx && !dy) {
@@ -510,7 +526,7 @@ coord_desc(x, y, outbuf, cmode)
 int x, y;
 char *outbuf, cmode;
 {
-    static char screen_fmt[16]; /* [12] suffices: "[%02d,%02d]" */
+    char *screen_fmt = nle_do_name()->_screen_fmt; /* per-env */
     int dx, dy;
 
     outbuf[0] = '\0';
@@ -1208,7 +1224,7 @@ do_mname()
         (void) christen_monst(mtmp, buf);
 }
 
-/* via_naming moved into nle_ctx_t (Cluster AU group 7) — macro above.
+/* via_naming moved into nle_ctx_t — macro above.
  * Default 0 via calloc. */
 
 /*
@@ -2056,7 +2072,7 @@ char *
 rndmonnam(code)
 char *code;
 {
-    /* Cluster BA: rndmonnam_buf (was `buf`) migrated to nle_ctx_t */
+    /* Rndmonnam_buf (was `buf`) migrated to nle_ctx_t */
     char *mname;
     int name;
 #define BOGUSMONSIZE 100 /* arbitrary */

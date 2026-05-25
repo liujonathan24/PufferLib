@@ -81,7 +81,7 @@ register const char *pref;
 /* manage a pool of BUFSZ buffers, so callers don't have to.
  * obufs migrated to nle_ctx_t (per-env heap, NUMOBUF*BUFSZ bytes). */
 #define obufs ((char (*)[BUFSZ]) current_nle_ctx->s_obufs_p)
-/* Cluster AO: obufidx + distantname per-env. */
+/* Obufidx + distantname per-env. */
 struct nle_objnam_state {
     int _obufidx;
     int _distantname;
@@ -256,7 +256,7 @@ struct obj *obj;
 /* used by distant_name() to pass extra information to xname_flags();
    it would be much cleaner if this were a parameter, but that would
    require all of the xname() and doname() calls to be modified */
-/* Cluster AO: distantname is per-env via nle_objnam_state (above). */
+/* Distantname is per-env via nle_objnam_state (above). */
 
 /* Give the name of an object seen at a distance.  Unlike xname/doname,
  * we don't want to set dknown if it's not set already.

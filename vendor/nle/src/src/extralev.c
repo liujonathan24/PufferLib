@@ -14,14 +14,14 @@ struct rogueroom {
     xchar dx, dy;
     boolean real;
     uchar doortable;
-    int nle_room_idx; /* renamed from `nroom` for Cluster BK macro safety */
+    int nle_room_idx; /* renamed from `nroom` for macro safety */
 };
 #define UP 1
 #define DOWN 2
 #define LEFT 4
 #define RIGHT 8
 
-/* Cluster AU group 8 — misc-2: r[3][3] migrated to nle_ctx_t.s_extralev_r.
+/* Misc-2: r[3][3] migrated to nle_ctx_t.s_extralev_r.
  * Lazy heap alloc; calloc zero-init matches the original BSS-zeroed static. */
 static struct rogueroom (*_au8_get_r(void))[3]
 {

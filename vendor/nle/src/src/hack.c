@@ -6,12 +6,12 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-/* Cluster BA: per-env return buffer for in_rooms() (renamed from `buf` so
+/* Per-env return buffer for in_rooms() (renamed from `buf` so
  * the file-level macro doesn't collide with the dozens of other `buf`
  * locals in this TU). */
 #define in_rooms_buf (current_nle_ctx->s_hack_in_rooms_buf)
 
-/* Cluster AU group 7 — per-env replacements for two hack.c file-statics.
+/* Per-env replacements for two hack.c file-statics.
  * tmp_anything is heap-allocated (forward-decl'd as `union any` in nle.h);
  * the helper below allocates on first use and is idempotent per env. */
 static union any *
@@ -24,7 +24,7 @@ nle_get_tmp_anything(void)
 }
 #define tmp_anything  (*nle_get_tmp_anything())
 #define wc            (current_nle_ctx->s_wc)
-/* Cluster AV-b2 — function-local statics promoted to nle_ctx_t fields. */
+/* Function-local statics promoted to nle_ctx_t fields. */
 #define lastmovetime    (current_nle_ctx->s_moverock_lastmovetime)
 #define skates          (current_nle_ctx->s_domove_skates)
 #define spotloc_x       (current_nle_ctx->s_spoteffects_spotloc_x)
@@ -54,7 +54,7 @@ STATIC_DCL void NDECL(domove_core);
 #define TRAVP_GUESS  1
 #define TRAVP_VALID  2
 
-/* tmp_anything moved into nle_ctx_t (Cluster AU group 7) — macro above. */
+/* tmp_anything moved into nle_ctx_t — macro above. */
 
 anything *
 uint_to_any(ui)
@@ -320,7 +320,7 @@ moverock()
             }
 
             {
-                /* Cluster AV-b2: lastmovetime moved to nle_ctx_t
+                /* Lastmovetime moved to nle_ctx_t
                  * (s_moverock_lastmovetime). See macro at top of file. */
  dopush:
                 if (!u.usteed) {
@@ -1444,7 +1444,7 @@ domove_core()
         /* check slippery ice */
         on_ice = !Levitation && is_ice(u.ux, u.uy);
         if (on_ice) {
-            /* Cluster AV-b2: skates moved to nle_ctx_t (s_domove_skates).
+            /* Skates moved to nle_ctx_t (s_domove_skates).
              * See macro at top of file. */
 
             if (!skates)
@@ -2170,10 +2170,10 @@ void
 spoteffects(pick)
 boolean pick;
 {
-    /* Cluster AK: inspoteffects was a process-wide recursion guard
+    /* Inspoteffects was a process-wide recursion guard
      * (function-local static); moved to nle_ctx_t. */
     #define inspoteffects (current_nle_ctx->s_inspoteffects)
-    /* Cluster AV-b2: spotloc/spotterrain/spottrap/spottraptyp moved
+    /* Spotloc/spotterrain/spottrap/spottraptyp moved
      * to nle_ctx_t. See macros at top of file. spotloc was 'coord' (x,y);
      * accessed as spotloc_x / spotloc_y per-component. */
 
@@ -2337,7 +2337,7 @@ in_rooms(x, y, typewanted)
 register xchar x, y;
 register int typewanted;
 {
-    /* Cluster BA: in_rooms_buf (was `buf`) migrated to nle_ctx_t */
+    /* In_rooms_buf (was `buf`) migrated to nle_ctx_t */
     char rno, *ptr = &in_rooms_buf[4];
     int typefound, min_x, min_y, max_x, max_y_offset, step;
     register struct rm *lev;
@@ -3099,7 +3099,7 @@ weight_cap()
     return (int) carrcap;
 }
 
-/* wc moved into nle_ctx_t (Cluster AU group 7) — macro above.
+/* wc moved into nle_ctx_t — macro above.
  * inv_weight()'s last weight_cap() value; valid after call to inv_weight(). */
 
 /* returns how far beyond the normal capacity the player is currently. */

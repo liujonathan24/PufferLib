@@ -10,17 +10,17 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 2 — pickup.c per-env state. Four file-scope statics. */
+/* Pickup.c per-env state. Four file-scope statics. */
 #define current_container   (current_nle_ctx->s_current_container)
 #define abort_looting       (current_nle_ctx->s_abort_looting)
 #define val_for_n_or_more   (current_nle_ctx->s_val_for_n_or_more)
 #define valid_menu_classes  (current_nle_ctx->s_valid_menu_classes)
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define costly        (current_nle_ctx->s_autopick_costly)
 #define oldcap        (current_nle_ctx->s_encumber_msg_oldcap)
-/* Cluster BB: add_valid_menu_class vmc_count accumulator -> per-env. */
+/* Add_valid_menu_class vmc_count accumulator -> per-env. */
 #define vmc_count     (current_nle_ctx->s_vmc_count)
-/* Cluster BG: per-action filter flags (set/cleared on each query_objlist
+/* Per-action filter flags (set/cleared on each query_objlist
  * pass). Per-env via nle_ctx_t to avoid cross-env races under OMP. */
 #define class_filter  (current_nle_ctx->s_class_filter)
 #define bucx_filter   (current_nle_ctx->s_bucx_filter)
@@ -75,7 +75,7 @@ STATIC_DCL void FDECL(tipcontainer, (struct obj *));
    in_container() and out_container() from askchain() and use_container().
    Also used by menu_loot() and container_gone(). */
 /* current_container / abort_looting migrated to nle_ctx_t->
- * s_current_container / s_abort_looting (Cluster AU group 2). */
+ * s_current_container / s_abort_looting. */
 #define Icebox (current_container->otyp == ICE_BOX)
 
 static const char
@@ -333,8 +333,7 @@ boolean picked_some;
 }
 
 /* Value set by query_objlist() for n_or_more(). */
-/* val_for_n_or_more migrated to nle_ctx_t->s_val_for_n_or_more
- * (Cluster AU group 2). */
+/* val_for_n_or_more migrated to nle_ctx_t->s_val_for_n_or_more. */
 
 /* query_objlist callback: return TRUE if obj's count is >= reference value */
 STATIC_OVL boolean
@@ -348,13 +347,13 @@ struct obj *obj;
 
 /* list of valid menu classes for query_objlist() and allow_category callback
    (with room for all object classes, 'u'npaid, BUCX, and terminator) */
-/* valid_menu_classes migrated to nle_ctx_t->s_valid_menu_classes
- * (Cluster AU group 2). The size literal in nle.h (24) matches
+/* valid_menu_classes migrated to nle_ctx_t->s_valid_menu_classes.
+ * The size literal in nle.h (24) matches
  * MAXOCLASSES(18) + 1 + 4 + 1; the _Static_assert catches future
  * MAXOCLASSES drift. */
 _Static_assert(MAXOCLASSES + 1 + 4 + 1 == 24,
                "MAXOCLASSES changed; update s_valid_menu_classes size in nle.h");
-/* Cluster BG: class_filter/bucx_filter/shop_filter migrated to nle_ctx_t
+/* Class_filter/bucx_filter/shop_filter migrated to nle_ctx_t
  * via macros above. */
 
 /* check valid_menu_classes[] for an entry; also used by askchain() */
@@ -369,7 +368,7 @@ void
 add_valid_menu_class(c)
 int c;
 {
-    /* Cluster BB: vmc_count migrated to current_nle_ctx->s_vmc_count. */
+    /* Vmc_count migrated to current_nle_ctx->s_vmc_count. */
 
     if (c == 0) { /* reset */
         vmc_count = 0;
@@ -759,7 +758,7 @@ struct obj *otmp;
 boolean calc_costly;
 {
     struct autopickup_exception *ape;
-    /* Cluster AV-b4: costly migrated to nle_ctx_t */
+    /* Costly migrated to nle_ctx_t */
     const char *otypes = flags.pickup_types;
     boolean pickit;
 
@@ -1631,7 +1630,7 @@ struct obj *otmp;
 int
 encumber_msg()
 {
-    /* Cluster AV-b4: oldcap migrated to nle_ctx_t (UNENCUMBERED == 0, zero-init OK) */
+    /* Oldcap migrated to nle_ctx_t (UNENCUMBERED == 0, zero-init OK) */
     int newcap = near_capacity();
 
     if (oldcap < newcap) {

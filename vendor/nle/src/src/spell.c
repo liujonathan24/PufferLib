@@ -1438,7 +1438,7 @@ static const char *spl_sortchoices[NUM_SPELL_SORTBY] = {
     /* a menu choice rather than a sort choice */
     "reassign casting letters to retain current order",
 };
-/* Cluster AP Part 2: per-env spell sort state. Were __thread. */
+/* Per-env spell sort state. Were __thread. */
 #define spl_sortmode  (current_nle_ctx->s_spl_sortmode)
 #define spl_orderindx (current_nle_ctx->s_spl_orderindx)
 

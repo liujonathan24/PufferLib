@@ -5,13 +5,13 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env scratch array — colbump is written/read across
+/* Per-env scratch array — colbump is written/read across
  * the vision_recalc body and bracketed by zero-fills at function entry
  * and exit, so per-env storage matches the original lifetime. */
 #define colbump (current_nle_ctx->s_vision_colbump)
 #include <stdlib.h> /* calloc */
 
-/* Cluster AU group 7 — close_dy/far_dy are arrays of pointers into the
+/* Close_dy/far_dy are arrays of pointers into the
  * generated close_table[]/far_table[] vis_tab.h tables. Per-env storage
  * lives on nle_ctx_t as void * (size depends on CLOSE_MAX_BC_DY /
  * FAR_MAX_BC_DY which come from the generated header — not visible to
@@ -88,7 +88,7 @@ char circle_start[] = {
 /*------ global variables ------*/
 
 /* viz_array is already a per-env macro in vision.h (stage 8'). Migrate
- * viz_rmin/viz_rmax similarly. cluster AD. */
+ * viz_rmin/viz_rmax similarly. */
 #define viz_rmin  (current_nle_ctx->s_viz_rmin)
 #define viz_rmax  (current_nle_ctx->s_viz_rmax)
 
@@ -531,7 +531,7 @@ int control;
     register struct rm *lev; /* pointer to current pos */
     struct rm *flev; /* pointer to position in "front" of current pos */
     extern unsigned char seenv_matrix[3][3]; /* from display.c */
-    /* Cluster BA: colbump migrated to nle_ctx_t */
+    /* Colbump migrated to nle_ctx_t */
     unsigned char *sv;                       /* ptr to seen angle bits */
     int oldseenv;                            /* previous seenv value */
 
@@ -1113,7 +1113,7 @@ int row, col;
 /*
  * Variables local to both Algorithms C and D.
  */
-/* Cluster AA: file-scope statics moved per-env to nle_ctx_t. */
+/* File-scope statics moved per-env to nle_ctx_t. */
 #define start_row  (current_nle_ctx->s_vis_start_row)
 #define start_col  (current_nle_ctx->s_vis_start_col)
 #define step       (current_nle_ctx->s_vis_step)
@@ -1123,7 +1123,7 @@ int row, col;
 #define vis_func   (current_nle_ctx->s_vis_func)
 #define varg       (current_nle_ctx->s_vis_varg)
 
-/* Cluster AL: per-env vision recursion-depth guard. Legitimate
+/* Per-env vision recursion-depth guard. Legitimate
  * left_side/right_side recursion is bounded by ROWNO=21. If we exceed
  * 64 we know we're looping. The volatile cast prevents the compiler
  * from optimizing the guard away based on dataflow analysis of the
@@ -1632,8 +1632,8 @@ cleardone:
  */
 #include "vis_tab.h"
 
-/* 3D table pointers moved into nle_ctx_t.{s_close_dy,s_far_dy}
- * (Cluster AU group 7). Allocated lazily in view_init() per env. */
+/* 3D table pointers moved into nle_ctx_t.{s_close_dy,s_far_dy}.
+ * Allocated lazily in view_init() per env. */
 
 STATIC_DCL void FDECL(right_side,  (int, int, int, int, int,
                                     int, int, char *));
@@ -1650,7 +1650,7 @@ view_init()
 {
     int i;
 
-    /* Cluster AU group 7 — allocate per-env close_dy/far_dy on demand.
+    /* Allocate per-env close_dy/far_dy on demand.
      * Re-entry on a re-init is safe: free + alloc keeps tables fresh in
      * case vis_tab.h is ever regenerated with new sizes. */
     if (current_nle_ctx->s_close_dy)
@@ -1774,7 +1774,7 @@ char *limits;       /* points at range limit for current row, or NULL */
     char *row_max = NULL; /* right most */
     int lim_max;          /* right most limit of circle */
 
-    /* Cluster AL: bail on pathological recursion. Depth is reset to 0
+    /* Bail on pathological recursion. Depth is reset to 0
      * at every view_from() entry, so 64 covers ROWNO=21 plus generous
      * branching. Returning early may leave one tick's vision frame
      * slightly stale, but keeps the env alive instead of hanging. */
@@ -1813,7 +1813,7 @@ char *limits;       /* points at range limit for current row, or NULL */
      * change the above assignment so that left and not left_shadow is the
      * variable that gets the shadow.
      */
-    /* Cluster AL: bound the while loop too — corrupted right_ptrs can
+    /* Bound the while loop too — corrupted right_ptrs can
      * cause loc_right to not progress, spinning the loop. COLNO=79 is the
      * legitimate max; 256 covers it generously. */
     int _iter = 0;
@@ -2067,7 +2067,7 @@ char *limits;
     char *row_max = NULL; /* right most */
     int lim_min;
 
-    /* Cluster AL: vecenv safety bail (see right_side). */
+    /* Vecenv safety bail (see right_side). */
     if (vision_recur_depth >= VISION_RECUR_LIMIT) return;
     vision_recur_depth++;
 
@@ -2091,7 +2091,7 @@ char *limits;
     /* This value could be illegal. */
     right_shadow = close_shadow(FROM_LEFT, row, cb_row, cb_col);
 
-    /* Cluster AL: loop iteration cap (see right_side). */
+    /* Loop iteration cap (see right_side). */
     int _iter = 0;
     while (right >= left_mark) {
         if (++_iter > 256) {
@@ -2274,7 +2274,7 @@ genericptr_t arg;
     int nrow, left, right, left_row, right_row;
     char *limits;
 
-    /* Cluster AL: reset recursion guard for this view_from call. */
+    /* Reset recursion guard for this view_from call. */
     vision_recur_depth = 0;
 
     /* Set globals for near_shadow(), far_shadow(), etc. to use. */
@@ -2748,7 +2748,7 @@ genericptr_t arg;
     int right;      /* the right-most visible column */
     char *limits;   /* range limit for next row */
 
-    /* Cluster AL: reset recursion guard for this view_from call (alg C path). */
+    /* Reset recursion guard for this view_from call (alg C path). */
     vision_recur_depth = 0;
 
     /* Set globals for q?_path(), left_side(), and right_side() to use. */

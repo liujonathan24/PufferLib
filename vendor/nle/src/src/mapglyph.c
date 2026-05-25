@@ -5,7 +5,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define encbuf (current_nle_ctx->s_mapglyph_encbuf)
 #if defined(TTY_GRAPHICS)
 #include "wintty.h" /* for prototype of has_color() only */
@@ -261,7 +261,7 @@ char *
 encglyph(glyph)
 int glyph;
 {
-    /* Cluster BA: encbuf migrated to nle_ctx_t */
+    /* Encbuf migrated to nle_ctx_t */
 
     Sprintf(encbuf, "\\G%04X%04X", context.rndencode, glyph);
     return encbuf;

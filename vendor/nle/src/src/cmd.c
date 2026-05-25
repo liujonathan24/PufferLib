@@ -8,7 +8,7 @@
 #include "lev.h"
 #include "func_tab.h"
 
-/* Cluster AU group 7 — per-env replacements for two cmd.c file-statics.
+/* Per-env replacements for two cmd.c file-statics.
  * clicklook_cc is heap-allocated via nle_get_clicklook_cc() (forward-decl'd
  * as `struct nhcoord` in nle.h); first-use idempotent init per env. */
 static struct nhcoord *
@@ -21,6 +21,38 @@ nle_get_clicklook_cc(void)
 }
 #define alt_esc       (current_nle_ctx->s_alt_esc)
 #define clicklook_cc  (*nle_get_clicklook_cc())
+
+/* Per-env cmd.c function-local statics. */
+struct nle_cmd_state {
+    int   _last_multi;
+    struct ext_func_tab *_back_dir_cmd[8];
+    boolean _backed_dir_cmd;
+    char  _cmd[4];
+    char  _in_line[80 /* COLNO */];
+    char  _key2cmdbuf[48];
+    unsigned _randomkey_i;
+};
+static struct nle_cmd_state *
+nle_cmd(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_cmd_state *s = (struct nle_cmd_state *) current_nle_ctx->s_cmd_state;
+    if (!s) {
+        s = (struct nle_cmd_state *) calloc(1, sizeof(struct nle_cmd_state));
+        current_nle_ctx->s_cmd_state = s;
+    }
+    return s;
+}
+#define last_multi    (nle_cmd()->_last_multi)
+#define back_dir_cmd  (nle_cmd()->_back_dir_cmd)
+#define backed_dir_cmd (nle_cmd()->_backed_dir_cmd)
+/* Note: the `cmd` static in click_to_cmd() is renamed to `click_cmd` to avoid
+ * colliding with the `cmd` parameter in rhack(). Bare uses in click_to_cmd()
+ * are manually rewritten to `click_cmd`. */
+#define click_cmd     (nle_cmd()->_cmd)
+#define in_line       (nle_cmd()->_in_line)
+#define key2cmdbuf    (nle_cmd()->_key2cmdbuf)
+#define randomkey_i   (nle_cmd()->_randomkey_i)
 
 /* Macros for meta and ctrl modifiers:
  *   M and C return the meta/ctrl code for the given character;
@@ -41,7 +73,7 @@ nle_get_clicklook_cc(void)
 #define unctrl(c) ((c) <= C('z') ? (0x60 | (c)) : (c))
 #define unmeta(c) (0x7f & (c))
 
-/* alt_esc moved into nle_ctx_t (Cluster AU group 7) — macro above. */
+/* alt_esc moved into nle_ctx_t — macro above. */
 
 /* Cmd — migrated to nle_ctx_t (per-env). */
 
@@ -142,7 +174,7 @@ extern int NDECL(dozap);              /**/
 extern int NDECL(doorganize);         /**/
 #endif /* DUMB */
 
-static int NDECL((*timed_occ_fn));
+#define timed_occ_fn (current_nle_ctx->timed_occ_fn_v)
 
 STATIC_PTR int NDECL(dosuspend_core);
 STATIC_PTR int NDECL(dosh_core);
@@ -218,7 +250,7 @@ STATIC_DCL void FDECL(show_direction_keys, (winid, CHAR_P, BOOLEAN_P));
 STATIC_DCL boolean FDECL(help_dir, (CHAR_P, int, const char *));
 
 static const char *readchar_queue = "";
-/* clicklook_cc moved into nle_ctx_t (Cluster AU group 7) — macro above. */
+/* clicklook_cc moved into nle_ctx_t — macro above. */
 /* for rejecting attempts to use wizard mode commands */
 static const char unavailcmd[] = "Unavailable command '%s'.";
 /* for rejecting #if !SHELL, !SUSPEND */
@@ -289,7 +321,7 @@ STATIC_DCL char NDECL(popch);
  * direction), and the input prompt is not shown.  Also, while in_doagain is
  * TRUE, no keystrokes can be saved into the saveq.
  */
-/* Cluster AP: per-env key-input queues. Were plain statics (process-global);
+/* Per-env key-input queues. Were plain statics (process-global);
  * concurrent OMP envs on the same thread could interleave input replay. */
 #define BSIZE 20
 #define pushq  (current_nle_ctx->s_pushq)
@@ -1631,7 +1663,7 @@ doterrain(VOID_ARGS)
 }
 
 /* -enlightenment and conduct- */
-/* Cluster AP: per-env. en_win was a plain static (process-global winid);
+/* Per-env. en_win was a plain static (process-global winid);
  * concurrent envs could alias the same window on game-over/conduct display.
  * en_via_menu was __thread; OMP cross-thread TLS hazard. */
 #define en_win       ((winid) current_nle_ctx->s_en_win)
@@ -3613,7 +3645,7 @@ const char *
 key2extcmddesc(key)
 uchar key;
 {
-    static char key2cmdbuf[48];
+    /* key2cmdbuf — migrated to nle_cmd_state (per-env). */
     const struct movcmd *mov;
     int k, c;
     uchar M_5 = (uchar) M('5'), M_0 = (uchar) M('0');
@@ -4530,11 +4562,10 @@ boolean initial;
     static const int ylist[] = {
         'y', 'Y', C('y'), M('y'), M('Y'), M(C('y'))
     };
-    static struct ext_func_tab *back_dir_cmd[8];
+    /* back_dir_cmd, backed_dir_cmd — migrated to nle_cmd_state (per-env). */
     const struct ext_func_tab *cmdtmp;
     boolean flagtemp;
     int c, i, updated = 0;
-    static boolean backed_dir_cmd = FALSE;
 
     if (initial) {
         updated = 1;
@@ -4658,7 +4689,7 @@ int NDECL((*cmd_func));
 char
 randomkey()
 {
-    static unsigned i = 0;
+    /* i — migrated to nle_cmd_state as randomkey_i (per-env). */
     char c;
 
     switch (rn2(16)) {
@@ -4684,7 +4715,7 @@ randomkey()
         c = (char) rn1('Z' - 'A' + 1, 'A');
         break;
     case 8:
-        c = extcmdlist[i++ % SIZE(extcmdlist)].key;
+        c = extcmdlist[randomkey_i++ % SIZE(extcmdlist)].key;
         break;
     case 9:
         c = '#';
@@ -5605,7 +5636,7 @@ boolean doit;
 }
 
 
-static NEARDATA int last_multi;
+/* last_multi — migrated to nle_cmd_state (per-env). */
 
 /*
  * convert a MAP window position into a movecmd
@@ -5615,14 +5646,14 @@ click_to_cmd(x, y, mod)
 int x, y, mod;
 {
     int dir;
-    static char cmd[4];
-    cmd[1] = 0;
+    /* cmd — migrated to nle_cmd_state as click_cmd (per-env). */
+    click_cmd[1] = 0;
 
     if (iflags.clicklook && mod == CLICK_2) {
         clicklook_cc.x = x;
         clicklook_cc.y = y;
-        cmd[0] = Cmd.spkeys[NHKF_CLICKLOOK];
-        return cmd;
+        click_cmd[0] = Cmd.spkeys[NHKF_CLICKLOOK];
+        return click_cmd;
     }
 
     x -= u.ux;
@@ -5634,43 +5665,43 @@ int x, y, mod;
         } else {
             u.tx = u.ux + x;
             u.ty = u.uy + y;
-            cmd[0] = Cmd.spkeys[NHKF_TRAVEL];
-            return cmd;
+            click_cmd[0] = Cmd.spkeys[NHKF_TRAVEL];
+            return click_cmd;
         }
 
         if (x == 0 && y == 0) {
             if (iflags.herecmd_menu) {
-                cmd[0] = here_cmd_menu(FALSE);
-                return cmd;
+                click_cmd[0] = here_cmd_menu(FALSE);
+                return click_cmd;
             }
 
             /* here */
             if (IS_FOUNTAIN(levl[u.ux][u.uy].typ)
                 || IS_SINK(levl[u.ux][u.uy].typ)) {
-                cmd[0] = cmd_from_func(mod == CLICK_1 ? dodrink : dodip);
-                return cmd;
+                click_cmd[0] = cmd_from_func(mod == CLICK_1 ? dodrink : dodip);
+                return click_cmd;
             } else if (IS_THRONE(levl[u.ux][u.uy].typ)) {
-                cmd[0] = cmd_from_func(dosit);
-                return cmd;
+                click_cmd[0] = cmd_from_func(dosit);
+                return click_cmd;
             } else if ((u.ux == xupstair && u.uy == yupstair)
                        || (u.ux == sstairs.sx && u.uy == sstairs.sy
                            && sstairs.up)
                        || (u.ux == xupladder && u.uy == yupladder)) {
-                cmd[0] = cmd_from_func(doup);
-                return cmd;
+                click_cmd[0] = cmd_from_func(doup);
+                return click_cmd;
             } else if ((u.ux == xdnstair && u.uy == ydnstair)
                        || (u.ux == sstairs.sx && u.uy == sstairs.sy
                            && !sstairs.up)
                        || (u.ux == xdnladder && u.uy == ydnladder)) {
-                cmd[0] = cmd_from_func(dodown);
-                return cmd;
+                click_cmd[0] = cmd_from_func(dodown);
+                return click_cmd;
             } else if (OBJ_AT(u.ux, u.uy)) {
-                cmd[0] = cmd_from_func(Is_container(level.objs[u.ux][u.uy])
+                click_cmd[0] = cmd_from_func(Is_container(level.objs[u.ux][u.uy])
                                        ? doloot : dopickup);
-                return cmd;
+                return click_cmd;
             } else {
-                cmd[0] = cmd_from_func(donull); /* just rest */
-                return cmd;
+                click_cmd[0] = cmd_from_func(donull); /* just rest */
+                return click_cmd;
             }
         }
 
@@ -5680,31 +5711,31 @@ int x, y, mod;
 
         if (!m_at(u.ux + x, u.uy + y)
             && !test_move(u.ux, u.uy, x, y, TEST_MOVE)) {
-            cmd[1] = Cmd.dirchars[dir];
-            cmd[2] = '\0';
+            click_cmd[1] = Cmd.dirchars[dir];
+            click_cmd[2] = '\0';
             if (iflags.herecmd_menu) {
-                cmd[0] = there_cmd_menu(FALSE, u.ux + x, u.uy + y);
-                if (cmd[0] == '\0')
-                    cmd[1] = '\0';
-                return cmd;
+                click_cmd[0] = there_cmd_menu(FALSE, u.ux + x, u.uy + y);
+                if (click_cmd[0] == '\0')
+                    click_cmd[1] = '\0';
+                return click_cmd;
             }
 
             if (IS_DOOR(levl[u.ux + x][u.uy + y].typ)) {
                 /* slight assistance to the player: choose kick/open for them
                  */
                 if (levl[u.ux + x][u.uy + y].doormask & D_LOCKED) {
-                    cmd[0] = cmd_from_func(dokick);
-                    return cmd;
+                    click_cmd[0] = cmd_from_func(dokick);
+                    return click_cmd;
                 }
                 if (levl[u.ux + x][u.uy + y].doormask & D_CLOSED) {
-                    cmd[0] = cmd_from_func(doopen);
-                    return cmd;
+                    click_cmd[0] = cmd_from_func(doopen);
+                    return click_cmd;
                 }
             }
             if (levl[u.ux + x][u.uy + y].typ <= SCORR) {
-                cmd[0] = cmd_from_func(dosearch);
-                cmd[1] = 0;
-                return cmd;
+                click_cmd[0] = cmd_from_func(dosearch);
+                click_cmd[1] = 0;
+                return click_cmd;
             }
         }
     } else {
@@ -5722,23 +5753,23 @@ int x, y, mod;
 
         if (x == 0 && y == 0) {
             /* map click on player to "rest" command */
-            cmd[0] = cmd_from_func(donull);
-            return cmd;
+            click_cmd[0] = cmd_from_func(donull);
+            return click_cmd;
         }
         dir = xytod(x, y);
     }
 
     /* move, attack, etc. */
-    cmd[1] = 0;
+    click_cmd[1] = 0;
     if (mod == CLICK_1) {
-        cmd[0] = Cmd.dirchars[dir];
+        click_cmd[0] = Cmd.dirchars[dir];
     } else {
-        cmd[0] = (Cmd.num_pad
+        click_cmd[0] = (Cmd.num_pad
                      ? M(Cmd.dirchars[dir])
                      : (Cmd.dirchars[dir] - 'a' + 'A')); /* run command */
     }
 
-    return cmd;
+    return click_cmd;
 }
 
 char
@@ -5806,11 +5837,7 @@ boolean historical; /* whether to include in message history: True => yes */
 STATIC_OVL char *
 parse()
 {
-#ifdef LINT /* static char in_line[COLNO]; */
-    char in_line[COLNO];
-#else
-    static char in_line[COLNO];
-#endif
+    /* in_line — migrated to nle_cmd_state (per-env). */
     register int foo;
 
     iflags.in_parse = TRUE;

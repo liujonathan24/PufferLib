@@ -1,34 +1,25 @@
 # NetHack env — setup
 
-The NetHack environment binds to `libnethack.so` from facebookresearch/NLE
-0.9.1 via dlopen-per-instance (so each env owns its own copy of NetHack's
-many globals). The `.so` and game-data are large/binary and not committed
-to the repo. To populate `vendor/nle/` on a fresh checkout:
+## Prerequisites
+
+`vendor/nle/` contains the vendored NLE source tree with our
+`nle_ctx_t` per-env refactor. It builds from source — no pip install
+of NLE is needed.
+
+## Build libnethack.so from source
 
 ```bash
-# Requires `nle==0.9.1` already installed (e.g. via `uv pip install nle`).
-# Locate the wheel install and its sdist (the sdist has the public headers).
-WHEEL=$(python -c "import nle, os; print(os.path.dirname(nle.__file__))")
-SDIST=$(find $HOME -path "*/sdists-v9/pypi/nle/*/src/include/nleobs.h" -print -quit 2>/dev/null)
-SDIST=${SDIST%/include/nleobs.h}
-
-mkdir -p vendor/nle/include vendor/nle/lib
-cp $WHEEL/libnethack.so vendor/nle/lib/
-cp $SDIST/include/nleobs.h vendor/nle/include/
-ln -sfn $WHEEL/nethackdir vendor/nle/nethackdir
+make -C vendor/nle/src/build nethack -j16
 ```
 
-The committed header `vendor/nle/include/nleobs.h` is provided so the
-above only needs to overwrite if there's a version mismatch.
+This produces `vendor/nle/src/build/libnethack.so`.
 
-## Build
+## Build the PufferLib extension
 
 Standalone (debug, no Python):
 ```bash
 bash build.sh nethack --local              # with sanitizers
 bash build.sh nethack --fast               # release
-EXTRA_CFLAGS="-DNETHACK_PROFILE=1" \
-  bash build.sh nethack --fast              # release with profiler
 ```
 
 Python `_C.so` (needs `intel/2024.2` for libiomp5):
@@ -49,17 +40,50 @@ Available flags: `NETHACK_USE_{CHARS, COLORS, SPECIALS, GLYPHS, BLSTATS, MESSAGE
 Fields with `=0` are not allocated, not bound (NLE skips writing them),
 and not packed into the observation tensor.
 
-## Standalone subcommands
+## Build standalone tools
 
 ```bash
-./nethack [N]                               # interactive driver, N steps with rendering
-./nethack record OUT.txt N [random|wait]    # ASCII trajectory log
-./nethack bench N [random|wait]             # quick throughput bench
-./nethack resets N                          # reset-only bench
-./nethack profile OUT.json N [random|wait]  # full profiler dump (needs PROFILE=1 build)
+# Live viewer
+clang -O2 -Wall -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
+    ocean/nethack/live_view.c -o live_view \
+    -L./vendor/nle/src/build -lnethack \
+    -Wl,-rpath=$PWD/vendor/nle/src/build \
+    -ldl -lpthread -lm
+
+# OMP throughput bench
+clang -O2 -Wall -fopenmp -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
+    ocean/nethack/multi_threaded.c -o multi_threaded \
+    -L./vendor/nle/src/build -lnethack \
+    -Wl,-rpath=$PWD/vendor/nle/src/build \
+    -ldl -lpthread -lm
+
+# Determinism harness (built automatically by verify_determinism_all.sh)
+clang -O2 -Wall -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
+    ocean/nethack/verify_determinism.c -o verify_determinism \
+    -L./vendor/nle/src/build -lnethack \
+    -Wl,-rpath=$PWD/vendor/nle/src/build \
+    -ldl -lpthread -lm
 ```
 
-## Experiments
+## Environment variables
 
-`experiments/exp_NNN_*/` — one folder per profiling experiment, each
-contains `NOTES.md` (hypothesis, result, decision) plus the raw JSON.
+| Variable | Default | Purpose |
+|---|---|---|
+| `NETHACKDIR` | `./vendor/nle/nethackdir` | Path to NetHack data files |
+| `USER` | (from env) | Required by NetHack for save file naming |
+
+## Quick smoke test
+
+```bash
+# Determinism (should print "16/16 OK, all OK")
+USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
+    bash ocean/nethack/verify_determinism_all.sh
+
+# Watch one env run
+USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
+    ./live_view --random --steps 200
+
+# OMP env-loop ceiling
+USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
+    ./multi_threaded 1024 3000 128
+```

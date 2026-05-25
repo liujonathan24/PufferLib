@@ -9,7 +9,7 @@
 #include "nle.h" /* current_nle_ctx for migrated globals */
 #include "lev.h"
 
-/* Cluster AU group 7 — per-env replacement for vanq_sortmode (end.c).
+/* Per-env replacement for vanq_sortmode (end.c).
  * VANQ_MLVL_MNDX == 0, so the calloc default matches the original
  * static initializer. */
 #define vanq_sortmode (current_nle_ctx->s_vanq_sortmode)
@@ -37,16 +37,45 @@ struct valuable_data {
     int typ;
 };
 
-static struct valuable_data
-    gems[LAST_GEM + 1 - FIRST_GEM + 1], /* 1 extra for glass */
-    amulets[LAST_AMULET + 1 - FIRST_AMULET];
-
-static struct val_list {
+/* gems, amulets, valuables — migrated to nle_end_state (runtime init) */
+struct val_list {
     struct valuable_data *list;
     int size;
-} valuables[] = { { gems, sizeof gems / sizeof *gems },
-                  { amulets, sizeof amulets / sizeof *amulets },
-                  { 0, 0 } };
+};
+
+/* Per-env end.c state. Extends earlier Schroedingers_cat migration with
+ * aborting, gems[], amulets[], valuables[]. */
+struct nle_end_state {
+    boolean _Schroedingers_cat;
+    boolean _aborting;
+    struct valuable_data _gems[LAST_GEM + 1 - FIRST_GEM + 1];
+    struct valuable_data _amulets[LAST_AMULET + 1 - FIRST_AMULET];
+    struct val_list _valuables[3]; /* {gems,sz}, {amulets,sz}, {0,0} */
+    boolean _valuables_inited;
+};
+static struct nle_end_state *nle_end_st(void) {
+    if (!current_nle_ctx) return NULL;
+    struct nle_end_state *s = (struct nle_end_state *) current_nle_ctx->s_end_state;
+    if (!s) {
+        s = (struct nle_end_state *) calloc(1, sizeof(struct nle_end_state));
+        current_nle_ctx->s_end_state = s;
+    }
+    if (!s->_valuables_inited) {
+        s->_valuables[0].list = s->_gems;
+        s->_valuables[0].size = (int)(sizeof s->_gems / sizeof *s->_gems);
+        s->_valuables[1].list = s->_amulets;
+        s->_valuables[1].size = (int)(sizeof s->_amulets / sizeof *s->_amulets);
+        s->_valuables[2].list = 0;
+        s->_valuables[2].size = 0;
+        s->_valuables_inited = TRUE;
+    }
+    return s;
+}
+#define Schroedingers_cat (nle_end_st()->_Schroedingers_cat)
+#define aborting          (nle_end_st()->_aborting)
+#define gems              (nle_end_st()->_gems)
+#define amulets           (nle_end_st()->_amulets)
+#define valuables         (nle_end_st()->_valuables)
 
 #ifndef NO_SIGNAL
 STATIC_PTR void FDECL(done_intr, (int));
@@ -193,7 +222,6 @@ NH_abort()
 {
     int gdb_prio = SYSOPT_PANICTRACE_GDB;
     int libc_prio = SYSOPT_PANICTRACE_LIBC;
-    static boolean aborting = FALSE;
 
     if (aborting)
         return;
@@ -315,19 +343,6 @@ static const char *ends[] = {
     "panicked", "were tricked", "quit",
     "escaped", "ascended"
 };
-
-/* Cluster AO: per-env. Was static __thread boolean. */
-struct nle_end_state { boolean _Schroedingers_cat; };
-static struct nle_end_state *nle_end_st(void) {
-    if (!current_nle_ctx) return NULL;
-    struct nle_end_state *s = (struct nle_end_state *) current_nle_ctx->s_end_state;
-    if (!s) {
-        s = (struct nle_end_state *) calloc(1, sizeof(struct nle_end_state));
-        current_nle_ctx->s_end_state = s;
-    }
-    return s;
-}
-#define Schroedingers_cat (nle_end_st()->_Schroedingers_cat)
 
 /*ARGSUSED*/
 void
@@ -503,7 +518,7 @@ int how;
         if (has_mname(mtmp))
             Sprintf(eos(buf), " of %s", MNAME(mtmp));
     } else if (mtmp->isshk && has_eshk(mtmp)) {
-        /* Cluster AV-a: has_eshk() guard. dealloc_mextra() can null
+        /* Has_eshk() guard. dealloc_mextra() can null
          * mtmp->mextra while leaving mtmp->isshk set; in that case
          * shkname()/shkname_is_pname() would dereference ESHK(mtmp)
          * (= mtmp->mextra->eshk) and segfault. Fall through to the
@@ -1237,7 +1252,7 @@ int how;
  * entire death path. The fast (non-dying) step path is unaffected.
  * Death happens at most once per env, so the contention is tiny.
  */
-/* cluster AC: removed pthread mutex around death path. It was added for
+/* Removed pthread mutex around death path. It was added for
  * the old multithreaded mode; under single-thread vecenv it caused
  * deadlock when an env yielded mid-death (via a --more-- prompt or
  * dump output) — the mutex was never unlocked, so the NEXT env's
@@ -1800,7 +1815,7 @@ static const char *vanqorders[NUM_VANQ_ORDER_MODES] = {
     "by count, high to low, by internal index within tied count",
     "by count, low to high, by internal index within tied count",
 };
-/* vanq_sortmode moved into nle_ctx_t (Cluster AU group 7) — macro above. */
+/* vanq_sortmode moved into nle_ctx_t — macro above. */
 
 STATIC_PTR int CFDECLSPEC
 vanqsort_cmp(vptr1, vptr2)

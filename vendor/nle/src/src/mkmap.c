@@ -6,7 +6,7 @@
 #include "nle.h" /* current_nle_ctx */
 #include "sp_lev.h"
 
-/* Cluster AU group 3 — file-statics migrated to nle_ctx_t for per-env
+/* File-statics migrated to nle_ctx_t for per-env
  * isolation. `new_locations` is alloc()'d at the top of mkmap() and
  * free()'d at the bottom, so the ctx pointer holds the in-progress
  * buffer for exactly this env's mkmap call. */
@@ -29,9 +29,13 @@ STATIC_DCL void FDECL(finish_map,
 STATIC_DCL void FDECL(remove_room, (unsigned));
 void FDECL(mkmap, (lev_init *));
 
-/* new_locations moved to nle_ctx_t (Cluster AU group 3) */
-int min_rx, max_rx, min_ry, max_ry; /* rectangle bounds for regions */
-/* n_loc_filled moved to nle_ctx_t (Cluster AU group 3) */
+/* new_locations moved to nle_ctx_t */
+/* min_rx, max_rx, min_ry, max_ry — migrated to nle_ctx_t. */
+#define min_rx (current_nle_ctx->min_rx_v)
+#define max_rx (current_nle_ctx->max_rx_v)
+#define min_ry (current_nle_ctx->min_ry_v)
+#define max_ry (current_nle_ctx->max_ry_v)
+/* n_loc_filled moved to nle_ctx_t */
 
 STATIC_OVL void
 init_map(bg_typ)

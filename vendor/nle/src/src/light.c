@@ -43,7 +43,7 @@
 #define LSF_SHOW 0x1        /* display the light source */
 #define LSF_NEEDS_FIXUP 0x2 /* need oid fixup */
 
-/* cluster AG: per-env (not __thread) light source list. Single-threaded
+/* Per-env (not __thread) light source list. Single-threaded
  * vecenv: env A's lights leaked into env B's vision_recalc → vision
  * recursion would read stale light data → corruption. */
 #define light_base (*(light_source **)&current_nle_ctx->s_light_base)

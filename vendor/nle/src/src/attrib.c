@@ -7,7 +7,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster BA: per-env return buffer (renamed from `buf` to avoid collisions
+/* Per-env return buffer (renamed from `buf` to avoid collisions
  * with the many local `buf` variables elsewhere in this TU). */
 #define from_what_buf (current_nle_ctx->s_attrib_from_what_buf)
 #include <ctype.h>
@@ -838,7 +838,7 @@ char *
 from_what(propidx)
 int propidx; /* special cases can have negative values */
 {
-    /* Cluster BA: from_what_buf (was `buf`) migrated to nle_ctx_t */
+    /* From_what_buf (was `buf`) migrated to nle_ctx_t */
 
     from_what_buf[0] = '\0';
     /*

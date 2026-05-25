@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster AU group 6 — file-statics migrated to nle_ctx_t. */
+/* File-statics migrated to nle_ctx_t. */
 #define obj_zapped  (current_nle_ctx->s_obj_zapped)
 #define poly_zapped (current_nle_ctx->s_poly_zapped)
 
@@ -17,10 +17,10 @@
  */
 #define MAGIC_COOKIE 1000
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
-/* Cluster BF: m_using per-env (was extern from muse.c). */
+/* M_using per-env (was extern from muse.c). */
 #define m_using (current_nle_ctx->s_m_using)
 
 STATIC_DCL void FDECL(polyuse, (struct obj *, int, int));

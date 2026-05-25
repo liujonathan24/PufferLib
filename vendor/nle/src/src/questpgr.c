@@ -10,7 +10,7 @@
 
 #include "qtext.h"
 
-/* Cluster AU group 5 — per-env quest pager state. Was four file-statics
+/* Per-env quest pager state. Was four file-statics
  * (cvt_buf, nambuf, qt_list, msg_file) racing across envs; now all four
  * route through current_nle_ctx. qt_list is a heap-allocated struct
  * qtlists pointed to by s_qt_list_p; nle.c allocates it in init_nle via
@@ -38,7 +38,7 @@ nle_qtlist_alloc(struct qtlists **target)
 #include "wintty.h"
 #endif
 
-/* Cluster BK — lev_message migrated to per-env nle_ctx_t. Was a NON-static
+/* Lev_message migrated to per-env nle_ctx_t. Was a NON-static
  * cross-TU heap pointer freed here in deliver_splev_message; env B's level
  * entry could free() env A's still-pending lev_message → dangling UAF.
  * Routing the macro to the same per-env slot as sp_lev.c eliminates the

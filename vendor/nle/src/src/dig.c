@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 6 — file-static migrated to nle_ctx_t. */
+/* File-static migrated to nle_ctx_t. */
 #define did_dig_msg (current_nle_ctx->s_did_dig_msg)
 
 STATIC_DCL boolean NDECL(rm_waslit);

@@ -6,11 +6,11 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define ate_brains    (current_nle_ctx->s_maybe_cannibal_ate_brains)
 #define save_hs       (current_nle_ctx->s_newuhs_save_hs)
 #define saved_hs      (current_nle_ctx->s_newuhs_saved_hs)
-/* Cluster AX-fix-2: file-statics msgbuf / force_save_hs per-env via nle_ctx_t.
+/* File-statics msgbuf / force_save_hs per-env via nle_ctx_t.
  * Originals (char msgbuf[BUFSZ]; STATIC_OVL boolean force_save_hs = FALSE;)
  * removed below. The Static_assert guards the literal-256 sizing in nle.h. */
 #define msgbuf            (current_nle_ctx->s_eat_msgbuf)
@@ -51,7 +51,7 @@ STATIC_DCL const char *FDECL(foodword, (struct obj *));
 STATIC_DCL int FDECL(tin_variety, (struct obj *, BOOLEAN_P));
 STATIC_DCL boolean FDECL(maybe_cannibal, (int, BOOLEAN_P));
 
-/* Cluster AX-fix-2: char msgbuf[BUFSZ] migrated to current_nle_ctx->s_eat_msgbuf via macro at top of file. */
+/* Char msgbuf[BUFSZ] migrated to current_nle_ctx->s_eat_msgbuf via macro at top of file. */
 
 /* also used to see if you're allowed to eat cats and dogs */
 #define CANNIBAL_ALLOWED() (Role_if(PM_CAVEMAN) || Race_if(PM_ORC))
@@ -81,7 +81,7 @@ STATIC_OVL NEARDATA const char allobj[] = {
     BALL_CLASS,   CHAIN_CLASS,  SPBOOK_CLASS, 0
 };
 
-/* Cluster AX-fix-2: STATIC_OVL boolean force_save_hs migrated to
+/* STATIC_OVL boolean force_save_hs migrated to
  * current_nle_ctx->s_eat_force_save_hs via macro at top of file. */
 
 /* see hunger states in hack.h - texts used on bottom line */
@@ -161,7 +161,7 @@ static const struct {
                 { "", 0, 0, 0 } };
 #define TTSZ SIZE(tintxts)
 
-/* Cluster AP Part 2: per-env. Was __thread; OMP coroutine-resume hazard. */
+/* Per-env. Was __thread; OMP coroutine-resume hazard. */
 #define eatmbuf (current_nle_ctx->s_eatmbuf)
 
 /* called after mimicing is over */
@@ -657,7 +657,7 @@ maybe_cannibal(pm, allowmsg)
 int pm;
 boolean allowmsg;
 {
-    /* Cluster AV-b4: ate_brains migrated to nle_ctx_t */
+    /* Ate_brains migrated to nle_ctx_t */
     struct permonst *fptr = &mons[pm]; /* food type */
 
     /* when poly'd into a mind flayer, multiple tentacle hits in one
@@ -2943,7 +2943,7 @@ newuhs(incr)
 boolean incr;
 {
     unsigned newhs;
-    /* Cluster AV-b4: save_hs, saved_hs migrated to nle_ctx_t */
+    /* Save_hs, saved_hs migrated to nle_ctx_t */
     int h = u.uhunger;
 
     newhs = (h > 1000)

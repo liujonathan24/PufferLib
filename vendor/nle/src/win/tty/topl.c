@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-/* Cluster BB: function-local statics in tty_getmsghistory/tty_putmsghistory.
+/* Function-local statics in tty_getmsghistory/tty_putmsghistory.
  * These are reached from the RL frontend via winrl.cc:rl_get/putmsghistory,
  * so they race across envs sharing one libnethack.so. Migrate to per-env. */
 #define nxtidx           (current_nle_ctx->s_topl_nxtidx)
@@ -547,8 +547,8 @@ char def;
     return q;
 }
 
-/* Cluster AN: per-env snapshot buffer for message history.
- * Was `static __thread char **snapshot_mesgs = 0`. Shared by
+/* Per-env snapshot buffer for message history.
+ * Was `static char **snapshot_mesgs = 0`. Shared by
  * tty_getmsghistory() and tty_putmsghistory() across coroutine yields,
  * so it must live in the env, not the calling thread. */
 struct nle_topl_state {
@@ -651,7 +651,7 @@ char *
 tty_getmsghistory(init)
 boolean init;
 {
-    /* Cluster BB: nxtidx migrated to current_nle_ctx->s_topl_nxtidx. */
+    /* nxtidx migrated to current_nle_ctx->s_topl_nxtidx. */
     char *nextmesg;
     char *result = 0;
 
@@ -693,7 +693,7 @@ tty_putmsghistory(msg, restoring_msghist)
 const char *msg;
 boolean restoring_msghist;
 {
-    /* Cluster BB: initd migrated to current_nle_ctx->s_topl_initd; ctx is
+    /* initd migrated to current_nle_ctx->s_topl_initd; ctx is
      * calloc-zero'd which gives FALSE on first call (matches original init). */
     int idx;
 #ifdef DUMPLOG

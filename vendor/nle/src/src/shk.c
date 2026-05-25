@@ -6,10 +6,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated flags */
 
-/* Cluster BA: per-env return buffer */
+/* Per-env return buffer */
 #define empty_shops (current_nle_ctx->s_shk_empty_shops)
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define pickmovetime  (current_nle_ctx->s_pick_pick_pickmovetime)
 
 #define PAY_SOME 2
@@ -32,7 +32,7 @@ STATIC_DCL void FDECL(kops_gone, (BOOLEAN_P));
 
 extern const struct shclass shtypes[]; /* defined in shknam.c */
 
-/* Cluster AT-A: per-env shop/billing state. Five file-statics
+/* Per-env shop/billing state. Five file-statics
  * (followmsg, repo, sell_response, sell_how, auto_credit) raced across
  * PufferLib envs at N>=256, producing the dopay() segfault on a
  * corrupted struct monst* (0xffffffff00000034 pattern). Definitions and
@@ -194,7 +194,7 @@ next_shkp(shkp, withbill)
 register struct monst *shkp;
 register boolean withbill;
 {
-    /* Cluster AV-a fix: also require has_eshk(). dealloc_mextra() clears
+    /* Fix: also require has_eshk(). dealloc_mextra() clears
      * mtmp->mextra to NULL but does NOT clear mtmp->isshk — the bytes of
      * the old mextra survive (arena no-op free) but the pointer is nulled,
      * and shopkeeper death paths don't always clear rooms[].resident.
@@ -581,7 +581,7 @@ char *enterstring;
     register int rt;
     register struct monst *shkp;
     register struct eshk *eshkp;
-    /* Cluster BA: empty_shops migrated to nle_ctx_t */
+    /* Empty_shops migrated to nle_ctx_t */
 
     if (!*enterstring)
         return;
@@ -732,7 +732,7 @@ struct obj *obj;
         return;
     shkp = shop_keeper(*u.ushops);
     if (shkp && inhishop(shkp)) {
-        /* Cluster AV-b4: pickmovetime migrated to nle_ctx_t */
+        /* Pickmovetime migrated to nle_ctx_t */
 
         /* if you bring a sack of N picks into a shop to sell,
            don't repeat this N times when they're taken out */
@@ -3041,7 +3041,7 @@ boolean peaceful, silent;
     return value;
 }
 
-/* Cluster AT-A migration macros (struct + nle_shk() defined at file top).
+/* per-env migration macros (struct + nle_shk() defined at file top).
  * Note: `repo` macro is at the original static-def site (~line 1691). */
 #define followmsg     (nle_shk()->_followmsg)
 #define sell_response (nle_shk()->_sell_response)

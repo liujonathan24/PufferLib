@@ -124,14 +124,14 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
 
-/* Cluster AU group 7 — per-env replacements for display.c file-statics.
+/* Per-env replacements for display.c file-statics.
  * `nul_gbuf` was a struct initializer with a function-macro call
  * (cmap_to_glyph(S_stone)) in its initializer list. It's effectively const
  * after first use, so we store the two fields on nle_ctx_t and reconstruct
  * the struct at the one use site. Initialized in init_nle (nle.c). */
 #define bad_count  (current_nle_ctx->s_bad_count)
 
-/* Cluster AV-b3 — function-local statics promoted to per-env ctx fields.
+/* Function-local statics promoted to per-env ctx fields.
  * tmp_at() animation list head + cls()/flush_screen() recursion guards.
  * All calloc-zero initial (NULL/FALSE/0); no explicit init in init_nle. */
 #define tglyph          (current_nle_ctx->s_tmp_at_tglyph)
@@ -139,7 +139,7 @@
 #define flushing        (current_nle_ctx->s_flush_screen_flushing)
 #define delay_flushing  (current_nle_ctx->s_flush_screen_delay_flushing)
 
-/* Cluster BG: function-local statics in swallowed()/under_water()/
+/* Function-local statics in swallowed()/under_water()/
  * under_ground() — per-env via nle_ctx_t. Names prefixed by function to
  * avoid collisions (each function had its own lastx/lasty/dela). */
 #define swallowed_lastx    (current_nle_ctx->s_swallowed_lastx)
@@ -979,19 +979,37 @@ int x, y;
 
 #define TMP_AT_MAX_GLYPHS (COLNO * 2)
 
-static struct tmp_glyph {
+struct tmp_glyph {
     coord saved[TMP_AT_MAX_GLYPHS]; /* previously updated positions */
     int sidx;                       /* index of next unused slot in saved[] */
     int style; /* either DISP_BEAM or DISP_FLASH or DISP_ALWAYS */
     int glyph; /* glyph to use when printing */
     struct tmp_glyph *prev;
-} tgfirst;
+};
+
+/* Per-env display.c state. tgfirst (the first/base tmp_glyph slot)
+ * bundled into one struct, lazily allocated via nle_display(). */
+struct nle_display_state {
+    struct tmp_glyph _tgfirst;
+};
+static struct nle_display_state *
+nle_display(void)
+{
+    if (!current_nle_ctx) return NULL;
+    struct nle_display_state *s = (struct nle_display_state *) current_nle_ctx->s_display_state;
+    if (!s) {
+        s = (struct nle_display_state *) calloc(1, sizeof(struct nle_display_state));
+        current_nle_ctx->s_display_state = s;
+    }
+    return s;
+}
+#define tgfirst (nle_display()->_tgfirst)
 
 void
 tmp_at(x, y)
 int x, y;
 {
-    /* Cluster AV-b3: tglyph promoted to current_nle_ctx->s_tmp_at_tglyph */
+    /* Tglyph promoted to current_nle_ctx->s_tmp_at_tglyph */
     struct tmp_glyph *tmp;
 
     switch (x) {
@@ -1150,7 +1168,7 @@ void
 swallowed(first)
 int first;
 {
-    /* Cluster BG: lastx/lasty -> swallowed_lastx/swallowed_lasty (per-env). */
+    /* Lastx/lasty -> swallowed_lastx/swallowed_lasty (per-env). */
     int swallower, left_ok, rght_ok;
 
     if (first) {
@@ -1214,7 +1232,7 @@ void
 under_water(mode)
 int mode;
 {
-    /* Cluster BG: lastx/lasty/dela -> under_water_* (per-env). */
+    /* Lastx/lasty/dela -> under_water_* (per-env). */
     register int x, y;
 
     /* swallowing has a higher precedence than under water */
@@ -1264,7 +1282,7 @@ void
 under_ground(mode)
 int mode;
 {
-    /* Cluster BG: dela -> under_ground_dela (per-env). */
+    /* Dela -> under_ground_dela (per-env). */
 
     /* swallowing has a higher precedence than under ground */
     if (u.uswallow)
@@ -1611,8 +1629,8 @@ int x, y, glyph;
         }                              \
     }
 
-/* nul_gbuf moved into nle_ctx_t.{s_nul_gbuf_new,s_nul_gbuf_glyph}
- * (Cluster AU group 7). Initialized in init_nle (nle.c) since
+/* nul_gbuf moved into nle_ctx_t.{s_nul_gbuf_new,s_nul_gbuf_glyph}.
+ * Initialized in init_nle (nle.c) since
  * cmap_to_glyph(S_stone) is a constant expression but requires display.h
  * macros, which init_nle has via hack.h. */
 /*
@@ -1625,7 +1643,7 @@ clear_glyph_buffer()
     register gbuf_entry *gptr;
     gbuf_entry nul_gbuf;
 
-    /* Cluster AU group 7 — lazy init for the per-env nul_gbuf payload.
+    /* Lazy init for the per-env nul_gbuf payload.
      * Original was a static struct initializer using cmap_to_glyph(S_stone).
      * GLYPH_CMAP_OFF is always nonzero, so a 0 glyph means uninitialized. */
     if (current_nle_ctx->s_nul_gbuf_glyph == 0)
@@ -1658,7 +1676,7 @@ int start, stop, y;
 void
 cls()
 {
-    /* Cluster AV-b3: in_cls promoted to current_nle_ctx->s_cls_in_cls */
+    /* In_cls promoted to current_nle_ctx->s_cls_in_cls */
 
     if (in_cls)
         return;
@@ -1681,7 +1699,7 @@ int cursor_on_u;
     /* Prevent infinite loops on errors:
      *      flush_screen->print_glyph->impossible->pline->flush_screen
      */
-    /* Cluster AV-b3: flushing/delay_flushing promoted to ctx fields */
+    /* Flushing/delay_flushing promoted to ctx fields */
     register int x, y;
 
     if (cursor_on_u == -1)
@@ -1999,7 +2017,7 @@ xchar x, y;
 static const char *FDECL(type_to_name, (int));
 static void FDECL(error4, (int, int, int, int, int, int));
 
-/* bad_count moved into nle_ctx_t.s_bad_count[36] (Cluster AU group 7).
+/* bad_count moved into nle_ctx_t.s_bad_count[36].
  * MAX_TYPE == 36 enforced below; macro above redirects to current_nle_ctx. */
 _Static_assert(MAX_TYPE == 36,
                "nle_ctx_t.s_bad_count size must match MAX_TYPE");

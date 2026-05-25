@@ -6,7 +6,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx, refactor */
 
-/* Cluster AV-b2 — function-local statics promoted to nle_ctx_t fields. */
+/* Function-local statics promoted to nle_ctx_t fields. */
 #define petname_used    (current_nle_ctx->s_makedog_petname_used)
 
 STATIC_DCL int NDECL(pet_type);
@@ -159,7 +159,7 @@ makedog()
     register struct obj *otmp;
     const char *petname;
     int pettype;
-    /* Cluster AV-b2: petname_used moved to nle_ctx_t
+    /* Petname_used moved to nle_ctx_t
      * (s_makedog_petname_used). See macro at top of file. */
 
     if (preferred_pet == 'n')

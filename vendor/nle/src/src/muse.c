@@ -9,10 +9,10 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AU group 4 — combat tick per-env (muse.c statics). */
+/* Combat tick per-env (muse.c statics). */
 #define zap_oseen (current_nle_ctx->s_zap_oseen)
 
-/* Cluster BF: m_using per-env (was NON-static cross-TU boolean,
+/* M_using per-env (was NON-static cross-TU boolean,
  * extern in zap.c). nle_ctx_t-zeroed field defaults to FALSE. */
 #define m_using (current_nle_ctx->s_m_using)
 
@@ -44,7 +44,7 @@ STATIC_DCL boolean FDECL(muse_unslime, (struct monst *, struct obj *,
 STATIC_DCL int FDECL(cures_sliming, (struct monst *, struct obj *));
 STATIC_DCL boolean FDECL(green_mon, (struct monst *));
 
-/* Cluster BJ: musable / trapx / trapy migrated to nle_ctx_t to remove
+/* Musable / trapx / trapy migrated to nle_ctx_t to remove
  * the last per-monster-turn process-global writes in muse.c. The
  * `struct musable` type stays file-local; its storage lives in
  * `current_nle_ctx->s_muse_m_p` (allocated in init_nle below — registered
@@ -63,7 +63,7 @@ struct musable {
 #define m     (*(struct musable *) current_nle_ctx->s_muse_m_p)
 #define trapx (current_nle_ctx->s_muse_trapx)
 #define trapy (current_nle_ctx->s_muse_trapy)
-/* (Cluster AU group 4: zap_oseen migrated to current_nle_ctx->s_zap_oseen
+/* (zap_oseen migrated to current_nle_ctx->s_zap_oseen
  * via macro at top of file; original `static boolean zap_oseen;` removed.
  * Comment retained for context:)
  * for wands which use mbhitm and are zapped at players.  We usually want
@@ -2620,7 +2620,7 @@ struct monst *mon;
     return FALSE;
 }
 
-/* Cluster BJ: per-env allocator for muse.c `struct musable`. Called from
+/* Per-env allocator for muse.c `struct musable`. Called from
  * init_nle (nle.c) at env-create time. The struct type is local to this
  * file; we expose only this helper to keep the include graph tight. */
 void

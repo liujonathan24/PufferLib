@@ -8,7 +8,7 @@
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx */
 
-/* Cluster AV-b4 — function-local statics migrated to nle_ctx_t */
+/* Function-local statics migrated to nle_ctx_t */
 #define lastmovetime  (current_nle_ctx->s_breakobj_lastmovetime)
 #define peaceful_shk  (current_nle_ctx->s_breakobj_peaceful_shk)
 
@@ -33,7 +33,7 @@ static const char bullets[] = { ALLOW_COUNT, COIN_CLASS, ALL_CLASSES,
 
 /* thrownobj (decl.c) tracks an object until it lands */
 
-/* Cluster AX-fix-2: notonhead per-env via nle_ctx_t (was extern boolean). */
+/* Notonhead per-env via nle_ctx_t (was extern boolean). */
 #define notonhead         (current_nle_ctx->s_notonhead)
 
 /* Throw the selected object, asking for direction */
@@ -2032,7 +2032,7 @@ boolean from_invent;
             struct monst *shkp = shop_keeper(*o_shop);
 
             if (shkp) { /* (implies *o_shop != '\0') */
-                /* Cluster AV-b4: lastmovetime, peaceful_shk migrated to nle_ctx_t */
+                /* Lastmovetime, peaceful_shk migrated to nle_ctx_t */
                 /*  We want to base shk actions on her peacefulness
                     at start of this turn, so that "simultaneous"
                     multiple breakage isn't drastically worse than
