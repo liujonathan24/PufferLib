@@ -55,47 +55,37 @@ and not packed into the observation tensor.
 ## Build standalone tools
 
 ```bash
-# Live viewer
-clang -O2 -Wall -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
+# Live viewer (interactive play / random agent / replay)
+clang -O2 -I vendor/nle/src/include -I vendor/nle/src/build/include \
+    -I vendor/nle/src/third_party/deboost.context/include \
+    -DDEFAULT_WINDOW_SYS=\"rl\" -DDLB -DNLE_ALLOW_SEEDING \
+    -DNLE_PER_ENV_FILES=1 -DNLE_PER_ENV_FLAGS=1 -DNLE_USE_ARENA_FREE=1 \
+    -DNLE_USE_TILES -DNOCLIPPING -DNOCWD_ASSUMPTIONS -DNOMAIL -DNOTPARMDECL \
+    -DNETHACK_USE_BLSTATS=1 \
     ocean/nethack/live_view.c -o live_view \
-    -L./vendor/nle/src/build -lnethack \
-    -Wl,-rpath=$PWD/vendor/nle/src/build \
-    -ldl -lpthread -lm
-
-# OMP throughput bench
-clang -O2 -Wall -fopenmp -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
-    ocean/nethack/multi_threaded.c -o multi_threaded \
-    -L./vendor/nle/src/build -lnethack \
-    -Wl,-rpath=$PWD/vendor/nle/src/build \
-    -ldl -lpthread -lm
-
-# Determinism harness (built automatically by verify_determinism_all.sh)
-clang -O2 -Wall -std=gnu11 -I./vendor/nle/include -I./ocean/nethack \
-    ocean/nethack/verify_determinism.c -o verify_determinism \
-    -L./vendor/nle/src/build -lnethack \
-    -Wl,-rpath=$PWD/vendor/nle/src/build \
-    -ldl -lpthread -lm
+    -L./vendor/nle/src/build -lnethack -lm -lbz2 -lpthread \
+    -Wl,-rpath=$(pwd)/vendor/nle/src/build
 ```
 
 ## Environment variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NETHACKDIR` | `./vendor/nle/nethackdir` | Path to NetHack data files |
+| `NETHACKDIR` | `$(pwd)/vendor/nle/src/build/dat` | Path to directory containing `nhdat` |
 | `USER` | (from env) | Required by NetHack for save file naming |
 
 ## Quick smoke test
 
 ```bash
-# Determinism (should print "16/16 OK, all OK")
-USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
-    bash ocean/nethack/verify_determinism_all.sh
+# Interactive play
+NETHACKDIR=$(pwd)/vendor/nle/src/build/dat ./live_view -i
+
+# Random agent
+NETHACKDIR=$(pwd)/vendor/nle/src/build/dat ./live_view --random --steps 200
 
 # Watch one env run
-USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
-    ./live_view --random --steps 200
-
-# OMP env-loop ceiling
-USER=$USER NETHACKDIR=$(pwd)/vendor/nle/nethackdir \
-    ./multi_threaded 1024 3000 128
+# Quick training test
+puffer train nethack \
+    --vec.total-agents 64 --vec.num-buffers 1 --vec.num-threads 4 \
+    --train.gpus 1 --train.total-timesteps 1000000 --train.minibatch-size 64
 ```
