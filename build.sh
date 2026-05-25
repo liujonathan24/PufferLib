@@ -123,12 +123,17 @@ elif [ "$ENV" = "impulse_wars" ]; then
 elif [ "$ENV" = "nethack" ]; then
     SRC_DIR="ocean/$ENV"
     NLE_DIR="vendor/nle"
+    NLE_REPO="https://github.com/liujonathan24/NetHack.git"
+    if [ ! -d "$NLE_DIR/src" ]; then
+        echo "Cloning modified NLE from $NLE_REPO ..."
+        git clone --depth 1 "$NLE_REPO" "$NLE_DIR"
+    fi
+    NETHACK_LIB_DIR="$(pwd)/$NLE_DIR/src/build"
+    if [ ! -f "$NETHACK_LIB_DIR/libnethack.so" ]; then
+        echo "Building libnethack.so ..."
+        make -C "$NETHACK_LIB_DIR" nethack -j$(nproc)
+    fi
     INCLUDES+=(-I./$NLE_DIR/include)
-    # Direct linkage: libnethack.so is linked at build time, not dlopen'd at
-    # runtime. nle_step/nle_start/nle_end and the fr_* fast-reset extensions
-    # are resolved as ordinary externs. -Wl,-rpath embeds the search path so
-    # the binary finds libnethack.so without LD_LIBRARY_PATH.
-    NETHACK_LIB_DIR="$(pwd)/vendor/nle/src/build"
     EXTRA_LDFLAGS+=(-L"$NETHACK_LIB_DIR" -lnethack -Wl,-rpath,"$NETHACK_LIB_DIR" -ldl)
 elif [ -d "ocean/$ENV" ]; then
     SRC_DIR="ocean/$ENV"
