@@ -116,6 +116,31 @@ make -C vendor/nle/src/build nethack -j$(nproc)   # if vendor/nle changed
 bash build.sh nethack                               # always (relinks _C.so)
 ```
 
+### Pulling NLE updates
+
+The modified NLE lives in a separate repo. To pull latest changes:
+
+```bash
+cd vendor/nle
+git pull origin main
+cd ../..
+make -C vendor/nle/src/build nethack -j$(nproc)
+bash build.sh nethack
+```
+
+To push NLE changes (after editing files under `vendor/nle/`):
+
+```bash
+cd vendor/nle
+git add -A && git commit -m "description of changes"
+git push origin main
+cd ../..
+```
+
+Note: `vendor/nle/` has its own `.git` — it is NOT tracked by the
+PufferLib repo. Add `vendor/nle` to PufferLib's `.gitignore` if it
+isn't already.
+
 ### Troubleshooting
 
 | Error | Fix |

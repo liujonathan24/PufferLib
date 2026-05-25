@@ -2,17 +2,29 @@
 
 ## Prerequisites
 
-`vendor/nle/` contains the vendored NLE source tree with our
-`nle_ctx_t` per-env refactor. It builds from source — no pip install
-of NLE is needed.
+The modified NLE source lives in a separate repo and must be cloned
+into `vendor/nle/`:
+
+```bash
+# From the PufferLib root:
+git clone https://github.com/liujonathan24/NetHack.git vendor/nle
+```
+
+No pip install of NLE is needed — it builds from source.
 
 ## Build libnethack.so from source
 
 ```bash
-make -C vendor/nle/src/build nethack -j16
+# First time: run cmake
+cd vendor/nle/src && mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cd ../../../..
+
+# Build
+make -C vendor/nle/src/build nethack -j$(nproc)
 ```
 
-This produces `vendor/nle/src/build/libnethack.so`.
+This produces `vendor/nle/src/build/libnethack.so` and `vendor/nle/src/build/dat/nhdat`.
 
 ## Build the PufferLib extension
 
