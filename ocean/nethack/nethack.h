@@ -200,6 +200,14 @@ static inline unsigned char nethack_char_to_token(unsigned char ch) {
 }
 #endif  /* NETHACK_CROP_OBS */
 
+// Frame skip: repeat the agent's action NETHACK_FRAME_SKIP times per
+// c_step call. Accumulates reward across sub-steps. Multiplies effective
+// SPS by the skip factor since GPU inference runs once per c_step.
+// Set to 1 to disable (default behavior).
+#ifndef NETHACK_FRAME_SKIP
+#define NETHACK_FRAME_SKIP 1
+#endif
+
 // Auto-dismiss prompts (welcome screen, --More--, yes/no, getline) before
 // applying the agent's action, by inspecting misc[]={in_yn_function,
 // in_getlin, xwaitingforspace} on every step. These tiny buffers are
@@ -893,21 +901,34 @@ void c_reset(Nethack* env) {
     env->pending_reset = 1;
 }
 
+static void nethack_single_step(Nethack* env);
+
 void c_step(Nethack* env) {
     if (env->pending_reset) {
         env->pending_reset = 0;
         nethack_do_reset(env);
     }
+    env->rewards[0] = 0.0f;
+    env->terminals[0] = 0.0f;
+    int action_idx = (int)env->actions[0];
+    if (action_idx < 0) action_idx = 0;
+    if (action_idx >= NETHACK_NUM_ACTIONS) action_idx = NETHACK_NUM_ACTIONS - 1;
+    env->obs.action = NETHACK_ACTION_TABLE[action_idx];
+    for (int _fs = 0; _fs < NETHACK_FRAME_SKIP; _fs++) {
+        nethack_single_step(env);
+        if (env->terminals[0] > 0.0f) break;
+        if (_fs < NETHACK_FRAME_SKIP - 1) env->obs.action = NETHACK_ACTION_TABLE[action_idx];
+    }
+    nethack_pack_obs(env);
+}
+
+static void nethack_single_step(Nethack* env) {
     PROF_INIT_IF_NEEDED();
     PROF_START(c_step_total);
     PROF_COUNT(PROF_C_STEPS, 1);
 #if NETHACK_PROFILE
     unsigned long fn_step_calls_before = g_prof.counters[PROF_FN_STEPS_TOTAL];
 #endif
-    int action_idx = (int)env->actions[0];
-    if (action_idx < 0) action_idx = 0;
-    if (action_idx >= NETHACK_NUM_ACTIONS) action_idx = NETHACK_NUM_ACTIONS - 1;
-    env->obs.action = NETHACK_ACTION_TABLE[action_idx];
 
     long time_before = nethack_current_time(env);
     PROF_START(agent_fn_step);
@@ -1034,24 +1055,17 @@ void c_step(Nethack* env) {
         env->prev_depth = depth;
     }
 
-    env->rewards[0] = reward;
+    env->rewards[0] += reward;
     env->episode_return += reward;
 
     if (env->obs.done || env->episode_length >= NETHACK_MAX_EPISODE_STEPS) {
         env->terminals[0] = 1.0f;
         nethack_add_log(env);
-        PROF_START(obs_pack_done);
-        nethack_pack_obs(env);
-        PROF_END(obs_pack_done, PROF_OBS_PACK);
         PROF_END(c_step_total, PROF_C_STEP_TOTAL);
         PROF_FN_STEPS_PER_C_STEP(g_prof.counters[PROF_FN_STEPS_TOTAL] - fn_step_calls_before);
         c_reset(env);
         return;
     }
-    env->terminals[0] = 0.0f;
-    PROF_START(obs_pack);
-    nethack_pack_obs(env);
-    PROF_END(obs_pack, PROF_OBS_PACK);
     PROF_END(c_step_total, PROF_C_STEP_TOTAL);
     PROF_FN_STEPS_PER_C_STEP(g_prof.counters[PROF_FN_STEPS_TOTAL] - fn_step_calls_before);
 }
