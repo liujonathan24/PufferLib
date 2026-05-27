@@ -137,7 +137,7 @@ extern void       nle_fr_destroy(void*);
 #define NETHACK_CROP_COLS    NH_COLS
 #endif
 #ifndef NETHACK_NUM_BLSTATS_COMPACT
-#define NETHACK_NUM_BLSTATS_COMPACT 11
+#define NETHACK_NUM_BLSTATS_COMPACT 15
 #endif
 
 #if NETHACK_CROP_OBS
@@ -727,6 +727,20 @@ static void nethack_pack_obs(Nethack* env) {
     bs[8] = (unsigned char)(bl[NLE_BL_CON] < 255 ? bl[NLE_BL_CON] : 255);
     bs[9] = (unsigned char)(bl[NLE_BL_INT] < 255 ? bl[NLE_BL_INT] : 255);
     bs[10] = (unsigned char)(bl[NLE_BL_WIS] < 255 ? bl[NLE_BL_WIS] : 255);
+    int stair_dx = 0, stair_dy = 0, stair_found = 0, on_stair = 0;
+    for (int r = 0; r < NH_ROWS && !stair_found; r++) {
+        for (int c = 0; c < NH_COLS; c++) {
+            if (env->chars[r * NH_COLS + c] == '>') {
+                stair_dx = c - px; stair_dy = r - py; stair_found = 1;
+                if (c == px && r == py) on_stair = 1;
+                break;
+            }
+        }
+    }
+    bs[11] = (unsigned char)(stair_dx + 128);
+    bs[12] = (unsigned char)(stair_dy + 128);
+    bs[13] = (unsigned char)(stair_found ? 255 : 0);
+    bs[14] = (unsigned char)(on_stair ? 255 : 0);
 #else
 #if NETHACK_USE_CHARS
     memcpy(o + NETHACK_OFF_CHARS, env->chars, NETHACK_SZ_CHARS);
