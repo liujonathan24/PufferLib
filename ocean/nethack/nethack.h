@@ -259,7 +259,7 @@ typedef struct Nethack {
     nle_ctx_t* ctx;
     nle_obs obs;
     nle_settings settings;
-    char vardir[4096];
+    char vardir[256];
 
     // Backing storage — only fields with USE_* enabled are actually allocated.
     // Conditionally compile these to save memory.
@@ -529,7 +529,7 @@ static int nethack_drain_prompts_cat(Nethack* env, ProfCounterId fn_step_counter
 static void nethack_init_settings(Nethack* env) {
     memset(&env->settings, 0, sizeof(env->settings));
     const char* source = getenv("NETHACKDIR");
-    if (source == NULL) source = "./vendor/nle/nethackdir";
+    if (source == NULL) source = "./vendor/nle/src/build/dat";
 
     if (nethack_make_vardir(source, env->vardir, sizeof(env->vardir)) != 0) {
         fprintf(stderr, "nethack: failed to create vardir from source=%s\n", source);
