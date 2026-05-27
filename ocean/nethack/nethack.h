@@ -122,6 +122,84 @@ extern void       nle_fr_destroy(void*);
 #define NETHACK_USE_INV      0
 #endif
 
+// Cropped + tokenized observation mode. When enabled, replaces the full
+// 21x79 chars grid with a CROP_R x CROP_R viewport centered on the player
+// position, plus NETHACK_NUM_BLSTATS compact blstat bytes. ASCII chars are
+// mapped to dense token IDs (0..NUM_TOKENS-1) via a 256-entry lookup table.
+// This drastically reduces CPU→GPU transfer per step.
+#ifndef NETHACK_CROP_OBS
+#define NETHACK_CROP_OBS     1
+#endif
+#ifndef NETHACK_CROP_R
+#define NETHACK_CROP_R       15
+#endif
+#ifndef NETHACK_NUM_BLSTATS_COMPACT
+#define NETHACK_NUM_BLSTATS_COMPACT 11
+#endif
+
+#if NETHACK_CROP_OBS
+#define NETHACK_CROP_GRID    (NETHACK_CROP_R * NETHACK_CROP_R)
+#define NETHACK_CROP_TOTAL   (NETHACK_CROP_GRID + NETHACK_NUM_BLSTATS_COMPACT)
+
+#undef NETHACK_USE_CHARS
+#undef NETHACK_USE_COLORS
+#undef NETHACK_USE_SPECIALS
+#undef NETHACK_USE_GLYPHS
+#undef NETHACK_USE_BLSTATS
+#undef NETHACK_USE_MESSAGE
+#undef NETHACK_USE_INV
+#define NETHACK_USE_CHARS    0
+#define NETHACK_USE_COLORS   0
+#define NETHACK_USE_SPECIALS 0
+#define NETHACK_USE_GLYPHS   0
+#define NETHACK_USE_BLSTATS  0
+#define NETHACK_USE_MESSAGE  0
+#define NETHACK_USE_INV      0
+
+#undef NETHACK_OBS_SIZE
+#define NETHACK_OBS_SIZE NETHACK_CROP_TOTAL
+
+#define NETHACK_NUM_TOKENS 96
+static inline unsigned char nethack_char_to_token(unsigned char ch) {
+    switch (ch) {
+    case ' ': return 1;  case '#': return 2;  case '.': return 3;
+    case '-': return 4;  case '|': return 5;  case '+': return 6;
+    case '^': return 7;  case '<': return 8;  case '>': return 9;
+    case '@': return 10;
+    case 'a': return 11; case 'b': return 12; case 'c': return 13;
+    case 'd': return 14; case 'e': return 15; case 'f': return 16;
+    case 'g': return 17; case 'h': return 18; case 'i': return 19;
+    case 'j': return 20; case 'k': return 21; case 'l': return 22;
+    case 'm': return 23; case 'n': return 24; case 'o': return 25;
+    case 'p': return 26; case 'q': return 27; case 'r': return 28;
+    case 's': return 29; case 't': return 30; case 'u': return 31;
+    case 'v': return 32; case 'w': return 33; case 'x': return 34;
+    case 'y': return 35; case 'z': return 36;
+    case 'A': return 37; case 'B': return 38; case 'C': return 39;
+    case 'D': return 40; case 'E': return 41; case 'F': return 42;
+    case 'G': return 43; case 'H': return 44; case 'I': return 45;
+    case 'J': return 46; case 'K': return 47; case 'L': return 48;
+    case 'M': return 49; case 'N': return 50; case 'O': return 51;
+    case 'P': return 52; case 'Q': return 53; case 'R': return 54;
+    case 'S': return 55; case 'T': return 56; case 'U': return 57;
+    case 'V': return 58; case 'W': return 59; case 'X': return 60;
+    case 'Y': return 61; case 'Z': return 62;
+    case ':': return 63; case ';': return 64; case '!': return 65;
+    case '?': return 66; case '\'': return 67; case '&': return 68;
+    case '~': return 69; case ']': return 70; case '[': return 71;
+    case ')': return 72; case '(': return 73; case '"': return 74;
+    case '`': return 75; case '/': return 76; case '\\': return 77;
+    case '{': return 78; case '}': return 79; case '%': return 80;
+    case '*': return 81; case '$': return 82; case '=': return 83;
+    case '_': return 84; case '0': return 85; case '1': return 86;
+    case '2': return 87; case '3': return 88; case '4': return 89;
+    case '5': return 90; case '6': return 91; case '7': return 92;
+    case '8': return 93; case '9': return 94; case ',': return 95;
+    default: return 0;
+    }
+}
+#endif  /* NETHACK_CROP_OBS */
+
 // Auto-dismiss prompts (welcome screen, --More--, yes/no, getline) before
 // applying the agent's action, by inspecting misc[]={in_yn_function,
 // in_getlin, xwaitingforspace} on every step. These tiny buffers are
@@ -173,10 +251,13 @@ extern void       nle_fr_destroy(void*);
 #define NETHACK_OFF_BLSTATS  (NETHACK_OFF_GLYPHS   + NETHACK_SZ_GLYPHS)
 #define NETHACK_OFF_MESSAGE  (NETHACK_OFF_BLSTATS  + NETHACK_SZ_BLSTATS)
 #define NETHACK_OFF_INV      (NETHACK_OFF_MESSAGE  + NETHACK_SZ_MESSAGE)
+#if NETHACK_CROP_OBS
+#define NETHACK_OBS_SIZE     NETHACK_CROP_TOTAL
+#else
 #define NETHACK_OBS_SIZE     (NETHACK_OFF_INV      + NETHACK_SZ_INV)
-
 #if NETHACK_OBS_SIZE == 0
 #error "At least one NETHACK_USE_* field must be enabled."
+#endif
 #endif
 
 // Compile-time action set selection.
@@ -266,7 +347,7 @@ typedef struct Nethack {
 #if NETHACK_USE_GLYPHS
     short          glyphs[NH_GRID];
 #endif
-#if NETHACK_USE_CHARS
+#if NETHACK_USE_CHARS || NETHACK_CROP_OBS
     unsigned char  chars[NH_GRID];
 #endif
 #if NETHACK_USE_COLORS
@@ -447,7 +528,7 @@ static void nethack_rm_vardir(const char* dir) {
 static void nethack_bind_obs(Nethack* env) {
     nle_obs* o = &env->obs;
     memset(o, 0, sizeof(*o));
-#if NETHACK_USE_CHARS
+#if NETHACK_USE_CHARS || NETHACK_CROP_OBS
     o->chars = env->chars;
 #endif
 #if NETHACK_USE_COLORS
@@ -605,6 +686,36 @@ void c_close(Nethack* env) {
 // ---------------------------------------------------------------------------
 static void nethack_pack_obs(Nethack* env) {
     unsigned char* o = env->observations;
+#if NETHACK_CROP_OBS
+    int px = (int)env->hook_blstats[NLE_BL_X];
+    int py = (int)env->hook_blstats[NLE_BL_Y];
+    int half = NETHACK_CROP_R / 2;
+    for (int dy = 0; dy < NETHACK_CROP_R; dy++) {
+        int sy = py - half + dy;
+        for (int dx = 0; dx < NETHACK_CROP_R; dx++) {
+            int sx = px - half + dx;
+            unsigned char ch = 0;
+            if (sy >= 0 && sy < NH_ROWS && sx >= 0 && sx < NH_COLS)
+                ch = env->chars[sy * NH_COLS + sx];
+            o[dy * NETHACK_CROP_R + dx] = nethack_char_to_token(ch);
+        }
+    }
+    unsigned char* bs = o + NETHACK_CROP_GRID;
+    long* bl = env->hook_blstats;
+    int hp = (int)bl[NLE_BL_HP], mhp = (int)bl[NLE_BL_HPMAX];
+    bs[0] = (unsigned char)(mhp > 0 ? (hp * 255 / mhp) : 0);
+    bs[1] = (unsigned char)(bl[NLE_BL_DEPTH] < 255 ? bl[NLE_BL_DEPTH] : 255);
+    bs[2] = (unsigned char)(bl[NLE_BL_GOLD] < 255 ? bl[NLE_BL_GOLD] : 255);
+    bs[3] = (unsigned char)(bl[NLE_BL_XP] < 255 ? bl[NLE_BL_XP] : 255);
+    int ac = (int)bl[NLE_BL_AC] + 128;
+    bs[4] = (unsigned char)(ac < 0 ? 0 : (ac > 255 ? 255 : ac));
+    bs[5] = (unsigned char)(bl[NLE_BL_HUNGER] < 255 ? bl[NLE_BL_HUNGER] : 255);
+    bs[6] = (unsigned char)(bl[NLE_BL_STR25] < 255 ? bl[NLE_BL_STR25] : 255);
+    bs[7] = (unsigned char)(bl[NLE_BL_DEX] < 255 ? bl[NLE_BL_DEX] : 255);
+    bs[8] = (unsigned char)(bl[NLE_BL_CON] < 255 ? bl[NLE_BL_CON] : 255);
+    bs[9] = (unsigned char)(bl[NLE_BL_INT] < 255 ? bl[NLE_BL_INT] : 255);
+    bs[10] = (unsigned char)(bl[NLE_BL_WIS] < 255 ? bl[NLE_BL_WIS] : 255);
+#else
 #if NETHACK_USE_CHARS
     memcpy(o + NETHACK_OFF_CHARS, env->chars, NETHACK_SZ_CHARS);
 #endif
@@ -618,7 +729,6 @@ static void nethack_pack_obs(Nethack* env) {
     memcpy(o + NETHACK_OFF_GLYPHS, env->glyphs, NETHACK_SZ_GLYPHS);
 #endif
 #if NETHACK_USE_BLSTATS
-    // Pack 27 longs as 27 int32s (truncate; NetHack stat values fit in i32).
     int32_t* dst = (int32_t*)(o + NETHACK_OFF_BLSTATS);
     for (int i = 0; i < NLE_BLSTATS_SIZE; i++) dst[i] = (int32_t)env->blstats[i];
 #endif
@@ -629,6 +739,7 @@ static void nethack_pack_obs(Nethack* env) {
     memcpy(o + NETHACK_OFF_INV,                          env->inv_letters,  NLE_INVENTORY_SIZE);
     memcpy(o + NETHACK_OFF_INV + NLE_INVENTORY_SIZE,     env->inv_oclasses, NLE_INVENTORY_SIZE);
 #endif
+#endif  /* NETHACK_CROP_OBS */
 }
 
 static void nethack_add_log(Nethack* env) {
