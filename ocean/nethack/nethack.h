@@ -131,10 +131,10 @@ extern void       nle_fr_destroy(void*);
 #define NETHACK_CROP_OBS     1
 #endif
 #ifndef NETHACK_CROP_ROWS
-#define NETHACK_CROP_ROWS    NH_ROWS
+#define NETHACK_CROP_ROWS    9
 #endif
 #ifndef NETHACK_CROP_COLS
-#define NETHACK_CROP_COLS    NH_COLS
+#define NETHACK_CROP_COLS    9
 #endif
 #ifndef NETHACK_NUM_BLSTATS_COMPACT
 #define NETHACK_NUM_BLSTATS_COMPACT 15
