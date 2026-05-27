@@ -130,15 +130,18 @@ extern void       nle_fr_destroy(void*);
 #ifndef NETHACK_CROP_OBS
 #define NETHACK_CROP_OBS     1
 #endif
-#ifndef NETHACK_CROP_R
-#define NETHACK_CROP_R       15
+#ifndef NETHACK_CROP_ROWS
+#define NETHACK_CROP_ROWS    NH_ROWS
+#endif
+#ifndef NETHACK_CROP_COLS
+#define NETHACK_CROP_COLS    NH_COLS
 #endif
 #ifndef NETHACK_NUM_BLSTATS_COMPACT
 #define NETHACK_NUM_BLSTATS_COMPACT 11
 #endif
 
 #if NETHACK_CROP_OBS
-#define NETHACK_CROP_GRID    (NETHACK_CROP_R * NETHACK_CROP_R)
+#define NETHACK_CROP_GRID    (NETHACK_CROP_ROWS * NETHACK_CROP_COLS)
 #define NETHACK_CROP_TOTAL   (NETHACK_CROP_GRID + NETHACK_NUM_BLSTATS_COMPACT)
 
 #undef NETHACK_USE_CHARS
@@ -697,15 +700,16 @@ static void nethack_pack_obs(Nethack* env) {
 #if NETHACK_CROP_OBS
     int px = (int)env->hook_blstats[NLE_BL_X];
     int py = (int)env->hook_blstats[NLE_BL_Y];
-    int half = NETHACK_CROP_R / 2;
-    for (int dy = 0; dy < NETHACK_CROP_R; dy++) {
-        int sy = py - half + dy;
-        for (int dx = 0; dx < NETHACK_CROP_R; dx++) {
-            int sx = px - half + dx;
+    int half_r = NETHACK_CROP_ROWS / 2;
+    int half_c = NETHACK_CROP_COLS / 2;
+    for (int dy = 0; dy < NETHACK_CROP_ROWS; dy++) {
+        int sy = py - half_r + dy;
+        for (int dx = 0; dx < NETHACK_CROP_COLS; dx++) {
+            int sx = px - half_c + dx;
             unsigned char ch = 0;
             if (sy >= 0 && sy < NH_ROWS && sx >= 0 && sx < NH_COLS)
                 ch = env->chars[sy * NH_COLS + sx];
-            o[dy * NETHACK_CROP_R + dx] = nethack_char_to_token(ch);
+            o[dy * NETHACK_CROP_COLS + dx] = nethack_char_to_token(ch);
         }
     }
     unsigned char* bs = o + NETHACK_CROP_GRID;
