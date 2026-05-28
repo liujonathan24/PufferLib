@@ -405,6 +405,7 @@ typedef struct Nethack {
     int tick;
     long prev_score;
     int prev_depth;
+    int max_depth;          // max NLE_BL_DEPTH reached this episode
     float episode_return;
     int episode_length;
     unsigned int rng;   // required by vecenv.h (seeded with env index)
@@ -762,7 +763,7 @@ static void nethack_pack_obs(Nethack* env) {
 static void nethack_add_log(Nethack* env) {
     env->log.perf            += (float)env->prev_score;
     env->log.score           += (float)env->prev_score;
-    env->log.depth           += (float)env->prev_depth;
+    env->log.depth           += (float)env->max_depth;
     env->log.valid_moves     += (float)env->episode_valid_moves;
     env->log.illegal_actions += (float)env->episode_illegal_actions;
     env->log.new_tiles       += (float)env->episode_new_tiles;
@@ -782,6 +783,7 @@ static void nethack_reset_bookkeeping(Nethack* env) {
 #else
     env->prev_depth = 1;
 #endif
+    env->max_depth = env->prev_depth;
     env->episode_return = 0.0f;
     env->episode_length = 0;
     env->episode_start_time = nethack_current_time(env);
@@ -1081,6 +1083,7 @@ static void nethack_single_step(Nethack* env) {
     }
 
     if (illegal) reward += env->illegal_penalty;
+    if (depth > env->max_depth) env->max_depth = depth;
     if (!env->obs.done) {
         env->prev_score = score;
         env->prev_depth = depth;
