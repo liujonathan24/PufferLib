@@ -320,6 +320,7 @@ typedef struct Log {
     float valid_moves;        // c_steps where the agent's action advanced NetHack's turn counter
     float illegal_actions;    // c_steps where the agent's action hit a sub-prompt we had to ESC out of
     float new_tiles;          // unique tiles entered this episode (sums over episodes via Log.n)
+    float revealed_tiles;     // unique floor/room tiles seen this episode
     float n;
 } Log;
 
@@ -392,11 +393,13 @@ typedef struct Nethack {
     long episode_valid_moves;
     long episode_illegal_actions;
     long episode_new_tiles;       // unique tiles entered this episode
+    long episode_revealed_tiles;  // unique floor/room tiles seen this episode
 
     // Exploration bitmap for the current dungeon level. Cleared on
     // dungeon-level change. One bit per (row, col); 21*79 = 1659 bits,
     // round up to 208 bytes.
     unsigned char visited[(NH_GRID + 7) / 8];
+    unsigned char revealed[(NH_GRID + 7) / 8];  // floor/room tiles ever seen
     int  visited_level;            // dungeon level the bitmap corresponds to
 
     int tick;
@@ -418,8 +421,9 @@ typedef struct Nethack {
     // Defaults below are also the fallbacks when the kwargs key is missing
     // (so the build still runs if config/nethack.ini hasn't been updated).
     float score_coef;       // default 0.01f  (R_SCORE)
-    float descent_coef;     // default 1.0f   (R_DESCENT)
+    float descent_coef;     // default 10.0f  (R_DESCENT)
     float scout_coef;       // default NETHACK_SCOUT_BONUS (legacy)
+    float reveal_coef;      // default 0.02f  (R_REVEAL) — per newly-seen floor tile
     float illegal_penalty;  // default NETHACK_ILLEGAL_PENALTY (legacy, negative)
 
     // Per-env explicit RNG seed for nle_start. Without this, NetHack uses
@@ -656,8 +660,9 @@ void init(Nethack* env) {
     // below preserve the legacy compile-time behavior for descent + scout +
     // illegal, and use R_SCORE=0.01 per ocean/nethack/REWARDS.md.
     env->score_coef      = 0.01f;
-    env->descent_coef    = NETHACK_DEPTH_BONUS;     // 1.0f
+    env->descent_coef    = 10.0f;
     env->scout_coef      = NETHACK_SCOUT_BONUS;     // 0.1f
+    env->reveal_coef     = 0.02f;
     env->illegal_penalty = NETHACK_ILLEGAL_PENALTY; // -0.5f
 
     // Pick per-env seeds derived from env->rng (vecenv sets this to env index)
@@ -761,6 +766,7 @@ static void nethack_add_log(Nethack* env) {
     env->log.valid_moves     += (float)env->episode_valid_moves;
     env->log.illegal_actions += (float)env->episode_illegal_actions;
     env->log.new_tiles       += (float)env->episode_new_tiles;
+    env->log.revealed_tiles  += (float)env->episode_revealed_tiles;
     env->log.episode_return  += env->episode_return;
     env->log.episode_length  += env->episode_length;
     env->log.n               += 1.0f;
@@ -782,7 +788,9 @@ static void nethack_reset_bookkeeping(Nethack* env) {
     env->episode_valid_moves = 0;
     env->episode_illegal_actions = 0;
     env->episode_new_tiles = 0;
+    env->episode_revealed_tiles = 0;
     memset(env->visited, 0, sizeof(env->visited));
+    memset(env->revealed, 0, sizeof(env->revealed));
     env->visited_level = 0;
     env->rewards[0] = 0.0f;
     env->terminals[0] = 0.0f;
@@ -1030,9 +1038,10 @@ static void nethack_single_step(Nethack* env) {
     // some rare deaths/penalties; set score_coef=0 to disable entirely.
     float reward = env->score_coef * (float)(score - env->prev_score);
 
-    // Depth-changed bonus + reset exploration bitmap.
+    // Depth-changed bonus + reset exploration bitmaps.
     if (depth != env->visited_level) {
         memset(env->visited, 0, sizeof(env->visited));
+        memset(env->revealed, 0, sizeof(env->revealed));
         env->visited_level = depth;
     }
     // Descent term: one-shot bonus on each new max-depth step (positive only
@@ -1050,6 +1059,24 @@ static void nethack_single_step(Nethack* env) {
             *b |= mask;
             reward += env->scout_coef;
             env->episode_new_tiles++;
+        }
+    }
+
+    // Reveal bonus: reward for each newly-visible floor/room/corridor tile.
+    // Scans the full chars grid (always populated via NLE) for tiles that are
+    // ground-truth walkable (., #, +, <, >) and not yet in the revealed bitmap.
+    if (env->reveal_coef != 0.0f) {
+        for (int idx = 0; idx < NH_GRID; idx++) {
+            unsigned char ch = env->chars[idx];
+            if (ch == '.' || ch == '#' || ch == '+' || ch == '<' || ch == '>') {
+                unsigned char* byte = &env->revealed[idx >> 3];
+                unsigned char mask = (unsigned char)(1 << (idx & 7));
+                if (!(*byte & mask)) {
+                    *byte |= mask;
+                    reward += env->reveal_coef;
+                    env->episode_revealed_tiles++;
+                }
+            }
         }
     }
 

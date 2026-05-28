@@ -27,6 +27,7 @@ void my_init(Env* env, Dict* kwargs) {
     nethack_read_coef(kwargs, "score_coef",      &env->score_coef);
     nethack_read_coef(kwargs, "descent_coef",    &env->descent_coef);
     nethack_read_coef(kwargs, "scout_coef",      &env->scout_coef);
+    nethack_read_coef(kwargs, "reveal_coef",    &env->reveal_coef);
     nethack_read_coef(kwargs, "illegal_penalty", &env->illegal_penalty);
 }
 
@@ -39,4 +40,5 @@ void my_log(Log* log, Dict* out) {
     dict_set(out, "valid_moves", log->valid_moves);
     dict_set(out, "illegal_actions", log->illegal_actions);
     dict_set(out, "new_tiles", log->new_tiles);
+    dict_set(out, "revealed_tiles", log->revealed_tiles);
 }
