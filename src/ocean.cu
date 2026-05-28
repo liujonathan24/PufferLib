@@ -570,9 +570,226 @@ static void* nmmo3_encoder_create_weights(void* self) {
 static void nmmo3_encoder_free_weights(void* weights) { free(weights); }
 static void nmmo3_encoder_free_activations(void* activations) { free(activations); }
 
+// ---- NetHack encoder: embedding + conv + blstats concat + projection ----
+
+static constexpr int NH_GRID_R = 9, NH_GRID_C = 9;
+static constexpr int NH_GRID_N = NH_GRID_R * NH_GRID_C;  // 81
+static constexpr int NH_BLSTATS = 11;
+static constexpr int NH_VOCAB = 96, NH_EMBED = 16;
+static constexpr int NH_CONV_OC = 32, NH_CONV_K = 3, NH_CONV_S = 1;
+static constexpr int NH_CONV_OH = NH_GRID_R - NH_CONV_K + 1;  // 7
+static constexpr int NH_CONV_OW = NH_GRID_C - NH_CONV_K + 1;  // 7
+static constexpr int NH_CONV_FLAT = NH_CONV_OC * NH_CONV_OH * NH_CONV_OW;  // 1568
+static constexpr int NH_CONCAT = NH_CONV_FLAT + NH_BLSTATS;  // 1579
+
+struct NHEncoderWeights {
+    int hidden, obs_size;
+    PrecisionTensor embed_w;   // (VOCAB, EMBED)
+    ConvWeights conv;
+    PrecisionTensor proj_w, proj_b;
+};
+
+struct NHEncoderActivations {
+    PrecisionTensor embed_out;     // (B, EMBED, 9, 9)  NCHW
+    PrecisionTensor embed_grad;    // (B, EMBED, 9, 9)  NCHW — grad from conv backward
+    ConvActivations conv;
+    PrecisionTensor concat;        // (B, CONCAT)
+    PrecisionTensor out;           // (B, hidden)
+    PrecisionTensor saved_obs;     // (B, obs_size) for backward
+    PrecisionTensor embed_wgrad;
+    FloatTensor embed_wgrad_f;
+    PrecisionTensor proj_wgrad, proj_bgrad;
+};
+
+__global__ void nh_embedding_kernel(
+    precision_t* __restrict__ out, const precision_t* __restrict__ obs,
+    const precision_t* __restrict__ embed_w, int B, int obs_size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= B * NH_GRID_N) return;
+    int b = idx / NH_GRID_N, pos = idx % NH_GRID_N;
+    int r = pos / NH_GRID_C, c = pos % NH_GRID_C;
+    int token = (int)to_float(obs[b * obs_size + pos]);
+    if (token < 0) token = 0; if (token >= NH_VOCAB) token = 0;
+    const precision_t* src = embed_w + token * NH_EMBED;
+    for (int d = 0; d < NH_EMBED; d++)
+        out[b * NH_EMBED * NH_GRID_R * NH_GRID_C + d * NH_GRID_R * NH_GRID_C + r * NH_GRID_C + c] = src[d];
+}
+
+__global__ void nh_concat_kernel(
+    precision_t* __restrict__ out, const precision_t* __restrict__ conv_out,
+    const precision_t* __restrict__ obs, int B, int obs_size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= B * NH_CONCAT) return;
+    int b = idx / NH_CONCAT, f = idx % NH_CONCAT;
+    if (f < NH_CONV_FLAT)
+        out[idx] = conv_out[b * NH_CONV_FLAT + f];
+    else
+        out[idx] = obs[b * obs_size + NH_GRID_N + (f - NH_CONV_FLAT)];
+}
+
+__global__ void nh_concat_backward_conv_kernel(
+    precision_t* __restrict__ conv_grad, const precision_t* __restrict__ concat_grad, int B) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= B * NH_CONV_FLAT) return;
+    int b = idx / NH_CONV_FLAT, f = idx % NH_CONV_FLAT;
+    conv_grad[idx] = concat_grad[b * NH_CONCAT + f];
+}
+
+__global__ void nh_embedding_backward_kernel(
+    float* __restrict__ embed_wgrad_f, const precision_t* __restrict__ embed_grad_nchw,
+    const precision_t* __restrict__ obs, int B, int obs_size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= B * NH_GRID_N * NH_EMBED) return;
+    int b = idx / (NH_GRID_N * NH_EMBED), rem = idx % (NH_GRID_N * NH_EMBED);
+    int pos = rem / NH_EMBED, d = rem % NH_EMBED;
+    int r = pos / NH_GRID_C, c = pos % NH_GRID_C;
+    int token = (int)to_float(obs[b * obs_size + pos]);
+    if (token < 0 || token >= NH_VOCAB) return;
+    float g = to_float(embed_grad_nchw[b * NH_EMBED * NH_GRID_R * NH_GRID_C
+                                       + d * NH_GRID_R * NH_GRID_C + r * NH_GRID_C + c]);
+    atomicAdd(&embed_wgrad_f[token * NH_EMBED + d], g);
+}
+
+static PrecisionTensor nh_encoder_forward(void* w, void* activations, PrecisionTensor input, cudaStream_t stream) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    NHEncoderActivations* a = (NHEncoderActivations*)activations;
+    int B = input.shape[0];
+
+    if (a->saved_obs.data) puf_copy(&a->saved_obs, &input, stream);
+
+    cudaMemsetAsync(a->embed_out.data, 0,
+        (int64_t)B * NH_EMBED * NH_GRID_R * NH_GRID_C * sizeof(precision_t), stream);
+    nh_embedding_kernel<<<grid_size(B * NH_GRID_N), BLOCK_SIZE, 0, stream>>>(
+        a->embed_out.data, input.data, ew->embed_w.data, B, ew->obs_size);
+
+    conv_forward(&ew->conv, &a->conv, a->embed_out.data, B, stream);
+
+    nh_concat_kernel<<<grid_size(B * NH_CONCAT), BLOCK_SIZE, 0, stream>>>(
+        a->concat.data, a->conv.out.data, input.data, B, ew->obs_size);
+
+    puf_mm(&a->concat, &ew->proj_w, &a->out, stream);
+    n3_bias_relu_kernel<<<grid_size(B * ew->hidden), BLOCK_SIZE, 0, stream>>>(
+        a->out.data, ew->proj_b.data, B * ew->hidden, ew->hidden);
+    return a->out;
+}
+
+static void nh_encoder_backward(void* w, void* activations, PrecisionTensor grad, cudaStream_t stream) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    NHEncoderActivations* a = (NHEncoderActivations*)activations;
+    int B = grad.shape[0], H = ew->hidden;
+
+    n3_relu_backward_kernel<<<grid_size(B * H), BLOCK_SIZE, 0, stream>>>(
+        grad.data, a->out.data, B * H);
+    bias_grad_kernel<<<H, 256, 0, stream>>>(
+        a->proj_bgrad.data, grad.data, B, H);
+    puf_mm_tn(&grad, &a->concat, &a->proj_wgrad, stream);
+
+    PrecisionTensor grad_concat = {.data = a->concat.data, .shape = {B, NH_CONCAT}};
+    puf_mm_nn(&grad, &ew->proj_w, &grad_concat, stream);
+
+    nh_concat_backward_conv_kernel<<<grid_size(B * NH_CONV_FLAT), BLOCK_SIZE, 0, stream>>>(
+        a->conv.grad.data, grad_concat.data, B);
+
+    conv_backward(&ew->conv, &a->conv, a->embed_grad.data, B, stream);
+
+    int embed_n = NH_VOCAB * NH_EMBED;
+    cudaMemsetAsync(a->embed_wgrad_f.data, 0, embed_n * sizeof(float), stream);
+    nh_embedding_backward_kernel<<<grid_size(B * NH_GRID_N * NH_EMBED), BLOCK_SIZE, 0, stream>>>(
+        a->embed_wgrad_f.data, a->embed_grad.data, a->saved_obs.data, B, ew->obs_size);
+    n3_float_to_precision_kernel<<<grid_size(embed_n), BLOCK_SIZE, 0, stream>>>(
+        a->embed_wgrad.data, a->embed_wgrad_f.data, embed_n);
+}
+
+static void nh_encoder_init_weights(void* w, uint64_t* seed, cudaStream_t stream) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    conv_init_weights(&ew->conv, seed, stream);
+    puf_normal_init(&ew->embed_w, 1.0f, (*seed)++, stream);
+    PrecisionTensor wt = {.data = ew->proj_w.data, .shape = {ew->hidden, NH_CONCAT}};
+    puf_kaiming_init(&wt, 1.0f, (*seed)++, stream);
+    cudaMemsetAsync(ew->proj_b.data, 0, numel(ew->proj_b.shape) * sizeof(precision_t), stream);
+}
+
+static void nh_encoder_reg_params(void* w, Allocator* alloc) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    conv_reg_params(&ew->conv, alloc);
+    ew->embed_w = {.shape = {NH_VOCAB, NH_EMBED}};
+    ew->proj_w  = {.shape = {ew->hidden, NH_CONCAT}};
+    ew->proj_b  = {.shape = {ew->hidden}};
+    alloc_register(alloc, &ew->embed_w);
+    alloc_register(alloc, &ew->proj_w);
+    alloc_register(alloc, &ew->proj_b);
+}
+
+static cudnnDataType_t nh_cudnn_dtype() {
+    return (PRECISION_SIZE == 2) ? CUDNN_DATA_BFLOAT16 : CUDNN_DATA_FLOAT;
+}
+
+static void nh_encoder_reg_train(void* w, void* activations, Allocator* acts, Allocator* grads, int B_TT) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    NHEncoderActivations* a = (NHEncoderActivations*)activations;
+    *a = {};
+    a->embed_out  = {.shape = {B_TT * NH_EMBED * NH_GRID_R * NH_GRID_C}};
+    a->embed_grad = {.shape = {B_TT * NH_EMBED * NH_GRID_R * NH_GRID_C}};
+    alloc_register(acts, &a->embed_out);
+    alloc_register(acts, &a->embed_grad);
+    conv_reg_train(&ew->conv, &a->conv, acts, grads, B_TT, nh_cudnn_dtype());
+    a->concat    = {.shape = {B_TT, NH_CONCAT}};
+    a->out       = {.shape = {B_TT, ew->hidden}};
+    a->saved_obs = {.shape = {B_TT, ew->obs_size}};
+    alloc_register(acts, &a->concat);
+    alloc_register(acts, &a->out);
+    alloc_register(acts, &a->saved_obs);
+    a->embed_wgrad   = {.shape = {NH_VOCAB, NH_EMBED}};
+    a->embed_wgrad_f = {.shape = {NH_VOCAB, NH_EMBED}};
+    a->proj_wgrad    = {.shape = {ew->hidden, NH_CONCAT}};
+    a->proj_bgrad    = {.shape = {ew->hidden}};
+    alloc_register(grads, &a->embed_wgrad);
+    alloc_register(acts,  &a->embed_wgrad_f);
+    alloc_register(grads, &a->proj_wgrad);
+    alloc_register(grads, &a->proj_bgrad);
+}
+
+static void nh_encoder_reg_rollout(void* w, void* activations, Allocator* alloc, int B) {
+    NHEncoderWeights* ew = (NHEncoderWeights*)w;
+    NHEncoderActivations* a = (NHEncoderActivations*)activations;
+    *a = {};
+    a->embed_out = {.shape = {B * NH_EMBED * NH_GRID_R * NH_GRID_C}};
+    alloc_register(alloc, &a->embed_out);
+    conv_reg_rollout(&ew->conv, &a->conv, alloc, B, nh_cudnn_dtype());
+    a->concat = {.shape = {B, NH_CONCAT}};
+    a->out    = {.shape = {B, ew->hidden}};
+    alloc_register(alloc, &a->concat);
+    alloc_register(alloc, &a->out);
+}
+
+static void* nh_encoder_create_weights(void* self) {
+    Encoder* e = (Encoder*)self;
+    NHEncoderWeights* w = (NHEncoderWeights*)calloc(1, sizeof(NHEncoderWeights));
+    w->hidden = e->out_dim;
+    w->obs_size = e->in_dim;
+    conv_init(&w->conv, NH_EMBED, NH_CONV_OC, NH_CONV_K, NH_CONV_S, NH_GRID_R, NH_GRID_C, true);
+    return w;
+}
+static void nh_encoder_free_weights(void* weights) { free(weights); }
+static void nh_encoder_free_activations(void* activations) { free(activations); }
+
 // Override encoder vtable for known ocean environments. No-op for unknown envs.
 static void create_custom_encoder(const std::string& env_name, Encoder* enc) {
-    if (env_name == "nmmo3") {
+    if (env_name == "nethack") {
+        *enc = Encoder{
+            .forward = nh_encoder_forward,
+            .backward = nh_encoder_backward,
+            .init_weights = nh_encoder_init_weights,
+            .reg_params = nh_encoder_reg_params,
+            .reg_train = nh_encoder_reg_train,
+            .reg_rollout = nh_encoder_reg_rollout,
+            .create_weights = nh_encoder_create_weights,
+            .free_weights = nh_encoder_free_weights,
+            .free_activations = nh_encoder_free_activations,
+            .in_dim = enc->in_dim, .out_dim = enc->out_dim,
+            .activation_size = sizeof(NHEncoderActivations),
+        };
+    } else if (env_name == "nmmo3") {
         *enc = Encoder{
             .forward = nmmo3_encoder_forward,
             .backward = nmmo3_encoder_backward,
