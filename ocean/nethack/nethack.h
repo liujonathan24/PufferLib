@@ -1040,20 +1040,27 @@ static void nethack_single_step(Nethack* env) {
     // some rare deaths/penalties; set score_coef=0 to disable entirely.
     float reward = env->score_coef * (float)(score - env->prev_score);
 
-    // Depth-changed bonus + reset exploration bitmaps.
-    if (depth != env->visited_level) {
+    // Frontier tracking. max_depth = deepest level reached this episode.
+    // Descent/scout/reveal are granted ONLY on the frontier (depth >= max_depth),
+    // and the exploration bitmaps reset ONLY when a NEW deepest level is reached.
+    // Returning to an already-visited (shallower) level therefore earns nothing
+    // and does NOT wipe the bitmap, so the stair yo-yo (>,<,>,< to re-farm
+    // descent/scout/reveal) pays exactly zero. A single bitmap is reused per
+    // level (screen positions collide across levels); resetting only on a new
+    // frontier is what makes that single bitmap safe against revisits.
+    int new_frontier = (depth > env->max_depth);
+    int on_frontier  = (depth >= env->max_depth);
+    if (new_frontier) {
         memset(env->visited, 0, sizeof(env->visited));
         memset(env->revealed, 0, sizeof(env->revealed));
-        env->visited_level = depth;
     }
-    // Descent term: one-shot bonus on each new max-depth step (positive only
-    // — we never charge the agent for going back up, so it cannot game the
-    // signal by yo-yo'ing between levels via score-delta on score loss).
-    if (depth > env->prev_depth) reward += env->descent_coef * (float)(depth - env->prev_depth);
+    // Descent term: bonus only for genuinely new depth (gated on max_depth, not
+    // the per-step prev_depth), so re-descending an already-reached level pays 0.
+    if (new_frontier) reward += env->descent_coef * (float)(depth - env->max_depth);
 
-    // Scout bonus: reward each new (row,col) entered this level.
+    // Scout bonus: reward each new (row,col) entered this level — frontier only.
     // px is column (0..79), py is row (0..21). Clamp defensively.
-    if (px >= 0 && px < NH_COLS && py >= 0 && py < NH_ROWS) {
+    if (on_frontier && px >= 0 && px < NH_COLS && py >= 0 && py < NH_ROWS) {
         int bit_idx = (int)py * NH_COLS + (int)px;
         unsigned char* b = &env->visited[bit_idx >> 3];
         unsigned char mask = (unsigned char)(1 << (bit_idx & 7));
@@ -1064,22 +1071,22 @@ static void nethack_single_step(Nethack* env) {
         }
     }
 
-    // Reveal bonus: reward for each newly-visible floor/room/corridor tile.
-    // Scans the full chars grid (always populated via NLE) for tiles that are
-    // ground-truth walkable (., #, +, <, >) and not yet in the revealed bitmap.
-    // The scan ALWAYS runs so episode_revealed_tiles stays accurate even when
-    // reveal_coef == 0 (a stat must not depend on its reward being enabled,
-    // matching the scout/new_tiles term above). reward += reveal_coef is a
-    // no-op when the coef is 0, so disabling the reward costs nothing here.
-    for (int idx = 0; idx < NH_GRID; idx++) {
-        unsigned char ch = env->chars[idx];
-        if (ch == '.' || ch == '#' || ch == '+' || ch == '<' || ch == '>') {
-            unsigned char* byte = &env->revealed[idx >> 3];
-            unsigned char mask = (unsigned char)(1 << (idx & 7));
-            if (!(*byte & mask)) {
-                *byte |= mask;
-                reward += env->reveal_coef;
-                env->episode_revealed_tiles++;
+    // Reveal bonus: reward each newly-visible walkable tile (., #, +, <, >) not
+    // yet in the revealed bitmap — frontier only, so revisiting a cleared level
+    // can't re-farm it. The scan runs whenever on_frontier regardless of
+    // reveal_coef, so episode_revealed_tiles stays an accurate unique-tile count
+    // even with the reward disabled (reward += reveal_coef is a no-op at 0).
+    if (on_frontier) {
+        for (int idx = 0; idx < NH_GRID; idx++) {
+            unsigned char ch = env->chars[idx];
+            if (ch == '.' || ch == '#' || ch == '+' || ch == '<' || ch == '>') {
+                unsigned char* byte = &env->revealed[idx >> 3];
+                unsigned char mask = (unsigned char)(1 << (idx & 7));
+                if (!(*byte & mask)) {
+                    *byte |= mask;
+                    reward += env->reveal_coef;
+                    env->episode_revealed_tiles++;
+                }
             }
         }
     }
