@@ -42,4 +42,5 @@ void my_log(Log* log, Dict* out) {
     dict_set(out, "illegal_actions", log->illegal_actions);
     dict_set(out, "new_tiles", log->new_tiles);
     dict_set(out, "revealed_tiles", log->revealed_tiles);
+    dict_set(out, "errors", log->errors);   // fraction of episodes ended by a NetHack panic
 }

@@ -321,8 +321,18 @@ typedef struct Log {
     float illegal_actions;    // c_steps where the agent's action hit a sub-prompt we had to ESC out of
     float new_tiles;          // unique tiles entered this episode (sums over episodes via Log.n)
     float revealed_tiles;     // unique floor/room tiles seen this episode
+    float errors;             // episodes that ended in a NetHack panic (how_done==PANICKED);
+                              // mean over Log.n == fraction of rollouts scrapped by an internal error
     float n;
 } Log;
+
+// NetHack game_end_types (vendor/nle/src/include/hack.h): PANICKED is the
+// internal-error/assertion termination -- as opposed to a real death (0-10) or
+// a legit ending (QUIT/ESCAPED/ASCENDED, 13-15). A panic does NOT abort the
+// process; really_done(PANICKED) sets obs.how_done and ends the episode, so we
+// can count it. Hard crashes (SIGSEGV/SIGABRT) kill the process and cannot be
+// counted in-process.
+#define NETHACK_HOW_PANICKED 11
 
 typedef struct Nethack {
     Log log;
@@ -768,6 +778,7 @@ static void nethack_add_log(Nethack* env) {
     env->log.illegal_actions += (float)env->episode_illegal_actions;
     env->log.new_tiles       += (float)env->episode_new_tiles;
     env->log.revealed_tiles  += (float)env->episode_revealed_tiles;
+    env->log.errors          += (env->obs.how_done == NETHACK_HOW_PANICKED) ? 1.0f : 0.0f;
     env->log.episode_return  += env->episode_return;
     env->log.episode_length  += env->episode_length;
     env->log.n               += 1.0f;
