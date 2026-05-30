@@ -1067,17 +1067,19 @@ static void nethack_single_step(Nethack* env) {
     // Reveal bonus: reward for each newly-visible floor/room/corridor tile.
     // Scans the full chars grid (always populated via NLE) for tiles that are
     // ground-truth walkable (., #, +, <, >) and not yet in the revealed bitmap.
-    if (env->reveal_coef != 0.0f) {
-        for (int idx = 0; idx < NH_GRID; idx++) {
-            unsigned char ch = env->chars[idx];
-            if (ch == '.' || ch == '#' || ch == '+' || ch == '<' || ch == '>') {
-                unsigned char* byte = &env->revealed[idx >> 3];
-                unsigned char mask = (unsigned char)(1 << (idx & 7));
-                if (!(*byte & mask)) {
-                    *byte |= mask;
-                    reward += env->reveal_coef;
-                    env->episode_revealed_tiles++;
-                }
+    // The scan ALWAYS runs so episode_revealed_tiles stays accurate even when
+    // reveal_coef == 0 (a stat must not depend on its reward being enabled,
+    // matching the scout/new_tiles term above). reward += reveal_coef is a
+    // no-op when the coef is 0, so disabling the reward costs nothing here.
+    for (int idx = 0; idx < NH_GRID; idx++) {
+        unsigned char ch = env->chars[idx];
+        if (ch == '.' || ch == '#' || ch == '+' || ch == '<' || ch == '>') {
+            unsigned char* byte = &env->revealed[idx >> 3];
+            unsigned char mask = (unsigned char)(1 << (idx & 7));
+            if (!(*byte & mask)) {
+                *byte |= mask;
+                reward += env->reveal_coef;
+                env->episode_revealed_tiles++;
             }
         }
     }
