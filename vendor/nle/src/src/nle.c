@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <fcntl.h>     /* O_WRONLY/O_CREAT/O_TRUNC for nle_load_level */
 #include <sys/time.h>
 #include <sys/mman.h>  /* munmap per-env arena in nle_end */
 
@@ -11,10 +12,12 @@
 #undef MONITOR_HEAP
 #endif
 #include "hack.h"
+#include "lev.h"        /* WRITE_SAVE / FREE_SAVE for savelev() */
 
 #include "dlb.h"
 
 #include "nle.h"
+#include "nle_sentinel.h"
 
 /* Single definition of current_nle_ctx; declared extern in nle.h.
  * Stage 10'+: TLS-marked so each OMP thread chases its own context.
@@ -149,6 +152,42 @@ nle_rng_init_flag(int idx)
     return &current_nle_ctx->rng_init[idx];
 }
 
+/* ---- difficulty knob catalog (catalog defined in include/nle.h) ---------- */
+
+static const char *const nle_tune_names_tbl[] = {
+#define NLE_TUNE_NAME(name, dflt) #name,
+    NLE_TUNE_FIELDS(NLE_TUNE_NAME)
+#undef NLE_TUNE_NAME
+};
+
+int
+nle_tune_count(void)
+{
+    return (int) (sizeof(nle_tune_names_tbl) / sizeof(nle_tune_names_tbl[0]));
+}
+
+const char *
+nle_tune_name(int index)
+{
+    if (index < 0 || index >= nle_tune_count())
+        return (const char *) 0;
+    return nle_tune_names_tbl[index];
+}
+
+void
+nle_tune_set_defaults(nle_tune_t *t)
+{
+#define NLE_TUNE_DFLT(name, dflt) t->name = (dflt);
+    NLE_TUNE_FIELDS(NLE_TUNE_DFLT)
+#undef NLE_TUNE_DFLT
+}
+
+nle_tune_t *
+nle_get_tune(nle_ctx_t *nle)
+{
+    return &nle->s_tune;
+}
+
 nle_ctx_t *
 init_nle(FILE *ttyrec, nle_obs *obs)
 {
@@ -162,9 +201,13 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * THIS env's fields. */
     current_nle_ctx = nle;
 
+    /* Difficulty knobs default to vanilla (all scales 1.0). calloc zeroed the
+     * ctx, so the knob block must be explicitly seeded before any read-site. */
+    nle_tune_set_defaults(&nle->s_tune);
+
     /* s8_tcap_p needs to be allocated before LI/CO are read; pre-alloc
      * and seed it so tmt_open below gets valid dimensions. */
-    nle->s8_tcap_p = calloc(1, sizeof(struct nle_tcap_t));
+    nle->s8_tcap_p = nle_arena_calloc(1, sizeof(struct nle_tcap_t));
     LI = NLE_TERM_LI;
     CO = NLE_TERM_CO;
 
@@ -199,17 +242,17 @@ init_nle(FILE *ttyrec, nle_obs *obs)
 
     /* Stage 4 player state: allocate the struct you on the heap so the
      * `u` macro in decl.h can resolve to (*current_nle_ctx->u_ptr). */
-    nle->u_ptr = (struct you *) calloc(1, sizeof(struct you));
+    nle->u_ptr = (struct you *) nle_arena_calloc(1, sizeof(struct you));
     if (!nle->u_ptr) {
         fprintf(stderr, "init_nle: failed to allocate struct you\n");
         abort();
     }
 
     /* Stage 5 flags / iflags / sysflags */
-    nle->flags_ptr = (struct flag *) calloc(1, sizeof(struct flag));
-    nle->iflags_ptr = (struct instance_flags *) calloc(1, sizeof(struct instance_flags));
+    nle->flags_ptr = (struct flag *) nle_arena_calloc(1, sizeof(struct flag));
+    nle->iflags_ptr = (struct instance_flags *) nle_arena_calloc(1, sizeof(struct instance_flags));
 #ifdef SYSFLAGS
-    nle->sysflags_ptr = (struct sysflag *) calloc(1, sizeof(struct sysflag));
+    nle->sysflags_ptr = (struct sysflag *) nle_arena_calloc(1, sizeof(struct sysflag));
 #endif
     if (!nle->flags_ptr || !nle->iflags_ptr) {
         fprintf(stderr, "init_nle: failed to allocate flags/iflags\n");
@@ -235,16 +278,16 @@ init_nle(FILE *ttyrec, nle_obs *obs)
 
     /* Stage 6' — dungeon topology heap allocations. All zero-init via calloc;
      * matches the original {0,...} static initializers in decl.c. */
-    nle->s6_topology_p = calloc(1, sizeof(struct dgn_topology));
-    nle->s6_dungeons_p = calloc(MAXDUNGEON, sizeof(dungeon));
-    nle->s6_upstair_p  = calloc(1, sizeof(stairway));
-    nle->s6_dnstair_p  = calloc(1, sizeof(stairway));
-    nle->s6_upladder_p = calloc(1, sizeof(stairway));
-    nle->s6_dnladder_p = calloc(1, sizeof(stairway));
-    nle->s6_sstairs_p  = calloc(1, sizeof(stairway));
-    nle->s6_updest_p   = calloc(1, sizeof(dest_area));
-    nle->s6_dndest_p   = calloc(1, sizeof(dest_area));
-    nle->s6_inv_pos_p  = calloc(1, sizeof(coord));
+    nle->s6_topology_p = nle_arena_calloc(1, sizeof(struct dgn_topology));
+    nle->s6_dungeons_p = nle_arena_calloc(MAXDUNGEON, sizeof(dungeon));
+    nle->s6_upstair_p  = nle_arena_calloc(1, sizeof(stairway));
+    nle->s6_dnstair_p  = nle_arena_calloc(1, sizeof(stairway));
+    nle->s6_upladder_p = nle_arena_calloc(1, sizeof(stairway));
+    nle->s6_dnladder_p = nle_arena_calloc(1, sizeof(stairway));
+    nle->s6_sstairs_p  = nle_arena_calloc(1, sizeof(stairway));
+    nle->s6_updest_p   = nle_arena_calloc(1, sizeof(dest_area));
+    nle->s6_dndest_p   = nle_arena_calloc(1, sizeof(dest_area));
+    nle->s6_inv_pos_p  = nle_arena_calloc(1, sizeof(coord));
     if (!nle->s6_topology_p || !nle->s6_dungeons_p
         || !nle->s6_upstair_p || !nle->s6_dnstair_p
         || !nle->s6_upladder_p || !nle->s6_dnladder_p
@@ -260,22 +303,22 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * `= DUMMY` ({0}) initializer at the old definition sites. Spell book
      * is an array of (MAXSPELL+1) entries. m_shot needs a non-zero
      * STRANGE_OBJECT for its `.o` field (matches decl.c old initializer). */
-    nle->s9c_m_shot_p       = calloc(1, sizeof(struct multishot));
-    nle->s9c_urealtime_p    = calloc(1, sizeof(struct u_realtime));
-    nle->s9c_quest_status_p = calloc(1, sizeof(struct q_score));
-    nle->s9c_spl_book_p     = calloc(MAXSPELL + 1, sizeof(struct spell));
-    nle->s9c_youmonst_p     = calloc(1, sizeof(struct monst));
-    nle->s9c_mvitals_p      = calloc(NUMMONS, sizeof(struct nle_mvitals_t));
-    nle->s9c_killer_p       = calloc(1, sizeof(struct kinfo));
+    nle->s9c_m_shot_p       = nle_arena_calloc(1, sizeof(struct multishot));
+    nle->s9c_urealtime_p    = nle_arena_calloc(1, sizeof(struct u_realtime));
+    nle->s9c_quest_status_p = nle_arena_calloc(1, sizeof(struct q_score));
+    nle->s9c_spl_book_p     = nle_arena_calloc(MAXSPELL + 1, sizeof(struct spell));
+    nle->s9c_youmonst_p     = nle_arena_calloc(1, sizeof(struct monst));
+    nle->s9c_mvitals_p      = nle_arena_calloc(NUMMONS, sizeof(struct nle_mvitals_t));
+    nle->s9c_killer_p       = nle_arena_calloc(1, sizeof(struct kinfo));
     /* s8_tcap_p already calloc'd at top of init_nle (LI/CO needed early). */
-    nle->s5_cmd_p           = calloc(1, sizeof(struct cmd));
-    nle->s_disco_p          = calloc(NUM_OBJECTS, sizeof(short));
+    nle->s5_cmd_p           = nle_arena_calloc(1, sizeof(struct cmd));
+    nle->s_disco_p          = nle_arena_calloc(NUM_OBJECTS, sizeof(short));
     /* obufs is NUMOBUF * BUFSZ bytes, defined in objnam.c. */
-    nle->s_obufs_p          = calloc(12 * 256, sizeof(char));
+    nle->s_obufs_p          = nle_arena_calloc(12 * 256, sizeof(char));
     /* tty_status is 2 * MAXBLSTATS * sizeof(struct tty_status_fields).
      * sizeof is opaque here — over-allocate (4096 is plenty for ~1840 B). */
-    nle->s_tty_status_p     = calloc(4096, 1);
-    nle->s_context_p        = calloc(1, sizeof(struct context_info));
+    nle->s_tty_status_p     = nle_arena_calloc(4096, 1);
+    nle->s_context_p        = nle_arena_calloc(1, sizeof(struct context_info));
     {
         extern struct nle_rndmonst_state *rndmonst_state_alloc(void);
         nle->s_rndmonst_state_p = rndmonst_state_alloc();
@@ -294,55 +337,55 @@ init_nle(FILE *ttyrec, nle_obs *obs)
      * (manifesting later as non-deterministic glibc double-free / SIGSEGV).
      * The baseline arrays below have NUM_OBJECTS + 1 elements, so copying the
      * terminator too is in-bounds. */
-    nle->s9o_objects_p   = malloc((NUM_OBJECTS + 1) * sizeof(struct objclass));
-    nle->s9o_obj_descr_p = malloc((NUM_OBJECTS + 1) * sizeof(struct objdescr));
+    nle->s9o_objects_p   = nle_arena_calloc(NUM_OBJECTS + 1, sizeof(struct objclass));
+    nle->s9o_obj_descr_p = nle_arena_calloc(NUM_OBJECTS + 1, sizeof(struct objdescr));
     /* do_name.c name-buffer pool: NUMMBUF=5 * BUFSZ=256 = 1280 bytes. */
-    nle->s_mbufs_p       = calloc(5 * 256, sizeof(char));
+    nle->s_mbufs_p       = nle_arena_calloc(5 * 256, sizeof(char));
     /* decl.c smeq[MAXNROFROOMS+1] — calloc'd zero matches original {0,...}. */
-    nle->s_smeq_p        = calloc(MAXNROFROOMS + 1, sizeof(int));
-    nle->s_bases_p       = calloc(MAXOCLASSES, sizeof(int));
+    nle->s_smeq_p        = nle_arena_calloc(MAXNROFROOMS + 1, sizeof(int));
+    nle->s_bases_p       = nle_arena_calloc(MAXOCLASSES, sizeof(int));
     /* CLR_MAX is 16 in the standard build. */
-    nle->s_hilites_p     = calloc(16, sizeof(char *));
+    nle->s_hilites_p     = nle_arena_calloc(16, sizeof(char *));
     /* Per-env work buffers from various src files. sizes are opaque
      * here (the struct types are defined in display.h / botl.h /
      * vision.h, which we deliberately don't pull into nle.h to keep
      * the util-build include cascade small). Bound generously by
      * counting bytes. ROWNO=21, COLNO=80, MAXBLSTATS=23. */
-    nle->s_gbuf_p           = calloc(ROWNO * COLNO, 64);   /* gbuf_entry */
-    nle->s_blstats_p        = calloc(2 * 23, 256);          /* struct istat_s */
-    nle->s_status_hilites_p = calloc(23, 256);              /* struct hilite_s */
-    nle->s_could_see_p      = calloc(2 * ROWNO * COLNO, 1);
-    nle->s_viz_clear_p      = calloc(ROWNO * COLNO, 1);
-    nle->s_left_ptrs_p      = calloc(ROWNO * COLNO, 1);
-    nle->s_right_ptrs_p     = calloc(ROWNO * COLNO, 1);
-    nle->s_SpLev_Map_p      = calloc(COLNO * ROWNO, 1);
+    nle->s_gbuf_p           = nle_arena_calloc(ROWNO * COLNO, 64);   /* gbuf_entry */
+    nle->s_blstats_p        = nle_arena_calloc(2 * 23, 256);          /* struct istat_s */
+    nle->s_status_hilites_p = nle_arena_calloc(23, 256);              /* struct hilite_s */
+    nle->s_could_see_p      = nle_arena_calloc(2 * ROWNO * COLNO, 1);
+    nle->s_viz_clear_p      = nle_arena_calloc(ROWNO * COLNO, 1);
+    nle->s_left_ptrs_p      = nle_arena_calloc(ROWNO * COLNO, 1);
+    nle->s_right_ptrs_p     = nle_arena_calloc(ROWNO * COLNO, 1);
+    nle->s_SpLev_Map_p      = nle_arena_calloc(COLNO * ROWNO, 1);
     /* fqn_filename_buffer = char[FQN_NUMBUF=4][FQN_MAX_FILENAME=512] = 2048 B */
-    nle->s_fqn_fname_p      = calloc(4 * 512, 1);
+    nle->s_fqn_fname_p      = nle_arena_calloc(4 * 512, 1);
     /* worm tables (worm.c). MAX_NUM_WORMS=32. */
-    nle->s_wheads_p         = calloc(32, sizeof(void *));
-    nle->s_wtails_p         = calloc(32, sizeof(void *));
-    nle->s_wgrowtime_p      = calloc(32, sizeof(long));
+    nle->s_wheads_p         = nle_arena_calloc(32, sizeof(void *));
+    nle->s_wtails_p         = nle_arena_calloc(32, sizeof(void *));
+    nle->s_wgrowtime_p      = nle_arena_calloc(32, sizeof(long));
     /* boolopt baseline is 2088 B; compopt is 1920 B. Generous alloc bounds. */
-    nle->s_boolopt_p        = calloc(1, 4096);
-    nle->s_compopt_p        = calloc(1, 4096);
+    nle->s_boolopt_p        = nle_arena_calloc(1, 4096);
+    nle->s_compopt_p        = nle_arena_calloc(1, 4096);
     /* urole / urace (struct Role / struct Race in you.h). Sizes opaque. */
-    nle->s_urole_p          = calloc(1, 512);
-    nle->s_urace_p          = calloc(1, 512);
+    nle->s_urole_p          = nle_arena_calloc(1, 512);
+    nle->s_urace_p          = nle_arena_calloc(1, 512);
     if (nle->s9o_objects_p && nle->s9o_obj_descr_p) {
         memcpy(nle->s9o_objects_p, objects_baseline,
                (NUM_OBJECTS + 1) * sizeof(struct objclass));
         memcpy(nle->s9o_obj_descr_p, obj_descr_baseline,
                (NUM_OBJECTS + 1) * sizeof(struct objdescr));
     }
-    nle->s7_level_p         = calloc(1, sizeof(dlevel_t));
-    nle->s7_rooms_p         = calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
-    nle->s7_doors_p         = calloc(DOORMAX, sizeof(coord));
-    nle->s7_level_info_p    = calloc(MAXLINFO, sizeof(struct linfo));
-    nle->s7_lastseentyp_p   = calloc(COLNO * ROWNO, sizeof(schar));
+    nle->s7_level_p         = nle_arena_calloc(1, sizeof(dlevel_t));
+    nle->s7_rooms_p         = nle_arena_calloc((MAXNROFROOMS + 1) * 2, sizeof(struct mkroom));
+    nle->s7_doors_p         = nle_arena_calloc(DOORMAX, sizeof(coord));
+    nle->s7_level_info_p    = nle_arena_calloc(MAXLINFO, sizeof(struct linfo));
+    nle->s7_lastseentyp_p   = nle_arena_calloc(COLNO * ROWNO, sizeof(schar));
     /* bhitpos per-env. */
-    nle->bhitpos_p          = calloc(1, sizeof(coord));
+    nle->bhitpos_p          = nle_arena_calloc(1, sizeof(coord));
     /* Utrack[UTSZ=50] per-env (track.c). */
-    nle->s_utrack           = calloc(50, sizeof(coord));
+    nle->s_utrack           = nle_arena_calloc(50, sizeof(coord));
     /* subrooms points into the rooms array (slot MAXNROFROOMS+1). */
     nle->s7_subrooms        = nle->s7_rooms_p + (MAXNROFROOMS + 1);
     /* upstairs_room/dnstairs_room/sstairs_room/ftrap left NULL — original
@@ -443,19 +486,40 @@ mainloop(fcontext_transfer_t ctx_transfer)
         s->hackdir[len] = '\0';
     }
 
+    /* Read-only data directory. When supplied, the immutable game data lives
+     * here (shared across envs, read-only) and only the writable game-state
+     * files stay under hackdir — so a fresh env needs only a tiny writable dir
+     * rather than a full copy of the dat tree. Empty => fall back to hackdir,
+     * which reproduces the original single-directory behavior exactly. */
+    char *datadir = s->hackdir;
+    if (s->datadir[0] != '\0') {
+        int dlen = strnlen(s->datadir, sizeof(s->datadir));
+        if (dlen >= (int) sizeof(s->datadir) - 1) {
+            error("DATADIR too long");
+            return;
+        }
+        if (s->datadir[dlen - 1] != '/') {
+            s->datadir[dlen] = '/';
+            s->datadir[dlen + 1] = '\0';
+        }
+        datadir = s->datadir;
+    }
+
     char *scoreprefix = (s->scoreprefix[0] != '\0')
                             ? s->scoreprefix
                             : s->hackdir;
-    fqn_prefix[SYSCONFPREFIX] = s->hackdir;
-    fqn_prefix[CONFIGPREFIX] = s->hackdir;
-    fqn_prefix[HACKPREFIX] = s->hackdir;
+    /* Read-only prefixes -> shared datadir (never written by the engine). */
+    fqn_prefix[DATAPREFIX] = datadir;
+    fqn_prefix[HACKPREFIX] = datadir;
+    fqn_prefix[SYSCONFPREFIX] = datadir;
+    fqn_prefix[CONFIGPREFIX] = datadir;
+    /* Writable prefixes -> per-env hackdir. */
     fqn_prefix[SAVEPREFIX] = s->hackdir;
     fqn_prefix[LEVELPREFIX] = s->hackdir;
     fqn_prefix[BONESPREFIX] = s->hackdir;
     fqn_prefix[SCOREPREFIX] = scoreprefix;
     fqn_prefix[LOCKPREFIX] = s->hackdir;
     fqn_prefix[TROUBLEPREFIX] = s->hackdir;
-    fqn_prefix[DATAPREFIX] = s->hackdir;
 
     char *argv[1] = { "nethack" };
 
@@ -713,6 +777,20 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
     nle->settings = *settings_p;
     nle->seeds_init = seed_init;
 
+    /* Apply difficulty-knob overrides supplied at start, BEFORE the mainloop
+     * below generates the first level (mklev). init_nle already seeded s_tune
+     * to vanilla defaults; tune_n == 0 leaves them untouched. */
+    {
+        int k;
+        double *tunep = (double *) &nle->s_tune;
+        int ncat = nle_tune_count();
+        for (k = 0; k < settings_p->tune_n && k < NLE_TUNE_MAX; k++) {
+            int idx = settings_p->tune_idx[k];
+            if (idx >= 0 && idx < ncat)
+                tunep[idx] = settings_p->tune_val[k];
+        }
+    }
+
     nle->stack = create_fcontext_stack(STACK_SIZE);
     nle->generatorcontext =
         make_fcontext(nle->stack.sptr, nle->stack.ssize, mainloop);
@@ -741,6 +819,11 @@ nle_start(nle_obs *obs, FILE *ttyrec, nle_seeds_init_t *seed_init,
             write_ttyrec_data(&obs->blstats[9], 4);
         }
     }
+
+    nle_sentinel_global_init();
+    /* seed_init->seeds[0] is the primary dungeon seed for this env */
+    nle->sentinel = nle_sentinel_register(
+        seed_init ? (unsigned long)seed_init->seeds[0] : 0UL);
 
     return nle;
 }
@@ -860,9 +943,135 @@ nle_swap_out(nle_ctx_t *nle)
     }
 }
 
+static long
+nle_arena_off(char *base, void *p)
+{
+    return p ? (long) ((char *) p - base) : -1L;
+}
+
+/* Arena memory map. Dumps every named per-env buffer (by arena offset), the
+ * live monster (fmon) and object (fobj) chains, and the monster grid with
+ * fmon-membership — so an arbitrary arena pointer can be classified (which
+ * buffer/monster/object it falls in) and stale grid pointers (in the grid but
+ * not in fmon) are flagged. Writes to `path`, or stderr if NULL. */
+void
+nle_dbg_memmap(nle_ctx_t *nle, const char *path)
+{
+    extern const struct permonst mons[];
+    FILE *f = path ? fopen(path, "w") : stderr;
+    struct monst *m;
+    struct obj *o;
+    char *base;
+    int x, y, n;
+    if (!f)
+        return;
+    if (!nle) {
+        if (path)
+            fclose(f);
+        return;
+    }
+    current_nle_ctx = nle;
+    base = nle->s_arena_base;
+
+    fprintf(f, "# nle whole-game memory map\n");
+    fprintf(f, "obs_dlvl=%d moves=%ld\n\n",
+            nle->s7_level_p ? (int) depth(&u.uz) : -1, (long) moves);
+
+    /* Every region that holds per-env game state. The arena holds the bulk
+     * (all dynamic NetHack allocations); the others live outside it and are
+     * captured separately by the snapshot (ctx struct + coroutine stack + rl
+     * display mirror). This is the complete footprint a snapshot must cover. */
+    {
+        extern size_t nle_rl_mirror_size(void);
+        char *stk_hi = (char *) nle->stack.sptr;
+        char *stk_lo = stk_hi - nle->stack.ssize;
+        fprintf(f, "## whole-game regions (addr  size  what)\n");
+        fprintf(f, "%18p  %10zu  nle_ctx_t struct (fixed per-env state)\n",
+                (void *) nle, sizeof(*nle));
+        fprintf(f, "%18p  %10zu  arena (used; cap=%zu) -- all dynamic state\n",
+                (void *) base, nle->s_arena_used, nle->s_arena_cap);
+        fprintf(f, "%18p  %10zu  coroutine stack (fcontext)\n",
+                (void *) stk_lo, nle->stack.ssize);
+        fprintf(f, "%18p  %10zu  rl display mirror (libc, outside arena)\n",
+                nle->s_netHackRL_instance, nle_rl_mirror_size());
+        fprintf(f, "\n");
+    }
+
+    fprintf(f, "## arena named buffers + chains (offsets relative to arena_base"
+               "=%p)\n\n", (void *) base);
+
+    {
+        struct { const char *name; void *p; } b[] = {
+            { "gbuf", nle->s_gbuf_p }, { "context", nle->s_context_p },
+            { "obufs", nle->s_obufs_p }, { "mbufs", nle->s_mbufs_p },
+            { "disco", nle->s_disco_p }, { "blstats", nle->s_blstats_p },
+            { "level(struct)", nle->s7_level_p }, { "rooms", nle->s7_rooms_p },
+            { "doors", nle->s7_doors_p }, { "level_info", nle->s7_level_info_p },
+            { "lastseentyp", nle->s7_lastseentyp_p },
+            { "youmonst", nle->s9c_youmonst_p }, { "mvitals", nle->s9c_mvitals_p },
+            { "killer", nle->s9c_killer_p }, { "spl_book", nle->s9c_spl_book_p },
+            { "quest_status", nle->s9c_quest_status_p },
+            { "objects", nle->s9o_objects_p }, { "obj_descr", nle->s9o_obj_descr_p },
+            { "rndmonst", nle->s_rndmonst_state_p }, { "artilist", nle->s_artilist_p },
+            { "muse_m", nle->s_muse_m_p }, { "could_see", nle->s_could_see_p },
+            { "viz_clear", nle->s_viz_clear_p }, { "left_ptrs", nle->s_left_ptrs_p },
+            { "right_ptrs", nle->s_right_ptrs_p }, { "wheads", nle->s_wheads_p },
+            { "wtails", nle->s_wtails_p }, { "wgrowtime", nle->s_wgrowtime_p },
+            { "tty_status", nle->s_tty_status_p }, { "tcap", nle->s8_tcap_p },
+            { "topology", nle->s6_topology_p }, { "dungeons", nle->s6_dungeons_p },
+        };
+        fprintf(f, "## named buffers (arena offset, name) -- sort -n to see layout\n");
+        for (n = 0; n < (int) (sizeof(b) / sizeof(b[0])); n++)
+            fprintf(f, "%10ld  %s\n", nle_arena_off(base, b[n].p), b[n].name);
+    }
+    fflush(f);
+
+#define INAR(p) ((char *) (p) >= base \
+                 && (char *) (p) < base + nle->s_arena_used)
+    fprintf(f, "\n## monsters fmon (offset id mnum hp species)\n");
+    for (m = fmon, n = 0; m && INAR(m) && n < 100000; m = m->nmon, n++) {
+        int valid = (m->data >= &mons[0] && m->data < &mons[NUMMONS]);
+        fprintf(f, "%10ld  id=%u mnum=%d hp=%d %s\n", nle_arena_off(base, m),
+                m->m_id, m->mnum, m->mhp,
+                valid ? mons[m->mnum].mname : "<BAD data>");
+    }
+    if (m && !INAR(m))
+        fprintf(f, "  (fmon walk hit OOB ptr %p at #%d)\n", (void *) m, n);
+    fflush(f);
+
+    fprintf(f, "\n## objects fobj (offset id otyp)\n");
+    for (o = fobj, n = 0; o && INAR(o) && n < 100000; o = o->nobj, n++)
+        fprintf(f, "%10ld  id=%u otyp=%d\n", nle_arena_off(base, o), o->o_id,
+                o->otyp);
+    fflush(f);
+
+    fprintf(f, "\n## grid monster ptrs (x y offset in_fmon valid_data)\n");
+    for (x = 0; x < COLNO; x++)
+        for (y = 0; y < ROWNO; y++) {
+            struct monst *gm = level.monsters[x][y], *fm;
+            int in = 0, fn = 0;
+            if (!gm)
+                continue;
+            for (fm = fmon; fm && INAR(fm) && fn < 100000;
+                 fm = fm->nmon, fn++)
+                if (fm == gm) { in = 1; break; }
+            fprintf(f, "%3d %3d  %10ld  in_fmon=%d valid_data=%d%s\n", x, y,
+                    nle_arena_off(base, gm), in,
+                    INAR(gm) && gm->data >= &mons[0]
+                        && gm->data < &mons[NUMMONS],
+                    in ? "" : "  <<< STALE GRID PTR");
+        }
+#undef INAR
+    fflush(f);
+    if (path)
+        fclose(f);
+}
+
 nle_ctx_t *
 nle_step(nle_ctx_t *nle, nle_obs *obs)
 {
+    nle_sentinel_beat(nle->sentinel, obs->action,
+                      obs->blstats ? (int)obs->blstats[NLE_BL_DEPTH] : 0);
     /* exp_039: prefetch the env context aggressively. Under puffer's
      * round-robin OMP step pattern, each c_step touches a different env's
      * 72 KB nle_ctx_t cold from L2/L3 — that single-pattern alone is
@@ -920,73 +1129,22 @@ nle_step(nle_ctx_t *nle, nle_obs *obs)
 static void
 free_nle_fields(nle_ctx_t *nle)
 {
-    free(nle->u_ptr);
-    free(nle->flags_ptr);
-    free(nle->iflags_ptr);
-#ifdef SYSFLAGS
-    free(nle->sysflags_ptr);
-#endif
-    free(nle->s6_topology_p);
-    free(nle->s6_dungeons_p);
-    free(nle->s6_upstair_p);
-    free(nle->s6_dnstair_p);
-    free(nle->s6_upladder_p);
-    free(nle->s6_dnladder_p);
-    free(nle->s6_sstairs_p);
-    free(nle->s6_updest_p);
-    free(nle->s6_dndest_p);
-    free(nle->s6_inv_pos_p);
-    free(nle->s9c_m_shot_p);
-    free(nle->s9c_urealtime_p);
-    free(nle->s9c_quest_status_p);
-    free(nle->s9c_spl_book_p);
-    free(nle->s9c_youmonst_p);
-    free(nle->s9c_mvitals_p);
-    free(nle->s9c_killer_p);
-    free(nle->s8_tcap_p);
-    free(nle->s5_cmd_p);
-    free(nle->s_disco_p);
-    free(nle->s_obufs_p);
-    free(nle->s_tty_status_p);
-    free(nle->s_context_p);
-    free(nle->s_rndmonst_state_p);
-    /* s_artilist_p and s_qt_list_p are allocated via alloc() (arena),
-     * not libc malloc — freed when the arena is munmap'd. */
-    free(nle->s9o_objects_p);
-    free(nle->s9o_obj_descr_p);
-    free(nle->s_mbufs_p);
-    free(nle->s_smeq_p);
-    free(nle->s_bases_p);
-    free(nle->s_hilites_p);
-    free(nle->s_gbuf_p);
-    free(nle->s_blstats_p);
-    free(nle->s_status_hilites_p);
-    free(nle->s_could_see_p);
-    free(nle->s_viz_clear_p);
-    free(nle->s_left_ptrs_p);
-    free(nle->s_right_ptrs_p);
-    free(nle->s_SpLev_Map_p);
-    free(nle->s_fqn_fname_p);
-    free(nle->s_wheads_p);
-    free(nle->s_wtails_p);
-    free(nle->s_wgrowtime_p);
-    free(nle->s_boolopt_p);
-    free(nle->s_compopt_p);
-    free(nle->s_urole_p);
-    free(nle->s_urace_p);
-    free(nle->s7_level_p);
-    free(nle->s7_rooms_p);
-    free(nle->s7_doors_p);
-    free(nle->s7_level_info_p);
-    free(nle->s7_lastseentyp_p);
-    free(nle->bhitpos_p);
-    free(nle->s_utrack);
-    free(nle->s_muse_m_p);
+    /* All per-env heap buffers hanging off nle_ctx_t are now allocated via
+     * nle_arena_calloc() / alloc() (the per-env arena), so that nle_fr_snapshot
+     * captures their contents wholesale. Arena memory is reclaimed when the
+     * arena is munmap'd in nle_end — calling libc free() on these (arena)
+     * pointers would corrupt the heap. So there is nothing to free here; the
+     * function is retained as the documented teardown hook. (This mirrors the
+     * long-standing handling of s_artilist_p / s_qt_list_p, which were already
+     * arena-allocated and intentionally never libc-freed.) */
+    (void) nle;
 }
 
 void
 nle_end(nle_ctx_t *nle)
 {
+    nle_sentinel_unregister(nle->sentinel);
+    nle->sentinel = NULL;
     current_nle_ctx = nle;
     nle_swap_in(nle);
     if (!nle->done) {
@@ -1047,6 +1205,436 @@ nle_get_seed(nle_ctx_t *nle, unsigned long *core, unsigned long *disp,
     *reseed = current_nle_ctx->has_strong_rngseed;
 }
 #endif
+
+/* ===================================================================
+ * Single-level blob save/load.
+ * =================================================================== */
+
+/* Serialize the CURRENT dungeon level to a malloc'd byte blob.
+ * Reuses NetHack's own savelev(WRITE_SAVE) into the per-env levelfile
+ * on disk, then slurps the bytes back. Caller frees via nle_free_blob.
+ * Returns the blob (and writes its length to *out_len), or NULL on error. */
+void *
+nle_save_level(nle_ctx_t *nle, long *out_len)
+{
+    int fd, ledger;
+    char errbuf[BUFSZ];
+    const char *fq;
+    long sz;
+    void *blob;
+    FILE *fp;
+
+    current_nle_ctx = nle;
+    if (out_len)
+        *out_len = 0;
+
+    ledger = ledger_no(&u.uz);
+    /* Write the in-memory current level to its <lock>.<ledger> file.
+     * WRITE_SAVE without FREE_SAVE so the live level stays intact. */
+    fd = create_levelfile(ledger, errbuf);
+    if (fd < 0)
+        return (void *) 0;
+    /* Exactly the do.c goto_level levelfile shape: no version header,
+     * just savelev() bytes. bufon/bufoff bracket the zerocomp stream. */
+    bufon(fd);
+    savelev(fd, ledger, WRITE_SAVE);
+    bflush(fd);
+    bufoff(fd);
+    nhclose(fd);
+
+    /* Slurp the file back into a blob. */
+    set_levelfile_name(lock, ledger);
+    fq = fqname(lock, LEVELPREFIX, 0);
+    fp = fopen(fq, "rb");
+    if (!fp)
+        return (void *) 0;
+    fseek(fp, 0, SEEK_END);
+    sz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (sz <= 0) { /* ftell error or empty file: nothing valid to return */
+        fclose(fp);
+        return (void *) 0;
+    }
+    blob = malloc((size_t) sz);
+    if (!blob) {
+        fclose(fp);
+        return (void *) 0;
+    }
+    if (fread(blob, 1, (size_t) sz, fp) != (size_t) sz) {
+        free(blob);
+        fclose(fp);
+        return (void *) 0;
+    }
+    fclose(fp);
+    if (out_len)
+        *out_len = sz;
+    return blob;
+}
+
+/* Release a blob returned by nle_save_level. */
+void
+nle_free_blob(void *blob)
+{
+    free(blob);
+}
+
+/* Load a level blob (from nle_save_level) as the CURRENT level of this
+ * (already-started) game. The game must have been started (nle_start) so
+ * the dungeon graph / u.uz / player struct exist; we overwrite the level
+ * CONTENTS in place.
+ *
+ * Two-phase: this mutates state and resets vision but does NOT re-render.
+ * Returns 0 on success, nonzero on error. */
+int
+nle_load_level(nle_ctx_t *nle, const void *blob, long len)
+{
+    int fd, ledger;
+    char errbuf[BUFSZ];
+    const char *fq;
+
+    current_nle_ctx = nle;
+    if (!blob || len <= 0) /* reject NULL/empty blobs before touching disk */
+        return 4;
+    ledger = ledger_no(&u.uz);
+
+    /* Stamp the blob over the target ledger's levelfile, then getlev it. */
+    set_levelfile_name(lock, ledger);
+    fq = fqname(lock, LEVELPREFIX, 0);
+    {
+        int wfd = open(fq, O_WRONLY | O_CREAT | O_TRUNC, FCMASK);
+        if (wfd < 0)
+            return 1;
+        if (write(wfd, blob, (size_t) len) != (ssize_t) len) {
+            close(wfd);
+            return 2;
+        }
+        close(wfd);
+        level_info[ledger].linfo_flags |= LFILE_EXISTS;
+    }
+
+    fd = open_levelfile(ledger, errbuf);
+    if (fd < 0)
+        return 3;
+
+    minit();                 /* ZEROCOMP reader init */
+    /* Discard the live current level so getlev's allocations don't leak/
+     * collide; FREE_SAVE tears down monsters/objs/timers of current level. */
+    savelev(-1, ledger, FREE_SAVE);
+
+    /* Pass pid=0, lev=0 to skip getlev()'s "is this the level/pid I expect?"
+     * sanity check. A standalone load DELIBERATELY installs an arbitrary level
+     * blob into the current ledger slot, so a mismatch is normal: e.g. resuming
+     * a checkpoint taken on dungeon level 5 stamps that blob over the level-1
+     * slot. With the check on, getlev() would call trickery() -> pline(...) ->
+     * done(TRICKED), and the pline() routes through the rl window port, which
+     * yields the game coroutine (jump_fcontext) from THIS (main) context -> jump
+     * to a dead fcontext -> SIGSEGV. (pid=0 likewise makes cross-process resume
+     * safe, since a checkpoint saved in another server run has a different
+     * hackpid.) pid/lev are used nowhere else in getlev(). */
+    getlev(fd, 0, (xchar) 0, FALSE);
+    nhclose(fd);
+
+    /* Standalone-load context fixups: place the hero on a sane, walkable
+     * tile of the LOADED level. The destination game's u.ux/u.uy is stale
+     * relative to the swapped-in contents and may land on rock/void, so we
+     * re-seat in priority order: the level's upstairs, else its downstairs,
+     * else the first ACCESSIBLE tile found by scanning the map. */
+    if (xupstair) {
+        u_on_newpos(xupstair, yupstair);
+    } else if (xdnstair) {
+        u_on_newpos(xdnstair, ydnstair);
+    } else {
+        int x, y;
+        boolean placed = FALSE;
+
+        for (x = 1; x < COLNO && !placed; x++)
+            for (y = 0; y < ROWNO && !placed; y++)
+                if (ACCESSIBLE(levl[x][y].typ)) {
+                    u_on_newpos(x, y);
+                    placed = TRUE;
+                }
+    }
+
+    /* The rl mirror is not reset here (no callable C reset exists from this
+     * translation unit); the next nle_step()'s full docrt() repaints every
+     * tile and so clears any prior-level glyph residue. */
+
+    /* docrt()/flush_screen()/pline() route through the rl window port, which
+     * YIELDS the game coroutine (jump_fcontext). They MUST NOT be called from
+     * this entry point (main context) or we jump to a dead fcontext and
+     * SIGSEGV. vision_reset() is pure computation (no window calls), so it is
+     * safe here; the actual re-render happens on the next nle_step(), which
+     * runs docrt() inside the coroutine. */
+    vision_reset();
+    return 0;
+}
+
+/* ===================================================================
+ * Secure state-modification API.
+ *
+ * A curated whitelist of player-field pokes plus a deferred dungeon-level
+ * jump. The C side only exposes the setters; the binding validates bounds.
+ * =================================================================== */
+
+/* Poke a single whitelisted integer player field. Returns 0 on success,
+ * nonzero for an unknown field name. */
+int
+nle_set_state(nle_ctx_t *nle, const char *field, long value)
+{
+    current_nle_ctx = nle;
+    if (!field)
+        return 1;
+
+    if (!strcmp(field, "hp")) {
+        u.uhp = (int) value;
+    } else if (!strcmp(field, "max_hp")) {
+        u.uhpmax = (int) value;
+    } else if (!strcmp(field, "hunger")) {
+        /* set the food counter, then recompute the derived hunger STATE
+         * (Hungry/Weak/Fainting/...) so blstats/encumbrance stay coherent. */
+        u.uhunger = (int) value;
+        newuhs(FALSE);
+    } else if (!strcmp(field, "xp_level")) {
+        int lev = (int) value;
+
+        if (lev < 1)
+            lev = 1;
+        if (lev > MAXULEV)
+            lev = MAXULEV;
+        u.ulevel = lev;
+        if (u.ulevelmax < u.ulevel)
+            u.ulevelmax = u.ulevel;
+        /* Keep experience points consistent with the new level: bump uexp
+         * up to the threshold for this level if it is currently too low, so
+         * the level does not immediately get clobbered by newexplevel(). */
+        if (u.uexp < newuexp(u.ulevel - 1))
+            u.uexp = newuexp(u.ulevel - 1);
+    } else if (!strcmp(field, "gold")) {
+        /* Gold is not a scalar field: it is a COIN_CLASS object in invent,
+         * and blstats[GOLD] == money_cnt(invent) == that object's quan.
+         * Adjust the existing gold object's quan, or create one if absent. */
+        struct obj *gold = findgold(invent);
+
+        if (value < 0L)
+            value = 0L;
+        if (!gold && value > 0L) {
+            /* mkgold(0,...) at hero pos makes a random pile; make it at an
+             * offmap-ish spot then re-quan, then move into inventory. We
+             * instead build the coin object directly via mkgold on the hero
+             * tile and pull it in. */
+            gold = mkgold(value, u.ux, u.uy);
+            if (gold) {
+                obj_extract_self(gold); /* remove from floor pile */
+                gold->quan = value;
+                gold->owt = weight(gold);
+                addinv(gold);
+            }
+        } else if (gold) {
+            gold->quan = value;
+            gold->owt = weight(gold);
+            if (value == 0L) {
+                /* an empty coin stack should not linger in inventory */
+                extract_nobj(gold, &invent);
+                dealloc_obj(gold);
+            }
+        }
+    } else if (!strcmp(field, "str") || !strcmp(field, "dex")
+               || !strcmp(field, "con") || !strcmp(field, "int")
+               || !strcmp(field, "wis") || !strcmp(field, "cha")) {
+        /* Set a single attribute (base + max).  The caller passes NetHack's
+         * encoded value: 3..18 normal, 19..118 == 18/01..18/00 strength
+         * percentile, 119..125 == 19..25 (exceptional, magic only).  The
+         * displayed attribute is acurr (== ABASE) plus item/temp bonuses,
+         * which are zero for an injected hero, so this is what shows up.
+         * Used by the curriculum stat-upgrade on the deep jump. */
+        int idx = (!strcmp(field, "str")) ? A_STR
+                : (!strcmp(field, "int")) ? A_INT
+                : (!strcmp(field, "wis")) ? A_WIS
+                : (!strcmp(field, "dex")) ? A_DEX
+                : (!strcmp(field, "con")) ? A_CON
+                : A_CHA;
+        int v = (int) value;
+
+        if (v < 3)
+            v = 3;
+        if (v > 125)
+            v = 125;
+        u.acurr.a[idx] = (schar) v;
+        if (u.amax.a[idx] < (schar) v)
+            u.amax.a[idx] = (schar) v;
+    } else {
+        return 1; /* unknown field */
+    }
+
+    context.botl = TRUE; /* bottom-line status is now stale */
+    return 0;
+}
+
+/* Schedule a DEFERRED move of the hero to dungeon level n within the
+ * current dungeon branch. The game loop (allmain.c) processes u.utotype
+ * via deferred_goto() after rhack(), so this is safe to call from the
+ * ctypes entry point: the actual goto_level() runs in-context on the next
+ * nle_step(). Returns 0 on success, nonzero on an out-of-range target. */
+int
+nle_goto_depth(nle_ctx_t *nle, int n)
+{
+    d_level dest;
+
+    current_nle_ctx = nle;
+
+    if (n < 1 || n > (int) dunlevs_in_dungeon(&u.uz))
+        return 1;
+
+    dest.dnum = u.uz.dnum; /* stay in the current branch */
+    dest.dlevel = (xchar) n;
+
+    if (on_level(&u.uz, &dest))
+        return 0; /* already there; nothing to schedule */
+
+    /* schedule_goto sets u.utolev + u.utotype; deferred_goto() consumes
+     * them on the next step. at_stairs/falling/portal all FALSE so the hero
+     * lands on the destination's normal entry tile. */
+    schedule_goto(&dest, FALSE, FALSE, 0, (char *) 0, (char *) 0);
+    return 0;
+}
+
+/* Seat the hero on the down (or up) staircase of the current level, if present.
+ * Two-phase like goto_depth: caller steps once to re-render. Returns 0 on
+ * success, nonzero if the requested stair does not exist on this level. */
+int
+nle_seat_on_stair(nle_ctx_t *nle, int down)
+{
+    current_nle_ctx = nle;
+
+    if (down && xdnstair > 0) {
+        u_on_newpos(xdnstair, ydnstair);
+    } else if (!down && xupstair > 0) {
+        u_on_newpos(xupstair, yupstair);
+    } else {
+        return 1; /* no such stair on this level */
+    }
+
+    context.botl = TRUE; /* hero position / status is now stale */
+    return 0;
+}
+
+/* Real level-up: raise the hero n experience levels with the normal HP/stat
+ * gains (pluslvl). Also bumps u.uexp to the new level threshold so the next
+ * newexplevel() won't undo it. Caller steps once to refresh blstats.
+ * Returns 0 on success. */
+int
+nle_level_up(nle_ctx_t *nle, int n)
+{
+    int i;
+    boolean saved_window_inited;
+
+    current_nle_ctx = nle;
+
+    /* pluslvl() emits messages (You_feel/pline "Welcome to experience
+     * level N"). Emitting through the window port from this bare entry
+     * point (outside nle_step's render context) yields the coroutine and
+     * crashes. Temporarily clear window_inited so pline() falls back to
+     * raw_print (safe: no coroutine yield), then restore it. The caller
+     * steps once afterward to re-render normally. */
+    saved_window_inited = iflags.window_inited;
+    iflags.window_inited = FALSE;
+
+    for (i = 0; i < n && u.ulevel < 30; i++)
+        pluslvl(FALSE);
+
+    iflags.window_inited = saved_window_inited;
+
+    /* Keep experience points consistent with the new level: bump uexp up to
+     * the threshold for this level if it is currently too low, so the level
+     * does not immediately get clobbered by newexplevel(). Mirrors the
+     * xp_level setter in nle_set_state. */
+    if (u.uexp < newuexp(u.ulevel - 1))
+        u.uexp = newuexp(u.ulevel - 1);
+
+    context.botl = TRUE; /* bottom-line status is now stale */
+    return 0;
+}
+
+/* ===================================================================
+ * Curriculum traversal: cross-branch goto + dungeon-table query.
+ * nle_goto_depth can only move WITHIN the current branch (it pins
+ * dest.dnum = u.uz.dnum) and is clamped to that branch's length, so it
+ * cannot reach Gehennom (levels ~26-50) or the Elemental Planes.  These
+ * entry points expose the dungeon layout and an arbitrary (dnum, dlevel)
+ * jump so a curriculum can stitch e.g. DoD 1-3 to Gehennom 48-50.
+ * =================================================================== */
+
+/* Number of dungeon branches currently defined (DoD, Gehennom, Mines, ...). */
+int
+nle_num_dungeons(nle_ctx_t *nle)
+{
+    current_nle_ctx = nle;
+    return nle->s_n_dgns;
+}
+
+/* Report the layout of dungeon branch `idx`: its name, logical depth_start
+ * (the absolute depth of its first level) and number of levels.  Lets the
+ * caller map an absolute "Dlvl N" to a concrete (dnum, dlevel) and locate
+ * branches (Gehennom, "The Elemental Planes") by name.  Any of the out
+ * pointers may be NULL.  Returns 0 on success, 1 if idx is out of range. */
+int
+nle_dungeon_info(nle_ctx_t *nle, int idx, char *name_out, int name_cap,
+                 int *depth_start_out, int *num_dunlevs_out)
+{
+    current_nle_ctx = nle;
+    if (idx < 0 || idx >= nle->s_n_dgns)
+        return 1;
+    if (name_out && name_cap > 0) {
+        (void) strncpy(name_out, dungeons[idx].dname, (size_t) (name_cap - 1));
+        name_out[name_cap - 1] = '\0';
+    }
+    if (depth_start_out)
+        *depth_start_out = dungeons[idx].depth_start;
+    if (num_dunlevs_out)
+        *num_dunlevs_out = (int) dungeons[idx].num_dunlevs;
+    return 0;
+}
+
+/* Schedule a DEFERRED move of the hero to an ARBITRARY (dnum, dlevel),
+ * including a dungeon branch other than the hero's current one (e.g.
+ * Gehennom or the Elemental Planes).  Like nle_goto_depth this is two-phase:
+ * the actual goto_level() runs via deferred_goto() on the next nle_step(),
+ * which handles cross-branch movement and generates the destination level on
+ * demand (mklev) if it has not been visited.  at_stairs/falling/portal are
+ * all FALSE so the hero lands on a random valid spot (the destination's
+ * branch stairs may not be registered for a teleport-style jump).
+ *
+ * Entering the endgame (the Elemental Planes) requires the Amulet of Yendor
+ * (goto_level returns early without it); we grant it here so the curriculum
+ * can reach the planes.  The non-wizard gate in goto_level then routes the
+ * hero to the Plane of Earth, which is the natural plane entry point.
+ *
+ * Returns 0 on success, nonzero for an out-of-range (dnum, dlevel). */
+int
+nle_goto_abs(nle_ctx_t *nle, int dnum, int dlevel)
+{
+    d_level dest;
+
+    current_nle_ctx = nle;
+
+    if (dnum < 0 || dnum >= nle->s_n_dgns)
+        return 1;
+    if (dlevel < 1 || dlevel > (int) dungeons[dnum].num_dunlevs)
+        return 1;
+
+    dest.dnum = (xchar) dnum;
+    dest.dlevel = (xchar) dlevel;
+
+    if (on_level(&u.uz, &dest))
+        return 0; /* already there; nothing to schedule */
+
+    /* The endgame gate in goto_level() needs the Amulet. */
+    if (dest.dnum == astral_level.dnum)
+        u.uhave.amulet = 1;
+
+    schedule_goto(&dest, FALSE, FALSE, 0, (char *) 0, (char *) 0);
+    return 0;
+}
 
 /* From unixtty.c */
 /* fatal error */

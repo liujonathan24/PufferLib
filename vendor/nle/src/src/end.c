@@ -7,6 +7,7 @@
 
 #include "hack.h"
 #include "nle.h" /* current_nle_ctx for migrated globals */
+#include "nle_sentinel.h"
 #include "lev.h"
 
 /* Per-env replacement for vanq_sortmode (end.c).
@@ -57,7 +58,7 @@ static struct nle_end_state *nle_end_st(void) {
     if (!current_nle_ctx) return NULL;
     struct nle_end_state *s = (struct nle_end_state *) current_nle_ctx->s_end_state;
     if (!s) {
-        s = (struct nle_end_state *) calloc(1, sizeof(struct nle_end_state));
+        s = (struct nle_end_state *) nle_arena_calloc(1, sizeof(struct nle_end_state));
         current_nle_ctx->s_end_state = s;
     }
     if (!s->_valuables_inited) {
@@ -675,6 +676,11 @@ VA_DECL(const char *, str)
 #else
         Vsprintf(buf, str, VA_ARGS);
 #endif
+        /* Attribute the panic reason to this env's sentinel slot (NULL slot ok;
+         * set_panic falls back to the current thread's slot). */
+        nle_sentinel_set_panic(current_nle_ctx ? current_nle_ctx->sentinel
+                                               : NULL,
+                               buf);
         raw_print(buf);
         paniclog("panic", buf);
     }

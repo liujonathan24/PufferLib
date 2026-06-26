@@ -539,6 +539,21 @@ int control;
     if (in_mklev || !iflags.vision_inited)
         return;
 
+    /* vision_radius knob: override the hero's night-vision range so they see
+     * this many cells in the dark (0 = vanilla). Lit areas are unaffected.
+     * Clamp to [1, MAX_RADIUS]: nv_range indexes circle_data[] via circle_ptr()
+     * (valid only up to MAX_RADIUS), and a huge/inf knob value would otherwise
+     * cast to a wild int and walk off the table -> SIGSEGV in vision_recalc.
+     * The `>= MAX_RADIUS` test runs on the double, so inf/huge are caught
+     * before the (int) cast (which would itself be UB for those). */
+    if (nle_tuning.vision_radius > 0.0) {
+        u.nv_range = (nle_tuning.vision_radius >= (double) MAX_RADIUS)
+                         ? MAX_RADIUS
+                         : (int) nle_tuning.vision_radius;
+        if (u.nv_range < 1)
+            u.nv_range = 1;
+    }
+
     /*
      * Either the light sources have been taken care of, or we must
      * recalculate them here.
@@ -745,6 +760,28 @@ int control;
 
         for (col = start; col <= stop;
              lev += ROWNO, sv += (int) colbump[++col]) {
+            /* vision_radius knob (hard sight limit): force any cell farther than
+             * `vision_radius` from the hero out of sight -- even inside a lit
+             * room, which NetHack would otherwise reveal whole. Routing through
+             * not_in_sight makes the existing newsym() logic re-hide a cell that
+             * just left sight (unexplored -> stone, explored -> dim memory), so
+             * shrinking the radius live removes newly-unseen area for free.
+             * Guarded on the non-default knob (>0), so vanilla play is
+             * byte-identical (golden parity preserved). */
+            if (nle_tuning.vision_radius > 0.0) {
+                /* Clamp like nv_range above: a huge knob makes vr*vr overflow
+                 * int (UB / wrong result). MAX_RADIUS covers the whole map. */
+                int vr = (nle_tuning.vision_radius >= (double) MAX_RADIUS)
+                             ? MAX_RADIUS
+                             : (int) nle_tuning.vision_radius;
+                int vdx = col - u.ux, vdy = row - u.uy;
+                if (vr < 1)
+                    vr = 1;
+                if (vdx * vdx + vdy * vdy > vr * vr) {
+                    next_row[col] &= ~(IN_SIGHT | COULD_SEE);
+                    goto not_in_sight;
+                }
+            }
             if (next_row[col] & IN_SIGHT) {
                 /*
                  * We see this position because of night- or xray-vision.
@@ -849,6 +886,12 @@ skip:
     viz_rmax = next_rmax;
 
     recalc_mapseen();
+
+    /* reveal_map knob is now applied as a render-time overlay on
+     * the emitted observation in the rl window port (NetHackRL::fill_obs), never
+     * mutating the hero's remembered map (gbuf) here. This keeps the knobs
+     * reversible and side-effect-free; the vanilla game and golden parity are
+     * untouched. */
 }
 
 /*

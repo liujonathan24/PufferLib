@@ -11,6 +11,51 @@
 #include "nleobs.h"
 #include "isaac64.h"
 
+/* ---------------------------------------------------------------------------
+ * nle_tune_t — parametric difficulty knobs.
+ *
+ * The knob catalog is defined ONCE via the X-macro below; the struct, the
+ * defaults, and the name table are all generated from it, and the binding
+ * treats nle_tune_t as a flat array of doubles indexed by the name table.
+ * Adding a knob = add one X() line here + read it at one engine decision
+ * site; no get/set plumbing changes anywhere (binding or C).
+ *
+ * Every knob is a double so the generic get/set works uniformly: floats are
+ * scales (1.0 = vanilla), bools are 0.0/1.0, ints are truncated. A scale knob
+ * that should be "off"/"use vanilla" uses the documented sentinel in its
+ * read-site (e.g. vision_radius <= 0 means "vanilla").
+ *
+ * X(name, default) — v1 = Layer 3 live (per-step) mechanics knobs.
+ */
+#define NLE_TUNE_FIELDS(X)                 \
+    X(dmg_to_player_scale,      1.0)       \
+    X(dmg_by_player_scale,      1.0)       \
+    X(player_hp_scale,          1.0)       \
+    X(hp_regen_scale,           1.0)       \
+    X(vision_radius,            0.0)       \
+    X(reveal_map,               0.0)       \
+    X(hunger_rate_scale,        1.0)       \
+    X(ongoing_spawn_scale,      1.0)       \
+    X(monster_difficulty_scale, 1.0)       \
+    X(monster_speed_scale,      1.0)       \
+    X(xp_gain_scale,            1.0)       \
+    X(room_density,             1.0)       \
+    X(mob_spawn,                1.0)       \
+    X(trap_density,             1.0)       \
+    X(locked_door,              1.0)       \
+    X(corridor_connectivity,    1.0)       \
+    X(room_size,                1.0)
+
+typedef struct nle_tune {
+#define NLE_TUNE_DECL(name, dflt) double name;
+    NLE_TUNE_FIELDS(NLE_TUNE_DECL)
+#undef NLE_TUNE_DECL
+} nle_tune_t;
+
+/* Convenience accessor for engine read-sites: `nle_tuning.<knob>`. Resolves to
+ * the current env's knob block (current_nle_ctx is anchored on every step). */
+#define nle_tuning (current_nle_ctx->s_tune)
+
 /* TODO: Fix this. */
 #undef SIG_RET_TYPE
 #define SIG_RET_TYPE void (*)(int)
@@ -111,6 +156,8 @@ typedef struct nle_globals {
 
     boolean done;
     nle_obs *observation;
+
+    void *sentinel; /* opaque nle_sentinel slot for this env (may be NULL) */
 
     /* nle_state refactor — RNG subsystem (stage 1, was static rnglist
      * in rnd.c). Accessed via nle_rng_state(idx) / nle_rng_init_flag(idx). */
@@ -1091,6 +1138,9 @@ typedef struct nle_globals {
     signed char          s_launchplace_y;
     /* Per-env topten linked list head (topten.c). */
     void                *s_tt_head;
+    /* Parametric difficulty knobs. Embedded by value so nle_fr_snapshot
+     * (which copies the ctx) captures it; read at engine decision sites. */
+    nle_tune_t           s_tune;
 } nle_ctx_t;
 
 /*
@@ -1117,10 +1167,112 @@ void nle_end(nle_ctx_t *);
 void nle_set_seed(nle_ctx_t *, unsigned long, unsigned long, boolean);
 void nle_get_seed(nle_ctx_t *, unsigned long *, unsigned long *, boolean *);
 
+/* Debug: dump the per-env arena memory map (named buffers + fmon/fobj chains +
+ * monster grid with fmon-membership/data-validity) to `path` (NULL => stderr).
+ * Diagnostic for arena-reuse / dangling-pointer investigations. */
+void nle_dbg_memmap(nle_ctx_t *, const char *);
+
+/* Single-level blob save/load.
+ *
+ * nle_save_level serializes the current dungeon level to a malloc'd byte
+ * blob (length written to *out_len); the caller owns it and must release
+ * it with nle_free_blob. nle_load_level stamps a previously saved blob over
+ * the current level and reloads its contents in place.
+ *
+ * NOTE: nle_load_level is two-phase. It mutates engine state and resets
+ * vision but does NOT re-render the map (re-rendering routes through the
+ * window port, which yields the game coroutine and is unsafe from this
+ * entry point). The caller must step the game once to render. */
+void *nle_save_level(nle_ctx_t *, long *out_len);
+void  nle_free_blob(void *blob);
+int   nle_load_level(nle_ctx_t *, const void *blob, long len);
+
+/* Hero (player) state blob save/load.
+ *
+ * nle_save_player serializes the full hero gamestate -- the `u` struct,
+ * inventory, attributes, killers/timers/light-sources and the dungeon graph
+ * (everything dosave0()'s gamestate tail writes), WITHOUT the level map -- to
+ * a malloc'd byte blob (length written to *out_len). The live game is left
+ * intact (WRITE_SAVE, not FREE_SAVE). Caller owns the blob; free it with
+ * nle_free_blob. Pairs with nle_save_level: a checkpoint = level blob +
+ * player blob. Returns the blob, or NULL on error.
+ *
+ * nle_load_player restores such a blob onto the CURRENT level. Returns 0 on
+ * success, nonzero on error.
+ *
+ * LOAD ORDERING CONTRACT: call nle_load_level BEFORE nle_load_player. The
+ * player restore relinks u.ustuck / u.usteed and the worn ball/chain against
+ * the current level's monster/object chains, so the target level must already
+ * be installed.
+ *
+ * NOTE: nle_load_player is two-phase, like nle_load_level. It mutates engine
+ * state and resets vision but does NOT re-render (re-rendering routes through
+ * the window port, which yields the game coroutine and is unsafe from this
+ * entry point). The caller must step the game once to render. */
+void *nle_save_player(nle_ctx_t *, long *out_len);
+int   nle_load_player(nle_ctx_t *, const void *blob, long len);
+
+/* Secure state-modification API.
+ *
+ * nle_set_state pokes a curated whitelist of simple integer player fields.
+ * "field" is one of: "hp", "max_hp", "gold", "xp_level", "hunger", or one of
+ * the six attributes "str"/"dex"/"con"/"int"/"wis"/"cha" (value is NetHack's
+ * encoded attribute: 3..18, 19..118 == 18/01..18/00, 119..125 == 19..25).
+ * Returns 0 on success, nonzero for an unknown field. The C side only
+ * provides the setters; the binding is responsible for validating bounds.
+ *
+ * nle_goto_depth schedules a DEFERRED move of the hero to dungeon level n
+ * in the current dungeon branch. It does not change levels synchronously
+ * (goto_level routes through the window port and yields the coroutine,
+ * which would crash from this entry point); instead it sets u.utolev /
+ * u.utotype so the game loop performs the change via deferred_goto() on
+ * the next nle_step(). Returns 0 on success, nonzero on bad target. */
+int nle_set_state(nle_ctx_t *, const char *field, long value);
+int nle_goto_depth(nle_ctx_t *, int n);
+
+/* nle_seat_on_stair seats the hero on the down (down != 0) or up staircase of
+ * the current level, if present. Two-phase like goto_depth: the caller steps
+ * once to re-render. Returns 0 on success, nonzero if no such stair exists.
+ *
+ * nle_level_up raises the hero n experience levels with the normal HP/stat
+ * gains (pluslvl), capped at level 30, and bumps u.uexp to the new level
+ * threshold so the next newexplevel() won't undo it. Caller steps once to
+ * refresh blstats. Returns 0 on success. */
+int nle_seat_on_stair(nle_ctx_t *, int down);
+int nle_level_up(nle_ctx_t *, int n);
+
+/* Curriculum traversal: cross-branch goto + dungeon-table query.
+ *
+ * nle_num_dungeons returns the number of dungeon branches defined.
+ * nle_dungeon_info reports branch `idx`'s name / depth_start / num_dunlevs
+ * (any out pointer may be NULL); lets the caller map an absolute "Dlvl N" to
+ * a (dnum, dlevel) and find Gehennom / the Elemental Planes by name.
+ * nle_goto_abs schedules a DEFERRED move to an arbitrary (dnum, dlevel),
+ * including a different branch than the hero's current one (unlike
+ * nle_goto_depth, which pins the branch). Two-phase: goto_level() runs via
+ * deferred_goto() on the next nle_step() and generates the level on demand.
+ * Reaching the Elemental Planes grants the Amulet (the goto_level gate). All
+ * return 0 on success, nonzero on a bad index / out-of-range target. */
+int nle_num_dungeons(nle_ctx_t *);
+int nle_dungeon_info(nle_ctx_t *, int idx, char *name_out, int name_cap,
+                     int *depth_start_out, int *num_dunlevs_out);
+int nle_goto_abs(nle_ctx_t *, int dnum, int dlevel);
+
 /* nle_state refactor — per-instance accessors. Called from rnd.c (and
  * other subsystems as they migrate). Each returns a pointer into the
  * current nle_ctx_t. CORE = 0 (gameplay RNG), DISP = 1 (display RNG). */
 isaac64_ctx *nle_rng_state(int idx);
 int          *nle_rng_init_flag(int idx);
+
+/* Arena-backed calloc (alloc.c). Per-env state allocated through this lands
+ * in the per-env arena and is captured by nle_fr_snapshot. */
+void *nle_arena_calloc(size_t count, size_t size);
+
+/* Difficulty knob catalog (nle.c). The binding calls count()/name() once to
+ * learn the catalog, then reads/writes nle_get_tune(nle) as a flat double[]. */
+int          nle_tune_count(void);
+const char  *nle_tune_name(int index);
+void         nle_tune_set_defaults(nle_tune_t *t);
+nle_tune_t  *nle_get_tune(nle_ctx_t *nle);
 
 #endif /* NLE_H */

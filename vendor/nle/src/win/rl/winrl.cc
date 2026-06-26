@@ -167,7 +167,17 @@ class ScopedStack
 
     ~ScopedStack()
     {
-        deque_.pop_back();
+        /* Guard against pop-on-empty. nle_fr_restore swaps the coroutine stack
+         * back to a snapshot, but the win-proc deque (libc-backed, outside the
+         * snapshot) keeps its live contents. The restored stack's still-pending
+         * ScopedStack destructors then pop entries this deque no longer holds —
+         * especially under repeated restore (the Monte-Carlo / checkpoint demo).
+         * std::deque::pop_back() on an empty deque is UB: it walks _M_finish
+         * past _M_start, leaving _M_cur garbage, so the next push_back writes to
+         * a near-null slot and SIGSEGVs. The deque is purely a diagnostic call
+         * stack (never read), so skipping the unmatched pop is harmless. */
+        if (!deque_.empty())
+            deque_.pop_back();
     }
 
   private:
@@ -230,6 +240,17 @@ class NetHackRL
     static void rl_status_update(int fldidx, genericptr_t ptr, int chg,
                                  int percent, int color,
                                  unsigned long *colormasks);
+
+    /* Snapshot support (nle_fr_snapshot/restore). The map-mirror arrays below
+     * (glyphs_/chars_/colors_/specials_/screen_descriptions_) are updated only
+     * for cells that change between steps. nle_fr_restore resets the engine's
+     * gbuf to the snapshot, but this C++ object lives outside the arena, so its
+     * mirror would keep stale cells from the abandoned branch. These copy the
+     * POD map arrays to/from a fixed-size blob so the mirror is restored too.
+     * (blstats_/status_ are fully recomputed each step and need no capture.) */
+    static size_t mirror_blob_size();
+    void save_mirror(void *dst) const;
+    void load_mirror(const void *src);
 
   private:
     struct rl_menu_item {
@@ -403,6 +424,181 @@ NetHackRL::NetHackRL(int &argc, char **argv) : glyphs_(), blstats_{}
     glyphs_.fill(nul_glyph);
 }
 
+/* ---- Snapshot mirror save/restore (see declarations above) ------------- */
+
+/* Fixed-max serialization of the cached inventory_ window. The 5 display arrays
+ * are captured wholesale; inventory_ is a per-env cache (updated only on
+ * inventory-window refreshes, not every step) that lives outside the arena, so
+ * it must be captured too or a snapshot restore leaves the previous branch's
+ * inventory in place -> inv_* observation divergence after restore. */
+static const int RL_INV_STR_MAX = 256;    /* >= any rendered item name */
+static const int RL_INV_OCNAME_MAX = 64;
+/* per slot: glyph(4) letter(1) oclass(1) str_len(2)+str(MAX) ocn_len(2)+ocn(MAX) */
+static const size_t RL_INV_SLOT =
+    4 + 1 + 1 + 2 + RL_INV_STR_MAX + 2 + RL_INV_OCNAME_MAX;
+/* The obs `message` reads windows_[WIN_MESSAGE]->last_msg during a yn-prompt
+ * (in_yn_function); that string lives in the rl instance, outside the arena, so
+ * it is captured here too. NLE_MESSAGE_SIZE bytes is all the obs ever copies. */
+static const int RL_MSG_MAX = NLE_MESSAGE_SIZE;
+
+size_t
+NetHackRL::mirror_blob_size()
+{
+    const size_t n = (size_t) (COLNO - 1) * ROWNO;
+    return n * sizeof(int16_t)                   /* glyphs_ */
+           + n                                   /* chars_ */
+           + n                                   /* colors_ */
+           + n                                   /* specials_ */
+           + n * NLE_SCREEN_DESCRIPTION_LENGTH   /* screen_descriptions_ */
+           + sizeof(uint32_t)                    /* inventory_ count */
+           + (size_t) NLE_INVENTORY_SIZE * RL_INV_SLOT /* inventory_ slots */
+           + 2 + RL_MSG_MAX;                     /* WIN_MESSAGE last_msg */
+}
+
+void
+NetHackRL::save_mirror(void *dst) const
+{
+    char *p = static_cast<char *>(dst);
+    std::memcpy(p, glyphs_.data(), sizeof(glyphs_));     p += sizeof(glyphs_);
+    std::memcpy(p, chars_.data(), sizeof(chars_));       p += sizeof(chars_);
+    std::memcpy(p, colors_.data(), sizeof(colors_));     p += sizeof(colors_);
+    std::memcpy(p, specials_.data(), sizeof(specials_)); p += sizeof(specials_);
+    std::memcpy(p, screen_descriptions_.data(), sizeof(screen_descriptions_));
+    p += sizeof(screen_descriptions_);
+
+    uint32_t count = (uint32_t) min((size_t) inventory_.size(),
+                                         (size_t) NLE_INVENTORY_SIZE);
+    std::memcpy(p, &count, sizeof(count)); p += sizeof(count);
+    for (int k = 0; k < NLE_INVENTORY_SIZE; ++k) {
+        int32_t glyph = 0;
+        char letter = 0, oclass = 0;
+        uint16_t slen = 0, oclen = 0;
+        char sbuf[RL_INV_STR_MAX], obuf[RL_INV_OCNAME_MAX];
+        std::memset(sbuf, 0, sizeof(sbuf));
+        std::memset(obuf, 0, sizeof(obuf));
+        if (k < (int) count) {
+            const rl_inventory_item &it = inventory_[k];
+            glyph = it.glyph;
+            letter = it.letter;
+            oclass = it.object_class;
+            slen = (uint16_t) min(it.str.size(), (size_t) RL_INV_STR_MAX);
+            std::memcpy(sbuf, it.str.data(), slen);
+            oclen = (uint16_t) min(it.object_class_name.size(),
+                                        (size_t) RL_INV_OCNAME_MAX);
+            std::memcpy(obuf, it.object_class_name.data(), oclen);
+        }
+        std::memcpy(p, &glyph, 4); p += 4;
+        *p++ = letter;
+        *p++ = oclass;
+        std::memcpy(p, &slen, 2); p += 2;
+        std::memcpy(p, sbuf, RL_INV_STR_MAX); p += RL_INV_STR_MAX;
+        std::memcpy(p, &oclen, 2); p += 2;
+        std::memcpy(p, obuf, RL_INV_OCNAME_MAX); p += RL_INV_OCNAME_MAX;
+    }
+
+    /* WIN_MESSAGE last_msg (yn-prompt message source). */
+    {
+        uint16_t mlen = 0;
+        char mbuf[RL_MSG_MAX];
+        std::memset(mbuf, 0, sizeof(mbuf));
+        if (WIN_MESSAGE != WIN_ERR && (size_t) WIN_MESSAGE < windows_.size()
+            && windows_[WIN_MESSAGE]) {
+            const LibcString &lm = windows_[WIN_MESSAGE]->last_msg;
+            mlen = (uint16_t) min(lm.size(), (size_t) RL_MSG_MAX);
+            std::memcpy(mbuf, lm.data(), mlen);
+        }
+        std::memcpy(p, &mlen, 2); p += 2;
+        std::memcpy(p, mbuf, RL_MSG_MAX); p += RL_MSG_MAX;
+    }
+}
+
+void
+NetHackRL::load_mirror(const void *src)
+{
+    const char *p = static_cast<const char *>(src);
+    std::memcpy(glyphs_.data(), p, sizeof(glyphs_));     p += sizeof(glyphs_);
+    std::memcpy(chars_.data(), p, sizeof(chars_));       p += sizeof(chars_);
+    std::memcpy(colors_.data(), p, sizeof(colors_));     p += sizeof(colors_);
+    std::memcpy(specials_.data(), p, sizeof(specials_)); p += sizeof(specials_);
+    std::memcpy(screen_descriptions_.data(), p, sizeof(screen_descriptions_));
+    p += sizeof(screen_descriptions_);
+
+    uint32_t count = 0;
+    std::memcpy(&count, p, sizeof(count)); p += sizeof(count);
+    inventory_.clear();
+    for (int k = 0; k < NLE_INVENTORY_SIZE; ++k) {
+        int32_t glyph;
+        char letter, oclass;
+        uint16_t slen, oclen;
+        std::memcpy(&glyph, p, 4); p += 4;
+        letter = *p++;
+        oclass = *p++;
+        std::memcpy(&slen, p, 2); p += 2;
+        const char *sbuf = p; p += RL_INV_STR_MAX;
+        std::memcpy(&oclen, p, 2); p += 2;
+        const char *obuf = p; p += RL_INV_OCNAME_MAX;
+        if (k < (int) count) {
+            rl_inventory_item it;
+            it.glyph = glyph;
+            it.letter = letter;
+            it.object_class = oclass;
+            it.str.assign(sbuf, min((int) slen, RL_INV_STR_MAX));
+            it.object_class_name.assign(obuf,
+                                        min((int) oclen, RL_INV_OCNAME_MAX));
+            inventory_.push_back(it);
+        }
+    }
+
+    /* WIN_MESSAGE last_msg. */
+    {
+        uint16_t mlen = 0;
+        std::memcpy(&mlen, p, 2); p += 2;
+        const char *mbuf = p; p += RL_MSG_MAX;
+        if (WIN_MESSAGE != WIN_ERR && (size_t) WIN_MESSAGE < windows_.size()
+            && windows_[WIN_MESSAGE]) {
+            windows_[WIN_MESSAGE]->last_msg.assign(
+                mbuf, min((int) mlen, RL_MSG_MAX));
+        }
+    }
+}
+
+/* C-callable shims used by nle_fast_reset.c. The NetHackRL instance lives on
+ * nle_ctx_t->s_netHackRL_instance (libc-malloc'd, outside the arena). */
+extern "C" size_t
+nle_rl_mirror_size(void)
+{
+    return NetHackRL::mirror_blob_size();
+}
+
+extern "C" void
+nle_rl_mirror_save(nle_ctx_t *nle, void *dst)
+{
+    if (nle && nle->s_netHackRL_instance)
+        static_cast<NetHackRL *>(nle->s_netHackRL_instance)->save_mirror(dst);
+    else
+        std::memset(dst, 0, NetHackRL::mirror_blob_size());
+}
+
+extern "C" void
+nle_rl_mirror_load(nle_ctx_t *nle, const void *src)
+{
+    if (nle && nle->s_netHackRL_instance)
+        static_cast<NetHackRL *>(nle->s_netHackRL_instance)->load_mirror(src);
+}
+
+/* Reset the win-proc diagnostic deque to empty on restore. The deque (libc-
+ * backed, outside the arena/snapshot) keeps its live depth, but the restored
+ * coroutine stack expects the snapshot-time depth; clearing here keeps the
+ * deque from drifting/growing across restores. The matching ScopedStack dtor
+ * guards pop-on-empty, so the restored stack's still-pending destructors are
+ * harmless no-ops against the now-empty deque. */
+extern "C" void
+nle_rl_winproc_reset(nle_ctx_t *nle)
+{
+    if (nle && nle->s_win_proc_calls)
+        static_cast<WinProcDeque *>(nle->s_win_proc_calls)->clear();
+}
+
 void
 NetHackRL::player_selection_method()
 {
@@ -485,6 +681,143 @@ NetHackRL::fill_obs(nle_obs *obs)
     if (obs->specials) {
         std::memcpy(obs->specials, specials_.data(), specials_.size());
     }
+
+    /* reveal_map knob: render-time observation overlay.
+     *
+     * This fills any cell that is still "unknown" (blank stone in the emitted
+     * obs) with the actual level terrain, computed straight from levl[][] via
+     * back_to_glyph(), and then overlays every live monster on the level. It
+     * writes ONLY into the emitted obs arrays -- never into gbuf, levl[][]
+     * (except a fully-restored temporary seenv poke, see below), or via
+     * newsym() -- so the hero's remembered map is untouched and the effect is
+     * fully reversible (turning the knob back to its default instantly
+     * re-hides everything on the next emitted obs).
+     *
+     * Guarded to the non-default knob path: when reveal_map==0 (the default)
+     * this loop never runs, so the default obs is byte-identical to vanilla
+     * and golden parity is unaffected. */
+    if (nle_tuning.reveal_map > 0.0) {
+        for (int x = 1; x < COLNO; x++) {
+            for (int y = 0; y < ROWNO; y++) {
+                size_t i = (x - 1) % (COLNO - 1);
+                size_t j = y % ROWNO;
+                size_t offset = j * (COLNO - 1) + i;
+
+                /* Only overlay cells the hero has not already seen. A blank
+                 * cell is the nul_glyph (stone) fill the port initializes
+                 * with and which store_glyph re-emits for unknown terrain. */
+                if (obs->glyphs && obs->glyphs[offset] != nul_glyph)
+                    continue;
+
+                /* back_to_glyph() returns S_stone for any wall whose seenv
+                 * bits are all clear (display.c: idx = seenv ? wall_angle()
+                 * : S_stone), so an unseen wall would overlay as blank stone
+                 * and stay masked. For wall cells (incl. secret doors) with
+                 * seenv==0, temporarily set seenv = SVALL so wall_angle()
+                 * computes a wall face, then restore the original value
+                 * immediately. Fully reversible: levl[][] is unchanged after
+                 * this call. */
+                schar typ = levl[x][y].typ;
+                uchar saved_seenv = levl[x][y].seenv;
+                boolean poked = FALSE;
+                if ((IS_WALL(typ) || typ == SDOOR) && saved_seenv == 0) {
+                    levl[x][y].seenv = SVALL;
+                    poked = TRUE;
+                }
+
+                int glyph = back_to_glyph(x, y);
+
+                if (poked)
+                    levl[x][y].seenv = saved_seenv;
+
+                /* Map the background glyph to char/color/special exactly the
+                 * way rl_print_glyph -> store_glyph / store_mapped_glyph do. */
+                int ch;
+                int color;
+                unsigned special;
+                (void) mapglyph(glyph, &ch, &color, &special, x, y, 0);
+                if (glyph != nul_glyph && color == CLR_BLACK) {
+                    color = iflags.wc2_darkgray ? 8 : CLR_BLUE;
+                }
+
+                if (obs->glyphs)
+                    obs->glyphs[offset] = shuffled_glyph(glyph);
+                if (obs->chars)
+                    obs->chars[offset] = (unsigned char) ch;
+                if (obs->colors)
+                    obs->colors[offset] = (unsigned char) color;
+                if (obs->specials)
+                    obs->specials[offset] = (unsigned char) special;
+                /* Also overlay into the tty buffer: harness consumers
+                 * (render_map_view, feature/hostile extraction) render the
+                 * agent's map from tty_chars, so reveal_map must reach it too.
+                 * The tty map cell for level (x,y) is row (j+1), col i
+                 * (row 0 is the message line); tty_chars is filled by the TMT
+                 * callback BEFORE fill_obs, so writing here overlays it. */
+                {
+                    size_t tj = j + 1;
+                    if (tj < (size_t) NLE_TERM_LI && i < (size_t) NLE_TERM_CO) {
+                        size_t toff = tj * NLE_TERM_CO + i;
+                        if (obs->tty_chars)
+                            obs->tty_chars[toff] = (unsigned char) ch;
+                        if (obs->tty_colors)
+                            obs->tty_colors[toff] = (signed char) color;
+                    }
+                }
+            }
+        }
+
+        /* Overlay every live monster on the level so reveal_map shows the
+         * full monster picture, refreshed each step. Uses the engine's normal
+         * monster->glyph mapping (mon_to_glyph with the display RNG, exactly
+         * as display.c's show path does), then maps glyph->char/color the same
+         * way as the terrain branch above. Monsters overwrite terrain. */
+        struct monst *mtmp;
+        for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+            if (DEADMONSTER(mtmp))
+                continue;
+
+            int mx = mtmp->mx;
+            int my = mtmp->my;
+            if (mx < 1 || mx >= COLNO || my < 0 || my >= ROWNO)
+                continue;
+
+            size_t i = (mx - 1) % (COLNO - 1);
+            size_t j = my % ROWNO;
+            size_t offset = j * (COLNO - 1) + i;
+
+            int glyph = mon_to_glyph(mtmp, rn2_on_display_rng);
+
+            int ch;
+            int color;
+            unsigned special;
+            (void) mapglyph(glyph, &ch, &color, &special, mx, my, 0);
+            if (glyph != nul_glyph && color == CLR_BLACK) {
+                color = iflags.wc2_darkgray ? 8 : CLR_BLUE;
+            }
+
+            if (obs->glyphs)
+                obs->glyphs[offset] = shuffled_glyph(glyph);
+            if (obs->chars)
+                obs->chars[offset] = (unsigned char) ch;
+            if (obs->colors)
+                obs->colors[offset] = (unsigned char) color;
+            if (obs->specials)
+                obs->specials[offset] = (unsigned char) special;
+            /* Overlay the monster into the tty buffer too (see terrain loop). */
+            {
+                size_t tj = j + 1;
+                if (tj < (size_t) NLE_TERM_LI && i < (size_t) NLE_TERM_CO) {
+                    size_t toff = tj * NLE_TERM_CO + i;
+                    if (obs->tty_chars)
+                        obs->tty_chars[toff] = (unsigned char) ch;
+                    if (obs->tty_colors)
+                        obs->tty_colors[toff] = (signed char) color;
+                }
+            }
+        }
+    }
+
     if (obs->message) {
         // TODO: This doesn't show anything in situations where there's too
         // many items at one tile, which will get displayed in a new window.
